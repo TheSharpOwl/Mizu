@@ -129,6 +129,44 @@ ComPtr<IDXGIAdapter4> GetAdapter(bool useWarp)
 	return dAdapter4;
 }
 
+ComPtr<IDXGIDevice2> CreateDevice(ComPtr<IDXGIDevice4> adapter4)
+{
+	ComPtr<IDXGIDevice2> device2;
+	ThrowIfFailed(D3D12CreateDevice(adapter4.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device2)));
+
+#if defined(_DEBUG)
+	ComPtr<ID3D12InfoQueue> infoQueue;
+	if (SUCCEEDED(device2.As(&infoQueue)))
+	{
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+
+		// TODO might change these later about what to supress out of the warnings and errors
+		// in case skipping a categoty is needed : D3D12_MESSAGE_CATEGORY Categories[] can be used
+		D3D12_MESSAGE_SEVERITY severities[] = {
+			D3D12_MESSAGE_SEVERITY_INFO
+		};
+		D3D12_MESSAGE_ID DenyIds[] = {
+			D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
+			D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         // This warning occurs when using capture frame while graphics debugging.
+			D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                       // This warning occurs when using capture frame while graphics debugging.
+		};
+
+		D3D12_INFO_QUEUE_FILTER filter = {};
+
+		//filter.DenyList.NumCategories = _countof(Categories);
+		//filter.DenyList.pCategoryList = Categories;
+		filter.DenyList.NumSeverities = _countof(severities);
+		filter.DenyList.pSeverityList = severities;
+		filter.DenyList.NumIDs = _countof(DenyIds);
+		filter.DenyList.pIDList = DenyIds;
+
+		ThrowIfFailed(infoQueue->PushStorageFilter(&filter));
+	}
+#endif
+	return device2;
+}
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 	const wchar_t* windowClassName = L"MizuWindowClass";
