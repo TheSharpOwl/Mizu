@@ -111,7 +111,7 @@ ComPtr<IDXGIAdapter4> GetAdapter(bool useWarp)
 	else
 	{
 		SIZE_T bestVideoMemory = 0;
-		for (unsigned int i = 0; i < dFactory->EnumAdapters1(i, &dAdapter1) != DXGI_ERROR_NOT_FOUND; i++)
+		for (UINT i = 0; dFactory->EnumAdapters1(i, &dAdapter1) != DXGI_ERROR_NOT_FOUND; ++i)
 		{
 			DXGI_ADAPTER_DESC1 dAdapterDesc;
 			dAdapter1->GetDesc1(&dAdapterDesc);
@@ -129,9 +129,9 @@ ComPtr<IDXGIAdapter4> GetAdapter(bool useWarp)
 	return dAdapter4;
 }
 
-ComPtr<IDXGIDevice2> CreateDevice(ComPtr<IDXGIDevice4> adapter4)
+ComPtr<ID3D12Device2> CreateDevice(ComPtr<IDXGIAdapter4> adapter4)
 {
-	ComPtr<IDXGIDevice2> device2;
+	ComPtr<ID3D12Device2> device2;
 	ThrowIfFailed(D3D12CreateDevice(adapter4.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device2)));
 
 #if defined(_DEBUG)
@@ -145,7 +145,7 @@ ComPtr<IDXGIDevice2> CreateDevice(ComPtr<IDXGIDevice4> adapter4)
 		// TODO might change these later about what to supress out of the warnings and errors
 		// in case skipping a categoty is needed : D3D12_MESSAGE_CATEGORY Categories[] can be used
 		D3D12_MESSAGE_SEVERITY severities[] = {
-			D3D12_MESSAGE_SEVERITY_INFO
+			D3D12_MESSAGE_SEVERITY_INFO // supress only the info messages
 		};
 		D3D12_MESSAGE_ID DenyIds[] = {
 			D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
@@ -169,10 +169,20 @@ ComPtr<IDXGIDevice2> CreateDevice(ComPtr<IDXGIDevice4> adapter4)
 }
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
+	EnableDebugLayer();
+
 	const wchar_t* windowClassName = L"MizuWindowClass";
 	RegisterWindowClass(hInstance, windowClassName);
 	HWND hWnd = CreateWindow(windowClassName, L"Mizu", hInstance, 300, 300);
+
+	// TODO check warp support before passing useWarp argument
+	ComPtr<IDXGIAdapter4> adapter = GetAdapter(true);
+
+	auto device = CreateDevice(adapter);
+
 	::ShowWindow(hWnd, SW_SHOW);
+
+
 	while (1)
 	{
 	}
