@@ -167,6 +167,21 @@ ComPtr<ID3D12Device2> CreateDevice(ComPtr<IDXGIAdapter4> adapter4)
 #endif
 	return device2;
 }
+
+ComPtr<ID3D12CommandQueue> CreateCommandQueue(ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE listType)
+{
+	ComPtr<ID3D12CommandQueue> queue;
+
+	D3D12_COMMAND_QUEUE_DESC des;
+	des.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	des.NodeMask = 0;
+	des.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	des.Type = listType;
+
+	ThrowIfFailed(device->CreateCommandQueue(&des, IID_PPV_ARGS(&queue)));
+	return queue;
+}
+
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 	EnableDebugLayer();
@@ -182,9 +197,11 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
 	::ShowWindow(hWnd, SW_SHOW);
 
-
+	// to print for example
 	while (1)
 	{
+		OutputDebugStringW(
+			L"Hello\n"		);
 	}
 	return 0;
 }	
