@@ -17,10 +17,18 @@
 #include "wrl.h"
 
 using namespace Microsoft::WRL;
+
+template <typename T>
+using cp = ComPtr<T>;
+
 uint32_t width = 1280, height= 720;
 HWND hWnd;
 // to toggle fullscreen state
 RECT WindowRect;
+RECT g_WindowRect; // TODO I think it's not used but make sure
+
+const int g_NumFrames = 2;
+cp<ID3D12Resource> g_BackBuffers[g_NumFrames];
 
 const wchar_t* windowClassName = L"MizuWindowClass";
 
@@ -57,7 +65,6 @@ void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
 
 }
 
-RECT g_WindowRect;
 
 HWND CreateWindow(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight)
 {
@@ -234,6 +241,41 @@ ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> co
 
 	ThrowIfFailed(swapChain1.As(&swapChain4));
 	return swapChain4;
+}
+
+ComPtr<ID3D12DescriptorHeap>CreateDescriptorHeap(ComPtr<ID3D12Device2> device ,D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+	ComPtr<ID3D12DescriptorHeap> descriporHeap;
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.NumDescriptors = numDescriptors;
+	desc.Type = type;
+	//will leave desc.Flags for now
+	ThrowIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriporHeap)));
+
+	return descriporHeap;
+}
+
+// the heap here is rtv type (from name but lol)
+void UpdateRenderTargetViews(cp<ID3D12Device2> device, cp<IDXGISwapChain4> swapChain, cp<ID3D12DescriptorHeap> descriptorHeap)
+{
+	auto rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	// here we assume it's for cpu
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	for (int i = 0; i < g_NumFrames; i++)
+	{
+		cp<ID3D12Resource> backBuffer;
+		ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
+		device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+		g_BackBuffers[i] = backBuffer;
+		rtvHandle.Offset(rtvDescSize);
+	}
+}
+
+cp<ID3D12CommandAllocator> CreateCommandAllocator(cp<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE listType)
+{
+	cp<ID3D12CommandAllocator> commandAllocator;
+	ThrowIfFailed(device->CreateCommandAllocator(listType, IID_PPV_ARGS(&commandAllocator)));
+	return commandAllocator;
 }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
