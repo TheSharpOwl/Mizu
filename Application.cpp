@@ -278,6 +278,16 @@ cp<ID3D12CommandAllocator> CreateCommandAllocator(cp<ID3D12Device2> device, D3D1
 	return commandAllocator;
 }
 
+cp<ID3D12GraphicsCommandList> CreateCommandList(cp<ID3D12Device2> device, cp<ID3D12CommandAllocator> commandAllocator, D3D12_COMMAND_LIST_TYPE listType)
+{
+	cp<ID3D12GraphicsCommandList> commandList;
+	ThrowIfFailed(device->CreateCommandList(0, listType, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
+	// we should close the list before being able to do any call reset call (which is the first call usually in the rendering loop)
+	ThrowIfFailed(commandList->Close());
+	return commandList;
+}
+
+
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 	EnableDebugLayer();
