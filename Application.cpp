@@ -287,6 +287,32 @@ cp<ID3D12GraphicsCommandList> CreateCommandList(cp<ID3D12Device2> device, cp<ID3
 	return commandList;
 }
 
+cp<ID3D12Fence> CreateFence(cp<ID3D12Device2> device)
+{
+	cp<ID3D12Fence> fence;
+	ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+	return fence;
+}
+
+HANDLE CreateEventHandle()
+{
+	HANDLE fenceEvent;
+
+	fenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+	assert(fenceEvent && "Failed to create the event handle !!!");
+
+	return fenceEvent;
+}
+
+// signals gpu when the signal command turn comes (after other things in the queue in front are done)
+uint64_t Signal(cp<ID3D12CommandQueue> commandQueue, cp<ID3D12Fence> fence, uint64_t& fenceValue)
+{
+	// didn't return the parameter in case of many workers increasing the value...
+	uint64_t newFenceVal = ++fenceValue;
+	ThrowIfFailed(commandQueue->Signal(fence.Get(), newFenceVal));
+	return newFenceVal;
+
+}
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
