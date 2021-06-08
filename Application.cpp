@@ -3,6 +3,9 @@
 #include <cstdint>
 #include <cassert>
 #include <algorithm>
+#include <chrono>
+#include <stdio.h>
+#include <wchar.h>
 #include "Helpers.h"
 
 // DirectX 12 specific headers.
@@ -21,14 +24,19 @@ using namespace Microsoft::WRL;
 template <typename T>
 using cp = ComPtr<T>;
 
-uint32_t width = 1280, height= 720;
+uint32_t width = 1280, height = 720;
 HWND hWnd;
 // to toggle fullscreen state
 RECT WindowRect;
 RECT g_WindowRect; // TODO I think it's not used but make sure
 
 const int g_NumFrames = 2;
+UINT g_CurrentBackBufferIndex = 0;
 cp<ID3D12Resource> g_BackBuffers[g_NumFrames];
+cp<ID3D12CommandAllocator> g_CommandAllocators[g_NumFrames];
+cp<ID3D12GraphicsCommandList> g_CommandList;
+cp<ID3D12DescriptorHeap> g_RTVDescriptorHeap;
+UINT g_RTVDescriptorSize;
 
 const wchar_t* windowClassName = L"MizuWindowClass";
 
@@ -36,9 +44,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
-		case WM_CLOSE:
-			::PostQuitMessage(69);
-			break;
+	case WM_CLOSE:
+		::PostQuitMessage(69);
+		break;
 	}
 
 	return ::DefWindowProc(hWnd, message, wParam, lParam);
@@ -243,7 +251,7 @@ ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> co
 	return swapChain4;
 }
 
-ComPtr<ID3D12DescriptorHeap>CreateDescriptorHeap(ComPtr<ID3D12Device2> device ,D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+ComPtr<ID3D12DescriptorHeap>CreateDescriptorHeap(ComPtr<ID3D12Device2> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
 {
 	ComPtr<ID3D12DescriptorHeap> descriporHeap;
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -314,6 +322,68 @@ uint64_t Signal(cp<ID3D12CommandQueue> commandQueue, cp<ID3D12Fence> fence, uint
 
 }
 
+void WaitForFenceValue(cp<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent, std::chrono::milliseconds duration = std::chrono::milliseconds::max())
+{
+	if (fence->GetCompletedValue() < fenceValue)
+	{
+		ThrowIfFailed(fence->SetEventOnCompletion(fenceValue, fenceEvent));
+		::WaitForSingleObject(fenceEvent, static_cast<DWORD>(duration.count()));
+	}
+}
+
+// to make sure that it's safe to release resources used by gpu, we should flush it first
+void Flush(cp<ID3D12CommandQueue> commandQueue, cp<ID3D12Fence> fence, uint64_t& fenceValue, HANDLE fenceEvent)
+{
+	uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
+	WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
+}
+
+void Update()
+{
+	static uint64_t frameCounter = 0;
+	static double secondsPassed = 0;
+	static std::chrono::high_resolution_clock clock;
+	static auto t0 = clock.now();
+
+	frameCounter++;
+	auto t1 = clock.now();
+	auto delta = t1 - t0;
+
+	secondsPassed += delta.count() * 1e-9;
+
+	if (secondsPassed > 1.0)
+	{
+		wchar_t buffer[500];
+		auto fps = frameCounter / secondsPassed;
+		swprintf_s(buffer, 500, L"FPS: %f\n", fps);
+		OutputDebugString(buffer);
+
+		frameCounter = 0;
+		secondsPassed = 0.0;
+	}
+}
+
+void Render()
+{
+	auto commandAllocator = g_CommandAllocators[g_CurrentBackBufferIndex];
+	auto backBuffer = g_BackBuffers[g_CurrentBackBufferIndex];
+
+	commandAllocator->Reset();
+	g_CommandList->Reset(commandAllocator.Get(), nullptr);
+
+	// clearing the render target
+	{
+
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		g_CommandList->ResourceBarrier(1, &barrier);
+
+		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(g_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), g_CurrentBackBufferIndex, g_RTVDescriptorSize);
+		g_CommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+	}
+}
+
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
 	EnableDebugLayer();
@@ -333,7 +403,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 	while (1)
 	{
 		OutputDebugStringW(
-			L"Hello\n"		);
+			L"Hello\n");
 	}
 	return 0;
-}	
+}
