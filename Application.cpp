@@ -35,7 +35,16 @@ UINT g_CurrentBackBufferIndex = 0;
 cp<ID3D12Resource> g_BackBuffers[g_NumFrames];
 cp<ID3D12CommandAllocator> g_CommandAllocators[g_NumFrames];
 cp<ID3D12GraphicsCommandList> g_CommandList;
+cp<ID3D12CommandQueue> g_CommandQueue;
 cp<ID3D12DescriptorHeap> g_RTVDescriptorHeap;
+cp<IDXGISwapChain4> g_SwapChain;
+cp<ID3D12Fence> g_Fence;
+uint64_t g_FrameFenceValues[g_NumFrames] = {};
+uint64_t g_FenceValue = 0;
+
+bool g_VSync; // TODO set to the suitable value or take it from the command line
+bool g_TearingSupported; // this too xD TODO
+
 UINT g_RTVDescriptorSize;
 
 const wchar_t* windowClassName = L"MizuWindowClass";
@@ -382,6 +391,22 @@ void Render()
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(g_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), g_CurrentBackBufferIndex, g_RTVDescriptorSize);
 		g_CommandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 	}
+	// presenting
+	{
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		g_CommandList->ResourceBarrier(1, &barrier);
+		
+		ThrowIfFailed(g_CommandList->Close());
+		ID3D12CommandList* const commandLists[] = {
+			g_CommandList.Get()
+		};
+		g_CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+	}
+	UINT syncInterval = g_VSync ? 1 : 0;
+	UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+	ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
+
+	g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal(g_CommandQueue, g_Fence, g_FenceValue);
 }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
