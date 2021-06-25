@@ -24,14 +24,18 @@ using namespace Microsoft::WRL;
 template <typename T>
 using cp = ComPtr<T>;
 
-uint32_t width = 1280, height = 720;
-HWND hWnd;
+uint32_t g_Width = 1280, g_Height = 720;
+
+HWND g_hWnd;
 // to toggle fullscreen state
-RECT WindowRect;
-RECT g_WindowRect; // TODO I think it's not used but make sure
+RECT g_WindowRect;
+
+HANDLE g_FenceEvent;
 
 const int g_NumFrames = 2;
 UINT g_CurrentBackBufferIndex = 0;
+cp<IDXGIAdapter4> g_Adapter;
+cp<ID3D12Device2> g_Device;
 cp<ID3D12Resource> g_BackBuffers[g_NumFrames];
 cp<ID3D12CommandAllocator> g_CommandAllocators[g_NumFrames];
 cp<ID3D12GraphicsCommandList> g_CommandList;
@@ -44,22 +48,15 @@ uint64_t g_FenceValue = 0;
 
 bool g_VSync; // TODO set to the suitable value or take it from the command line
 bool g_TearingSupported; // this too xD TODO
-
+bool g_IsFullscreen;
+bool g_IsInitialized;
+bool g_UseWarp = true;
 UINT g_RTVDescriptorSize;
 
 const wchar_t* windowClassName = L"MizuWindowClass";
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-	case WM_CLOSE:
-		::PostQuitMessage(69);
-		break;
-	}
 
-	return ::DefWindowProc(hWnd, message, wParam, lParam);
-}
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
 {
@@ -401,34 +398,230 @@ void Render()
 			g_CommandList.Get()
 		};
 		g_CommandQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
-	}
-	UINT syncInterval = g_VSync ? 1 : 0;
-	UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-	ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
 
-	g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal(g_CommandQueue, g_Fence, g_FenceValue);
+		UINT syncInterval = g_VSync ? 1 : 0;
+		UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
+
+		g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal(g_CommandQueue, g_Fence, g_FenceValue);
+	}
+	
+}
+
+void Resize(uint32_t width, uint32_t height)
+{
+	if (g_Width == width && g_Height == height)
+		return;
+	g_Width = std::max(width, 1U);
+	g_Height = std::max(height, 1U);
+
+	Flush(g_CommandQueue, g_Fence, g_FenceValue, g_FenceEvent);
+
+	// this is not necessary afaik TODO check that
+	for (uint32_t i = 0; i < g_NumFrames; i++)
+	{
+		g_BackBuffers[i].Reset();
+		g_FrameFenceValues[i] = g_FrameFenceValues[g_CurrentBackBufferIndex];
+	}
+
+
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+	ThrowIfFailed(g_SwapChain->GetDesc(&swapChainDesc));
+	ThrowIfFailed(g_SwapChain->ResizeBuffers(g_NumFrames, width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+
+	g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
+	UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap);
+}
+
+void SetFullscreen(bool isFullscreen)
+{
+	if (isFullscreen == g_IsFullscreen)
+		return;
+	if (isFullscreen)// to full screen
+	{
+		// store the window dimensions
+		::GetWindowRect(g_hWnd, &g_WindowRect);
+		
+		// set the window to a style such that it is borderless 
+		UINT windowStyle = WS_OVERLAPPEDWINDOW & ~(WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+
+		::SetWindowLongW(g_hWnd, GWL_STYLE, windowStyle);
+
+		// get the dimensions of the full screen state by getting the minotor dim
+		HMONITOR hMonitor = ::MonitorFromWindow(g_hWnd, MONITOR_DEFAULTTONEAREST);
+		MONITORINFOEX monitorInfo = {};
+		monitorInfo.cbSize = sizeof(MONITORINFOEX);
+		::GetMonitorInfo(hMonitor, &monitorInfo);
+
+		::SetWindowPos(g_hWnd, HWND_TOP, monitorInfo.rcMonitor.left,
+			monitorInfo.rcMonitor.top,
+			monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left,
+			monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top,
+			SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+
+		::ShowWindow(g_hWnd, SW_MAXIMIZE);
+	}
+	else // to windowed mode
+	{
+		::SetWindowLongW(g_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+		::SetWindowPos(g_hWnd, HWND_NOTOPMOST,
+			g_WindowRect.left,
+			g_WindowRect.top,
+			g_WindowRect.right - g_WindowRect.left,
+			g_WindowRect.bottom - g_WindowRect.top,
+			SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+		::ShowWindow(g_hWnd, SW_NORMAL);
+	}
+
+	g_IsFullscreen = isFullscreen;
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (g_IsInitialized)
+	{
+		switch (message)
+		{
+		case WM_PAINT:
+			Update();
+			Render();
+			break;
+
+		case WM_SYSKEYDOWN:
+		case WM_KEYDOWN:
+		{
+			bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+			switch (wParam)
+			{
+			case 'V':
+				g_VSync = !g_VSync;
+				break;
+			case VK_ESCAPE:
+				::PostQuitMessage(0);
+				break;
+			case VK_RETURN:
+				if (alt)
+				{
+			case VK_F11:
+				SetFullscreen(!g_IsFullscreen);
+				}
+				break;
+			}
+		}
+		break;
+		// this case is for not getting a windows annoying sound
+		case WM_SYSCHAR:
+			break;
+
+		case WM_SIZE:
+		{
+			RECT clientRect = {};
+			::GetClientRect(g_hWnd, &clientRect);
+
+			int width = clientRect.right - clientRect.left;
+			int height = clientRect.bottom - clientRect.top;
+
+			Resize(width, height);
+		}
+		break;
+
+		case WM_DESTROY:
+			::PostQuitMessage(0);
+			break;
+		default:
+			return ::DefWindowProcW(hWnd, message, wParam, lParam);
+		}
+	}
+	else
+	{
+		return ::DefWindowProcW(hWnd, message, wParam, lParam);
+	}
+
+	return 0;
+
+	//	switch (message)
+//	{
+//	case WM_CLOSE:
+//		::PostQuitMessage(69);
+//		break;
+//	}
+//	return ::DefWindowProc(hWnd, message, wParam, lParam);
+
 }
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
+
+	// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
+	// Using this awareness context allows the client area of the window 
+	// to achieve 100% scaling while still allowing non-client window content to 
+	// be rendered in a DPI sensitive fashion.
+	SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
 	EnableDebugLayer();
+
+	g_TearingSupported = checkTearingSupport();
 
 	const wchar_t* windowClassName = L"MizuWindowClass";
 	RegisterWindowClass(hInstance, windowClassName);
-	HWND hWnd = CreateWindow(windowClassName, L"Mizu", hInstance, 300, 300);
+	HWND g_hWnd = CreateWindow(windowClassName, L"Mizu", hInstance, g_Width, g_Height);
+
+	::GetWindowRect(g_hWnd, &g_WindowRect);
 
 	// TODO check warp support before passing useWarp argument
-	ComPtr<IDXGIAdapter4> adapter = GetAdapter(true);
+	g_Adapter = GetAdapter(g_UseWarp);
 
-	auto device = CreateDevice(adapter);
+	g_Device = CreateDevice(g_Adapter);
 
-	::ShowWindow(hWnd, SW_SHOW);
+	g_CommandQueue = CreateCommandQueue(g_Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+	g_SwapChain = CreateSwapChain(g_hWnd, g_CommandQueue, g_Width, g_Height, g_NumFrames);
+
+	g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
+
+	g_RTVDescriptorHeap = CreateDescriptorHeap(g_Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, g_NumFrames);
+	g_RTVDescriptorSize = g_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap);
+
+	// number of swap chain back buffers = number of frames in we have in the buffer = number of command allocators needed (usually)
+	for (int i = 0; i < g_NumFrames; i++)
+	{
+		g_CommandAllocators[i] = CreateCommandAllocator(g_Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	}
+	// we will use only one command list
+	g_CommandList =
+		CreateCommandList(g_Device, g_CommandAllocators[g_CurrentBackBufferIndex], D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+	g_Fence = CreateFence(g_Device);
+	//the event handle used to block the CPU until a specific fence value has been reached
+	g_FenceEvent = CreateEventHandle();
+
+	g_IsInitialized = true;
+
+	::ShowWindow(g_hWnd, SW_SHOW);
+	MSG msg = {};
 
 	// to print for example
-	while (1)
+	while (msg.message != WM_QUIT)
 	{
 		OutputDebugStringW(
 			L"Hello\n");
+		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
+
+		}
 	}
+
+	Flush(g_CommandQueue, g_Fence, g_FenceValue, g_FenceEvent);
+
+	::CloseHandle(g_FenceEvent);
+
 	return 0;
 }
