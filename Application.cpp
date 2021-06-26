@@ -82,14 +82,17 @@ void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
 
 HWND CreateWindow(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight)
 {
-	int screenWidth = ::GetSystemMetrics(SM_CXBORDER);
-	int screenHeight = ::GetSystemMetrics(SM_CYBORDER);
+
+	int screenWidth = ::GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = ::GetSystemMetrics(SM_CYSCREEN);
 
 	RECT windowRect = { 0, 0, static_cast<LONG>(windowWidth), static_cast<LONG>(windowHeight) };
 	::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
 
 	windowWidth = windowRect.right - windowRect.left;
 	windowHeight = windowRect.bottom - windowRect.top;
+
+
 
 	// putting the window in the center
 	int windowX = std::max<int>(0, (screenWidth - windowWidth) / 2);
@@ -243,7 +246,7 @@ ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> co
 	scDesc.BufferCount = numberOfBuffers;
 	scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scDesc.Stereo = FALSE;
-	scDesc.SampleDesc = { 1, 0 }; // this must be so in the flip discard model https://en.wikipedia.org/wiki/Bit_blit
+	scDesc.SampleDesc = {1, 0 }; // this must be so in the flip discard model https://en.wikipedia.org/wiki/Bit_blit
 	scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	scDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	scDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -611,8 +614,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 	// to print for example
 	while (msg.message != WM_QUIT)
 	{
-		//OutputDebugStringW(
-		//	L"Hello\n");
+		OutputDebugStringW(
+			L"Hello\n");
 		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			::TranslateMessage(&msg);
