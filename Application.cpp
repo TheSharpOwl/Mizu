@@ -236,18 +236,20 @@ ComPtr<IDXGISwapChain4> CreateSwapChain(HWND hWnd, ComPtr<ID3D12CommandQueue> co
 	createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-	DXGI_SWAP_CHAIN_DESC1 scDesc;
+	ThrowIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&f4)));
+	DXGI_SWAP_CHAIN_DESC1 scDesc = {};
 	scDesc.Width = width;
 	scDesc.Height = height;
 	scDesc.BufferCount = numberOfBuffers;
 	scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scDesc.Stereo = FALSE;
-	scDesc.SampleDesc = { 0,1 }; // this must be so in the flip discard model https://en.wikipedia.org/wiki/Bit_blit
+	scDesc.SampleDesc = { 1, 0 }; // this must be so in the flip discard model https://en.wikipedia.org/wiki/Bit_blit
 	scDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	scDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 	scDesc.Scaling = DXGI_SCALING_STRETCH;
 	scDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	scDesc.Flags = checkTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
 	ThrowIfFailed(f4->CreateSwapChainForHwnd(commandQueue.Get(), hWnd, &scDesc, nullptr, nullptr, &swapChain1));
 
 	// disable alt + enter to handle fullscreen manually
@@ -609,8 +611,8 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 	// to print for example
 	while (msg.message != WM_QUIT)
 	{
-		OutputDebugStringW(
-			L"Hello\n");
+		//OutputDebugStringW(
+		//	L"Hello\n");
 		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			::TranslateMessage(&msg);
