@@ -376,6 +376,7 @@ void Update()
 
 void Render()
 {
+
 	auto commandAllocator = g_CommandAllocators[g_CurrentBackBufferIndex];
 	auto backBuffer = g_BackBuffers[g_CurrentBackBufferIndex];
 
@@ -409,6 +410,9 @@ void Render()
 		ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
 
 		g_FrameFenceValues[g_CurrentBackBufferIndex] = Signal(g_CommandQueue, g_Fence, g_FenceValue);
+
+		g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
+		WaitForFenceValue(g_Fence, g_FenceValue, g_FenceEvent);
 	}
 	
 }
@@ -586,6 +590,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
 	g_SwapChain = CreateSwapChain(g_hWnd, g_CommandQueue, g_Width, g_Height, g_NumFrames);
 
+
 	g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
 
 	g_RTVDescriptorHeap = CreateDescriptorHeap(g_Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, g_NumFrames);
@@ -610,7 +615,6 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
 	::ShowWindow(g_hWnd, SW_SHOW);
 	MSG msg = {};
-
 	// to print for example
 	while (msg.message != WM_QUIT)
 	{
