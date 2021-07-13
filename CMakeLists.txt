@@ -9,9 +9,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory f
 
 set(HEADERS
  inc/d3dx12.h
- inc/Helpers.h)
+ inc/Helpers.h
+ inc/Window.hpp
+ inc/CommandQueue.hpp)
 
-#set(SOURCES) # TODO when adding classes and modules
+set(SOURCES 
+src/CommandQueue.cpp)
 
 include_directories(inc)
 
