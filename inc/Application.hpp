@@ -70,7 +70,7 @@ private:
 	Application(const Application& copy) = delete;
 	Application& operator=(const Application& other) = delete;
 
-	HINSTANCE m_HInstance;
+	HINSTANCE m_hInstance;
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_Adapter;
 	Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;

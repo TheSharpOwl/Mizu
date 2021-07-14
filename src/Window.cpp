@@ -1,8 +1,25 @@
 #include "Window.hpp"
 #include "Application.hpp"
+#include "CommandQueue.hpp"
 
 template<typename T>
 using cp = Microsoft::WRL::ComPtr<T>;
+
+
+Window::Window(HWND hWnd, const std::wstring& windowName, int width, int height, bool vsync) :
+	m_hWnd(hWnd)
+	, m_WindowName(windowName)
+	, m_ClientWidth(width)
+	, m_ClientHeight(height)
+	, m_VSync(vsync)
+	, m_FullScreen(false)
+	, m_FrameCounter(0)
+{
+    m_SwapChain = CreateSwapChain();
+
+
+}
+
 
 HWND Window::GetWindowHandle() const
 {
@@ -113,17 +130,6 @@ Microsoft::WRL::ComPtr<IDXGISwapChain4> Window::CreateSwapChain()
 
 
 
-Window::Window(HWND hWnd, const std::wstring& windowName, int width, int height, bool vsync) :
-        m_hWnd(hWnd)
-		, m_WindowName(windowName)
-		, m_ClientWidth(clientWidth)
-		, m_ClientHeight(clientHeight)
-		, m_VSync(vSync)
-		, m_Fullscreen(false)
-		, m_FrameCounter(0)
-{
-    
-}
 
 Window::~Window()
 {

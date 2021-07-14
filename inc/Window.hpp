@@ -93,7 +93,7 @@ private:
 	int m_ClientHeight;
 	bool m_VSync;
 	bool m_FullScreen;
-
+	int64_t m_FrameCounter;
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> m_SwapChain;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;

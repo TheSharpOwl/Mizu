@@ -14,11 +14,16 @@ set(HEADERS
  inc/Game.hpp
  inc/KeyCodes.h
  inc/Events.h
+ inc/Window.hpp
+ inc/Application.hpp
+ inc/DX12LibPCH.h
  )
 
 set(SOURCES 
 src/CommandQueue.cpp
-src/Game.cpp)
+src/Game.cpp
+src/Window.cpp
+src/Application.cpp)
 
 include_directories(inc)
 
