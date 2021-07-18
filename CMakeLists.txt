@@ -9,21 +9,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory f
 
 set(HEADERS
  inc/d3dx12.h
- inc/Helpers.h
  inc/CommandQueue.hpp
- inc/Game.hpp
- inc/KeyCodes.h
- inc/Events.h
- inc/Window.hpp
- inc/Application.hpp
- inc/DX12LibPCH.h
  )
 
 set(SOURCES 
 src/CommandQueue.cpp
-src/Game.cpp
-src/Window.cpp
-src/Application.cpp)
+)
 
 include_directories(inc)
 

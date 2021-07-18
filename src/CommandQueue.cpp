@@ -13,7 +13,7 @@ CommandQueue::CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_C
 	m_Device(device),
 	m_CommandListType(type)
 {
-	D3D12_COMMAND_QUEUE_DESC des;
+	D3D12_COMMAND_QUEUE_DESC des = {};
 	des.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	des.NodeMask = 0;
 	des.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
@@ -136,7 +136,7 @@ Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandQueue::CreateCommandAlloca
 Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator)
 {
 	cp<ID3D12GraphicsCommandList2> commandList;
-	ThrowIfFailed(m_Device->CreateCommandList(0, m_CommandListType, commandAllocator.Get(),nullptr , IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(m_Device->CreateCommandList(0, m_CommandListType, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
 
 	// no need to close it inside our class 
 	//ThrowIfFailed(commandList->Close());
