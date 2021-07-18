@@ -35,7 +35,7 @@ public:
 
 	void DestroyWindow(std::shared_ptr<Window> window_ptr);
 
-	std::shared_ptr<Window> getWindow(const std::wstring& windowName);
+	std::shared_ptr<Window> GetWindowByName(const std::wstring& windowName);
 
 	int Run(std::shared_ptr<Game> gamePtr);
 
@@ -44,8 +44,7 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
 
-
-	Microsoft::WRL::ComPtr<CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
+	std::shared_ptr<CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
 
 	void Flush();
 
