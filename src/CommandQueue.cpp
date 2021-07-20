@@ -46,7 +46,7 @@ uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsC
 	m_CommandQueue->ExecuteCommandLists(1, ppCommandList);
 	uint64_t fenceValue = Signal();
 
-	m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
+	m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{fenceValue, commandAllocator});
 	m_CommandListQueue.push(commandList);
 
 
@@ -87,9 +87,9 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::GetCommandList(
 		commandList = CreateCommandList(commandAllocator);
 	}
 
-
 	// we associate the command allocator with the command list so that we can retrieve the command allocator from the command list when it is executed
-	ThrowIfFailed(commandAllocator->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
+	UINT data_size = sizeof(commandAllocator);
+	ThrowIfFailed(commandList->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
 
 	return commandList;
 }
