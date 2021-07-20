@@ -33,11 +33,11 @@ CommandQueue::~CommandQueue()
 
 uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
 {
-	commandList->Close();
+    commandList->Close();
 
-	ID3D12CommandAllocator* commandAllocator;
-	UINT dataSize = sizeof(commandAllocator);
-	ThrowIfFailed(commandList->GetPrivateData(__uuidof(ID3D12CommandAllocator), &dataSize, &commandAllocator));
+    ID3D12CommandAllocator* commandAllocator;
+    UINT dataSize = sizeof(commandAllocator);
+    ThrowIfFailed(commandList->GetPrivateData(__uuidof(ID3D12CommandAllocator), &dataSize, &commandAllocator));
 
 	ID3D12CommandList* const ppCommandList[] = {
 		commandList.Get()

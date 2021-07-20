@@ -30,11 +30,10 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
-protected:
+public:
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(); // was protected
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
-
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator);
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator); // was protected
 
 
 private:
