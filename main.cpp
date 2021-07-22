@@ -284,6 +284,7 @@ void UpdateRenderTargetViews(cp<ID3D12Device2> device, cp<IDXGISwapChain4> swapC
 
 void Update()
 {
+
 	static uint64_t frameCounter = 0;
 	static double secondsPassed = 0;
 	static std::chrono::high_resolution_clock clock;
@@ -292,6 +293,7 @@ void Update()
 	frameCounter++;
 	auto t1 = clock.now();
 	auto delta = t1 - t0;
+	t0 = t1;
 
 	secondsPassed += delta.count() * 1e-9;
 
@@ -328,7 +330,7 @@ void Render()
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		g_CommandList->ResourceBarrier(1, &barrier);
 		
-		g_FrameFenceValues[g_CurrentBackBufferIndex] = g_CommandQueue->ExecuteCommandList(g_CommandList);
+		g_FenceValue = g_FrameFenceValues[g_CurrentBackBufferIndex] = g_CommandQueue->ExecuteCommandList(g_CommandList);
 		UINT syncInterval = g_VSync ? 1 : 0;
 		UINT presentFlags = g_TearingSupported && !g_VSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 		ThrowIfFailed(g_SwapChain->Present(syncInterval, presentFlags));
@@ -336,7 +338,7 @@ void Render()
 		
 
 		g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
-		g_CommandQueue->WaitForFenceValue(g_FenceValue);
+		g_CommandQueue->WaitForFenceValue(g_FrameFenceValues[g_CurrentBackBufferIndex]);
 	}
 	
 }
@@ -540,8 +542,6 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 	// to print for example
 	while (msg.message != WM_QUIT)
 	{
-		OutputDebugStringW(
-			L"Hello\n");
 		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			::TranslateMessage(&msg);
