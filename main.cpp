@@ -523,18 +523,6 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 
 	UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap);
 
-	// number of swap chain back buffers = number of frames in we have in the buffer = number of command allocators needed (usually)
-	//for (int i = 0; i < g_NumFrames; i++)
-	//{
-	//	g_CommandAllocators[i] = g_CommandQueue->CreateCommandAllocator();
-	//}
-	//// we will use only one command list
-	//g_CommandList = g_CommandQueue->CreateCommandList(g_CommandAllocators[g_CurrentBackBufferIndex]);
-
-	//g_Fence = CreateFence(g_Device);
-	////the event handle used to block the CPU until a specific fence value has been reached
-	//g_FenceEvent = CreateEventHandle();
-
 	g_IsInitialized = true;
 
 	::ShowWindow(g_hWnd, SW_SHOW);
