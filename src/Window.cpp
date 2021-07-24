@@ -2,8 +2,9 @@
 
 using namespace Mizu;
 using namespace Microsoft::WRL;
+using namespace std;
 
-Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight) :
+Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight, shared_ptr<CommandQueue> commandQueue) :
 	screenWidth(::GetSystemMetrics(SM_CXSCREEN)), screenHeight(::GetSystemMetrics(SM_CYSCREEN))
 {
 	RegisterWindowClass(hInst, windowClassName);
@@ -23,6 +24,8 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 	/*DWORD d = GetLastError();*/ //left in case of debugging an error
 
 	assert(hWnd && "Failed To create a window");
+
+	m_swapChain = CreateSwapChain(commandQueue->GetCommandQueue());
 }
 
 void Window::RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)

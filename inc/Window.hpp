@@ -1,5 +1,7 @@
 #pragma once
 #include "DX12LibPCH.h"
+#include "CommandQueue.hpp"
+#include <memory>
 
 namespace Mizu
 {
@@ -7,7 +9,7 @@ namespace Mizu
 	{
 	public:
 
-		Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight);
+		Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight, std::shared_ptr<CommandQueue> commandQueue);
 
 		const uint32_t numberOfBuffers = 2;
 
@@ -30,5 +32,7 @@ namespace Mizu
 		uint32_t windowHeight;
 
 		RECT windowRect;
+
+		Microsoft::WRL::ComPtr<IDXGISwapChain4>  m_swapChain;
 	};
 }
