@@ -13,7 +13,7 @@ CommandQueue::CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_C
 	m_Device(device),
 	m_CommandListType(type)
 {
-	D3D12_COMMAND_QUEUE_DESC des;
+	D3D12_COMMAND_QUEUE_DESC des = {};
 	des.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	des.NodeMask = 0;
 	des.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
@@ -33,11 +33,11 @@ CommandQueue::~CommandQueue()
 
 uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
 {
-	commandList->Close();
+    commandList->Close();
 
-	ID3D12CommandAllocator* commandAllocator;
-	UINT dataSize = sizeof(commandAllocator);
-	ThrowIfFailed(commandList->GetPrivateData(__uuidof(ID3D12CommandAllocator), &dataSize, &commandAllocator));
+    ID3D12CommandAllocator* commandAllocator;
+    UINT dataSize = sizeof(commandAllocator);
+    ThrowIfFailed(commandList->GetPrivateData(__uuidof(ID3D12CommandAllocator), &dataSize, &commandAllocator));
 
 	ID3D12CommandList* const ppCommandList[] = {
 		commandList.Get()
@@ -46,7 +46,7 @@ uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsC
 	m_CommandQueue->ExecuteCommandLists(1, ppCommandList);
 	uint64_t fenceValue = Signal();
 
-	m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
+	m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{fenceValue, commandAllocator});
 	m_CommandListQueue.push(commandList);
 
 
@@ -87,9 +87,9 @@ Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::GetCommandList(
 		commandList = CreateCommandList(commandAllocator);
 	}
 
-
 	// we associate the command allocator with the command list so that we can retrieve the command allocator from the command list when it is executed
-	ThrowIfFailed(commandAllocator->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
+	UINT data_size = sizeof(commandAllocator);
+	ThrowIfFailed(commandList->SetPrivateDataInterface(__uuidof(ID3D12CommandAllocator), commandAllocator.Get()));
 
 	return commandList;
 }
@@ -136,7 +136,7 @@ Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandQueue::CreateCommandAlloca
 Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator)
 {
 	cp<ID3D12GraphicsCommandList2> commandList;
-	ThrowIfFailed(m_Device->CreateCommandList(0, m_CommandListType, commandAllocator.Get(),nullptr , IID_PPV_ARGS(&commandList)));
+	ThrowIfFailed(m_Device->CreateCommandList(0, m_CommandListType, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
 
 	// no need to close it inside our class 
 	//ThrowIfFailed(commandList->Close());

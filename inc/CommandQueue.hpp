@@ -6,11 +6,7 @@
 #include<queue>
 #include<cstdint>
 
-struct CommandAllocatorEntry
-{
-	uint64_t fenceValue;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-};
+
 
 
 class CommandQueue
@@ -30,15 +26,18 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
-protected:
+public:
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(); // was protected
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
-
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator);
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator); // was protected
 
 
 private:
-
+	struct CommandAllocatorEntry
+	{
+		uint64_t fenceValue;
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+	};
 	D3D12_COMMAND_LIST_TYPE m_CommandListType;
 	Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
