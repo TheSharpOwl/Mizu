@@ -11,11 +11,13 @@ set(HEADERS
  inc/d3dx12.h
  inc/CommandQueue.hpp
  inc/Window.hpp
+ inc/Application.hpp
  )
 
 set(SOURCES 
 src/CommandQueue.cpp
 src/Window.cpp
+src/Application.cpp
 )
 
 include_directories(inc)

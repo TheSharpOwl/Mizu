@@ -1,20 +1,27 @@
 #pragma once
 #include "DX12LibPCH.h"
-#include "CommandQueue.hpp"
 #include <memory>
+
+class CommandQueue;
 
 namespace Mizu
 {
+
 	class Window
 	{
 	public:
 
 		Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight, std::shared_ptr<CommandQueue> commandQueue);
 
-		const uint32_t numberOfBuffers = 2;
+		static const uint32_t numberOfBuffers = 2;
 
-		static bool checkTearingSupport();
+		static bool CheckTearingSupport();
 
+		UINT GetCurrentBackBufferIndex() const;
+
+		void Present(const UINT syncInterval, const UINT presentFlags) const;
+
+		void Resize(uint32_t newWidth, uint32_t newHeight);
 	protected:
 
 		friend LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -23,16 +30,20 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue);
 
-		HWND hWnd;
+		HWND m_hWnd;
 
-		uint32_t  screenWidth;
-		uint32_t  screenHeight;
+		uint32_t  m_screenWidth;
+		uint32_t  m_screenHeight;
 
-		uint32_t windowWidth;
-		uint32_t windowHeight;
+		uint32_t m_windowWidth;
+		uint32_t m_windowHeight;
 
-		RECT windowRect;
+		RECT m_windowRect;
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain4>  m_swapChain;
+		std::shared_ptr<CommandQueue> m_commandQueue;
+
+		Microsoft::WRL::ComPtr<IDXGISwapChain4> m_swapChain;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_backBuffers[numberOfBuffers];
 	};
 }

@@ -8,7 +8,7 @@
 
 
 
-
+// TODO put inside a namespace Mizu !!!
 class CommandQueue
 {
 public:
@@ -48,4 +48,3 @@ private:
 	std::queue<CommandAllocatorEntry> m_CommandAllocatorQueue;
 	std::queue<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>> m_CommandListQueue;
 };
-
