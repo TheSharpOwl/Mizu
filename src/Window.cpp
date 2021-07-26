@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include "Application.hpp"
 #include "CommandQueue.hpp"
 #include <algorithm>
 
@@ -27,7 +28,9 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 
 	assert(m_hWnd && "Failed To create a window");
 
-	m_swapChain = CreateSwapChain(commandQueue->GetCommandQueue());
+	Application& app = Application::Get();
+
+	m_swapChain = CreateSwapChain(app.GetCommandQueue());
 }
 
 void Window::RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)

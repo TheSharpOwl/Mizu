@@ -4,6 +4,8 @@
 
 class CommandQueue;
 
+// TODO add Renderer class and improve dependencies (for example app and window)
+
 namespace Mizu
 {
 
@@ -39,8 +41,6 @@ namespace Mizu
 		uint32_t m_windowHeight;
 
 		RECT m_windowRect;
-
-		std::shared_ptr<CommandQueue> m_commandQueue;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain4> m_swapChain;
 
