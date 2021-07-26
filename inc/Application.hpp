@@ -38,6 +38,11 @@ namespace Mizu
 
 		Application(HINSTANCE hInst);
 
+		Microsoft::WRL::ComPtr<IDXGIAdapter4> GetAdapter();
+
+
+		Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice();
+
 		HINSTANCE m_hInstance;
 
 		Microsoft::WRL::ComPtr<IDXGIAdapter4> m_adapter;
@@ -49,5 +54,7 @@ namespace Mizu
 		std::shared_ptr<Window> m_window;
 
 		bool m_IsTearingSupported;
+
+		const bool m_useWarp = false;
 	};
 }
