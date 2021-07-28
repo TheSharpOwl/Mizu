@@ -24,13 +24,18 @@ namespace Mizu
 		void Present(const UINT syncInterval, const UINT presentFlags) const;
 
 		void Resize(uint32_t newWidth, uint32_t newHeight);
+
+		void Update();
+
+		void Render();
+
 	protected:
 
 		friend LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 		void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName);
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue);
+		Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(std::shared_ptr<CommandQueue> command_queue_sptr);
 
 		HWND m_hWnd;
 
@@ -45,5 +50,12 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<IDXGISwapChain4> m_swapChain;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_backBuffers[numberOfBuffers];
+
+		UINT m_currentBackBufferIndex;
+
+		uint64_t m_frameFenceValues[numberOfBuffers];
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
+		UINT m_RTVDescriptorSize;
 	};
-}
+}			

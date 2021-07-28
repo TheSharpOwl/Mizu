@@ -2,6 +2,7 @@
 
 #include "DX12LibPCH.h"
 #include <memory>
+#include <utility>
 
 class CommandQueue;
 
@@ -31,9 +32,14 @@ namespace Mizu
 		bool IsTearingSupported() const;
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
+		std::shared_ptr<CommandQueue> GetCommandQueue() const;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList();
 
-		
+		// return the created descriptor heap with its size
+		std::pair<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, UINT> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
+
+		UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
+
 	protected:
 
 		Application(HINSTANCE hInst);

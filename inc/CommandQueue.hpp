@@ -26,13 +26,15 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
+// todo make private/protected
 public:
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(); // was protected
 
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator); // was protected
 
 
-private:
+protected:
+
 	struct CommandAllocatorEntry
 	{
 		uint64_t fenceValue;

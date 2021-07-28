@@ -63,9 +63,14 @@ ComPtr<ID3D12Device2> Application::GetDevice() const
 	return m_device;
 }
 
-ComPtr<ID3D12CommandQueue> Application::GetCommandQueue() const
+shared_ptr<CommandQueue> Application::GetCommandQueue() const
 {
-	return m_commandQueue->GetCommandQueue();
+	return m_commandQueue;
+}
+
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList()
+{
+	return m_commandQueue->GetCommandList();
 }
 
 
@@ -146,4 +151,23 @@ ComPtr<ID3D12Device2> Application::CreateDevice()
 	}
 #endif
 	return device2;
+}
+
+
+pair<ComPtr<ID3D12DescriptorHeap>, UINT> Application::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+{
+	ComPtr<ID3D12DescriptorHeap> descriporHeap;
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.NumDescriptors = numDescriptors;
+	desc.Type = type;
+	//will leave desc.Flags for now
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriporHeap)));
+
+	return {descriporHeap, GetDescriptorHandleIncrementSize(type)};
+}
+
+
+UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
+{
+	return m_device->GetDescriptorHandleIncrementSize(type);
 }
