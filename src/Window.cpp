@@ -7,7 +7,7 @@ using namespace Mizu;
 using namespace Microsoft::WRL;
 using namespace std;
 
-Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight, shared_ptr<CommandQueue> commandQueue) :
+Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight) :
 	m_screenWidth(::GetSystemMetrics(SM_CXSCREEN)), m_screenHeight(::GetSystemMetrics(SM_CYSCREEN))
 {
 	RegisterWindowClass(hInst, windowClassName);

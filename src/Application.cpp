@@ -1,5 +1,6 @@
 #include "Application.hpp"
 #include "CommandQueue.hpp"
+#include "Window.hpp"
 
 using namespace Mizu;
 using namespace Microsoft::WRL;
@@ -33,7 +34,7 @@ Application::Application(HINSTANCE hInst) :
 	// TODO create the other 2 types of command queues here
 	m_commandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	// create the window and pass the command queue to it OR BETTER TO MAKE THE WINDOW	GET THE COMMAND QUEUE FROM APPLICATION!
-//	m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, Width, Height, m_commandQueue);
+    m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, Width, Height);
 }
 void Application::Create(HINSTANCE hInst) // static 
 {

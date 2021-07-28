@@ -13,7 +13,7 @@ namespace Mizu
 	{
 	public:
 
-		Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight, std::shared_ptr<CommandQueue> commandQueue);
+		Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight);
 
 		static const uint32_t numberOfBuffers = 2;
 
