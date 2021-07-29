@@ -360,3 +360,5 @@ ZERO_CHECK.vcxproj
 ZERO_CHECK.vcxproj.filters
 /Engine.vcxproj
 /Engine.vcxproj.filters
+*.vcxproj
+*.filters

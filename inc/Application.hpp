@@ -8,8 +8,8 @@ class CommandQueue;
 
 namespace Mizu
 {
-	class Window;
 
+	class Window;
 	class Application
 	{
 	public:

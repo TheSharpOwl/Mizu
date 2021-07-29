@@ -3,14 +3,14 @@
 #include "CommandQueue.hpp"
 #include <algorithm>
 
-using namespace Mizu;
 using namespace Microsoft::WRL;
 using namespace std;
+using namespace Mizu;
 
 Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight) :
 	m_screenWidth(::GetSystemMetrics(SM_CXSCREEN)), m_screenHeight(::GetSystemMetrics(SM_CYSCREEN))
 {
-	RegisterWindowClass(hInst, windowClassName);
+	//RegisterWindowClass(hInst, windowClassName);
 
 	m_windowRect = { 0, 0, static_cast<LONG>(windowWidth), static_cast<LONG>(windowHeight) };
 	::AdjustWindowRect(&m_windowRect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -37,6 +37,8 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 	auto [descriptorHeap, descriptorSize] = Application::Get().CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, numberOfBuffers);
 	m_RTVDescriptorHeap = descriptorHeap;
 	m_RTVDescriptorSize = descriptorSize;
+
+	UpdateRenderTargetViews();
 }
 
 void Window::RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
@@ -234,3 +236,5 @@ void Window::Render()
 		commandQueue->WaitForFenceValue(m_frameFenceValues[m_currentBackBufferIndex]);
 	}
 }
+
+

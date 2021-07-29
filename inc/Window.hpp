@@ -5,10 +5,10 @@
 class CommandQueue;
 
 // TODO add Renderer class and improve dependencies (for example app and window)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
-
 	class Window
 	{
 	public:
@@ -29,9 +29,10 @@ namespace Mizu
 
 		void Render();
 
-	protected:
 
-		friend LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	protected:
 
 		void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName);
 
@@ -60,4 +61,4 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
 		UINT m_RTVDescriptorSize;
 	};
-}			
+}

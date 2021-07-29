@@ -8,6 +8,7 @@ using namespace std;
 
 static Application* App = nullptr;
 
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 Application::Application(HINSTANCE hInst) :
 	m_hInstance(hInst),
@@ -26,6 +27,24 @@ Application::Application(HINSTANCE hInst) :
 	debugInterface->EnableDebugLayer();
 #endif
 
+	wchar_t* windowClassName = L"MizuWindowClass";
+
+	WNDCLASSEX windowClass = {};
+	windowClass.cbSize = sizeof(WNDCLASSEX);
+	windowClass.style = CS_HREDRAW | CS_VREDRAW;
+	windowClass.lpfnWndProc = &WndProc;
+	windowClass.cbClsExtra = 0;
+	windowClass.cbWndExtra = 0;
+	windowClass.hInstance = hInst;
+	windowClass.hIcon = nullptr; //::LoadIcon(hInstance, NULL);
+	windowClass.hCursor = nullptr;//::LoadCursor(NULL, IDC_ARROW);
+	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	windowClass.lpszMenuName = nullptr;
+	windowClass.lpszClassName = windowClassName;
+	windowClass.hIconSm = nullptr;
+
+	static HRESULT hl = ::RegisterClassExW(&windowClass);
+	assert(SUCCEEDED(hl));
 	// get the adapter
 	m_adapter = GetAdapter();
 	// make a device
@@ -34,7 +53,7 @@ Application::Application(HINSTANCE hInst) :
 	// TODO create the other 2 types of command queues here
 	m_commandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	// create the window and pass the command queue to it OR BETTER TO MAKE THE WINDOW	GET THE COMMAND QUEUE FROM APPLICATION!
-    m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, Width, Height);
+    m_window = make_shared<Window>(windowClassName, L"Mizu Demo", hInst, Width, Height);
 }
 void Application::Create(HINSTANCE hInst) // static 
 {
@@ -175,4 +194,79 @@ UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE ty
 void Application::Flush()
 {
 	m_commandQueue->Flush();
+}
+
+bool isReady = false;
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (isReady)
+	{
+		//switch (message)
+		//{
+		//case WM_PAINT:
+		//	Update();
+		//	Render();
+		//	break;
+
+		//case WM_SYSKEYDOWN:
+		//case WM_KEYDOWN:
+		//{
+		//	bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+		//	switch (wParam)
+		//	{
+		//	case 'V':
+		//		g_VSync = !g_VSync;
+		//		break;
+		//	case VK_ESCAPE:
+		//		::PostQuitMessage(0);
+		//		break;
+		//	case VK_RETURN:
+		//		if (alt)
+		//		{
+		//	case VK_F11:
+		//		SetFullscreen(!g_IsFullscreen);
+		//		}
+		//		break;
+		//	}
+		//}
+		//break;
+		//// this case is for not getting a windows annoying sound
+		//case WM_SYSCHAR:
+		//	break;
+
+		//case WM_SIZE:
+		//{
+		//	RECT clientRect = {};
+		//	::GetClientRect(g_hWnd, &clientRect);
+
+		//	int width = clientRect.right - clientRect.left;
+		//	int height = clientRect.bottom - clientRect.top;
+
+		//	Resize(width, height);
+		//}
+		//break;
+
+		//case WM_DESTROY:
+		//	::PostQuitMessage(0);
+		//	break;
+		//default:
+		//	return ::DefWindowProcW(hWnd, message, wParam, lParam);
+		//}
+	}
+	else
+	{
+		return ::DefWindowProcW(hWnd, message, wParam, lParam);
+	}
+
+	return 0;
+
+	//	switch (message)
+//	{
+//	case WM_CLOSE:
+//		::PostQuitMessage(69);
+//		break;
+//	}
+//	return ::DefWindowProc(hWnd, message, wParam, lParam);
+
 }
