@@ -31,6 +31,8 @@ namespace Mizu
 
 		bool IsTearingSupported() const;
 
+		void Flush();
+
 		Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
 		std::shared_ptr<CommandQueue> GetCommandQueue() const;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList();

@@ -37,6 +37,8 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain4> CreateSwapChain(std::shared_ptr<CommandQueue> command_queue_sptr);
 
+		void UpdateRenderTargetViews();
+
 		HWND m_hWnd;
 
 		uint32_t  m_screenWidth;

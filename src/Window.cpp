@@ -128,32 +128,47 @@ ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command
 	return swapChain4;
 }
 
+void Window::UpdateRenderTargetViews()
+{
+	auto device = Application::Get().GetDevice();
+	auto rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	// here we assume it's for CPU
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	for (int i = 0; i < numberOfBuffers; i++)
+	{
+		ComPtr<ID3D12Resource> backBuffer;
+		ThrowIfFailed(m_swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
+		device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+		m_backBuffers[i] = backBuffer;
+		rtvHandle.Offset(rtvDescSize);
+	}
+}
+
 
 void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 {
-	// TODO 
+	if (m_windowWidth == newWidth && m_windowHeight == newHeight)
+		return;
 
-	//if (m_windowWidth == newWidth && m_windowHeight == newHeight)
-	//	return;
-	//m_windowWidth = max(newWidth, 1U);
-	//m_windowHeight = max(newHeight, 1U);
+	m_windowWidth = max(newWidth, 1U);
+	m_windowHeight = max(newHeight, 1U);
 
-	//m_commandQueue->Flush();
+	Application::Get().Flush();
 
-	//// this is not necessary afaik TODO check that
-	//for (uint32_t i = 0; i < numberOfBuffers; i++)
-	//{
-	//	m_backBuffers[i].Reset();
-	//	g_FrameFenceValues[i] = g_FrameFenceValues[g_CurrentBackBufferIndex];
-	//}
+	// this is not necessary afaik TODO check that
+	for (uint32_t i = 0; i < numberOfBuffers; i++)
+	{
+		m_backBuffers[i].Reset();
+		m_frameFenceValues[i] = m_frameFenceValues[m_currentBackBufferIndex];
+	}
 
 
-	//DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-	//ThrowIfFailed(g_SwapChain->GetDesc(&swapChainDesc));
-	//ThrowIfFailed(g_SwapChain->ResizeBuffers(g_NumFrames, m_windowWidth, m_windowHeight, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+	DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+	ThrowIfFailed(m_swapChain->GetDesc(&swapChainDesc));
+	ThrowIfFailed(m_swapChain->ResizeBuffers(numberOfBuffers, m_windowWidth, m_windowHeight, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
-	//g_CurrentBackBufferIndex = g_SwapChain->GetCurrentBackBufferIndex();
-	//UpdateRenderTargetViews(g_Device, g_SwapChain, g_RTVDescriptorHeap);
+	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+	UpdateRenderTargetViews();
 }
 
 void Window::Update()

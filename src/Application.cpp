@@ -171,3 +171,8 @@ UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE ty
 {
 	return m_device->GetDescriptorHandleIncrementSize(type);
 }
+
+void Application::Flush()
+{
+	m_commandQueue->Flush();
+}
