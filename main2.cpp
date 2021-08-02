@@ -1,5 +1,5 @@
 #include "Application.hpp"
-
+#include "Window.hpp"
 
 bool g_IsInitialized = false;
 
@@ -84,28 +84,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
-
 	Mizu::Application::Create(hInstance);
+	Mizu::Application& app = Mizu::Application::Get();
+	
+	std::shared_ptr<Mizu::Window> ourWindow = std::make_shared<Mizu::Window>(L"MizuWindowClass", L"Mizu Demo", hInstance, app.Width, app.Height);
 
+	g_IsInitialized = true;
 
-	//g_IsInitialized = true;
+	ourWindow->ShowWindow();
 
-	//::ShowWindow(g_hWnd, SW_SHOW);
-	//MSG msg = {};
-	//// to print for example
-	//while (msg.message != WM_QUIT)
-	//{
-	//	if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-	//	{
-	//		::TranslateMessage(&msg);
-	//		::DispatchMessage(&msg);
+	MSG msg = {};
+	// to print for example
+	while (msg.message != WM_QUIT)
+	{
+		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
+		}
+	}
 
-	//	}
-	//}
+	app.Flush();
 
-	//g_CommandQueue->Flush();
-
-	//::CloseHandle(g_FenceEvent);
+	// TODO find a better way to handle that close handle
+	app.Close();
 
 	return 0;
 }

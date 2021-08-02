@@ -1,3 +1,4 @@
+#include "..\inc\Window.hpp"
 #include "Window.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
@@ -10,7 +11,7 @@ using namespace Mizu;
 Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINSTANCE hInst, uint32_t windowWidth, uint32_t windowHeight) :
 	m_screenWidth(::GetSystemMetrics(SM_CXSCREEN)), m_screenHeight(::GetSystemMetrics(SM_CYSCREEN))
 {
-	//RegisterWindowClass(hInst, windowClassName);
+	// window class is already registered in app constructor
 
 	m_windowRect = { 0, 0, static_cast<LONG>(windowWidth), static_cast<LONG>(windowHeight) };
 	::AdjustWindowRect(&m_windowRect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -90,6 +91,11 @@ UINT Window::GetCurrentBackBufferIndex() const
 void Window::Present(const UINT syncInterval, const UINT presentFlags) const
 {
 	ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
+}
+
+void Window::ShowWindow()
+{
+	::ShowWindow(m_hWnd, SW_SHOW);
 }
 
 ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command_queue_sptr)

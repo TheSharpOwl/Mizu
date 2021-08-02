@@ -23,6 +23,9 @@ public:
 	bool IsFenceComplete(uint64_t fenceValue);
 	void WaitForFenceValue(uint64_t fenceValue);
 	void Flush();
+	
+	// TODO find a better solution than this one to close the window handle
+	void CloseHandle() { ::CloseHandle(m_FenceEvent); };
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 

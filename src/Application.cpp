@@ -1,3 +1,4 @@
+#include "..\inc\Application.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "Window.hpp"
@@ -27,7 +28,7 @@ Application::Application(HINSTANCE hInst) :
 	debugInterface->EnableDebugLayer();
 #endif
 
-	wchar_t* windowClassName = L"MizuWindowClass";
+	// register the window class
 
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -52,15 +53,18 @@ Application::Application(HINSTANCE hInst) :
 	// create the command queue
 	// TODO create the other 2 types of command queues here
 	m_commandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	// create the window and pass the command queue to it OR BETTER TO MAKE THE WINDOW	GET THE COMMAND QUEUE FROM APPLICATION!
-    m_window = make_shared<Window>(windowClassName, L"Mizu Demo", hInst, Width, Height);
+
 }
 void Application::Create(HINSTANCE hInst) // static 
 {
 	if (!App)
 	{
 		App = new Application(hInst);
+		// create the window
+		// MOVED TO MAIN FOR NOW
+		//App->m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, App->Width, App->Height);
 	}
+	
 }
 
 void Application::Destroy() // static
@@ -194,6 +198,11 @@ UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE ty
 void Application::Flush()
 {
 	m_commandQueue->Flush();
+}
+
+void Mizu::Application::Close()
+{
+	m_commandQueue->CloseHandle();
 }
 
 bool isReady = false;

@@ -32,6 +32,8 @@ namespace Mizu
 
 		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+		void ShowWindow();
+
 	protected:
 
 		void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName);

@@ -13,6 +13,8 @@ namespace Mizu
 	class Application
 	{
 	public:
+		
+		static inline const wchar_t* windowClassName = L"MizuWindowClass";
 
 		Application() = delete;
 
@@ -32,6 +34,8 @@ namespace Mizu
 		bool IsTearingSupported() const;
 
 		void Flush();
+		
+		void Close();
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
 		std::shared_ptr<CommandQueue> GetCommandQueue() const;
