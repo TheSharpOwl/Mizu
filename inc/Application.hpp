@@ -6,6 +6,8 @@
 
 class CommandQueue;
 
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 namespace Mizu
 {
 
@@ -68,5 +70,7 @@ namespace Mizu
 		bool m_IsTearingSupported;
 
 		const bool m_useWarp = false;
+
+		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	};
 }

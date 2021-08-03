@@ -8,8 +8,82 @@ using namespace Microsoft::WRL;
 using namespace std;
 
 static Application* App = nullptr;
+static bool isReady = false;
 
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	OutputDebugStringW(L"CALLBACK");
+	if (isReady)
+	{
+		switch (message)
+		{
+		case WM_PAINT:
+			App->m_window->Update();
+			App->m_window->Render();
+			break;
+
+		case WM_SYSKEYDOWN:
+		case WM_KEYDOWN:
+		{
+			bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+
+			switch (wParam)
+			{
+				//case 'V':
+				//	g_VSync = !g_VSync;
+				//	break;
+			case VK_ESCAPE:
+				::PostQuitMessage(0);
+				break;
+			case VK_RETURN:
+				//	if (alt)
+				//	{
+				//case VK_F11:
+				//	//SetFullscreen(!g_IsFullscreen);
+				//	}
+				break;
+			}
+		}
+		break;
+		// this case is for not getting a windows annoying sound
+		case WM_SYSCHAR:
+			break;
+
+		case WM_SIZE: // TODO test it
+		{
+			RECT clientRect = {};
+			::GetClientRect(hWnd, &clientRect);
+
+			int width = clientRect.right - clientRect.left;
+			int height = clientRect.bottom - clientRect.top;
+
+			App->m_window->Resize(width, height);
+		}
+		break;
+
+		case WM_DESTROY:
+			::PostQuitMessage(0);
+			break;
+		default:
+			return ::DefWindowProcW(hWnd, message, wParam, lParam);
+		}
+	}
+	else
+	{
+		return ::DefWindowProcW(hWnd, message, wParam, lParam);
+	}
+
+	return 0;
+
+	//	switch (message)
+//	{
+//	case WM_CLOSE:
+//		::PostQuitMessage(69);
+//		break;
+//	}
+//	return ::DefWindowProc(hWnd, message, wParam, lParam);
+
+}
 
 Application::Application(HINSTANCE hInst) :
 	m_hInstance(hInst),
@@ -61,8 +135,10 @@ void Application::Create(HINSTANCE hInst) // static
 	{
 		App = new Application(hInst);
 		// create the window
-		// MOVED TO MAIN FOR NOW
-		//App->m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, App->Width, App->Height);
+	
+		App->m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, App->Width, App->Height);
+		isReady = true;
+		App->m_window->ShowWindow();
 	}
 	
 }
@@ -203,79 +279,4 @@ void Application::Flush()
 void Mizu::Application::Close()
 {
 	m_commandQueue->CloseHandle();
-}
-
-bool isReady = false;
-static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if (isReady)
-	{
-		//switch (message)
-		//{
-		//case WM_PAINT:
-		//	Update();
-		//	Render();
-		//	break;
-
-		//case WM_SYSKEYDOWN:
-		//case WM_KEYDOWN:
-		//{
-		//	bool alt = (::GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-
-		//	switch (wParam)
-		//	{
-		//	case 'V':
-		//		g_VSync = !g_VSync;
-		//		break;
-		//	case VK_ESCAPE:
-		//		::PostQuitMessage(0);
-		//		break;
-		//	case VK_RETURN:
-		//		if (alt)
-		//		{
-		//	case VK_F11:
-		//		SetFullscreen(!g_IsFullscreen);
-		//		}
-		//		break;
-		//	}
-		//}
-		//break;
-		//// this case is for not getting a windows annoying sound
-		//case WM_SYSCHAR:
-		//	break;
-
-		//case WM_SIZE:
-		//{
-		//	RECT clientRect = {};
-		//	::GetClientRect(g_hWnd, &clientRect);
-
-		//	int width = clientRect.right - clientRect.left;
-		//	int height = clientRect.bottom - clientRect.top;
-
-		//	Resize(width, height);
-		//}
-		//break;
-
-		//case WM_DESTROY:
-		//	::PostQuitMessage(0);
-		//	break;
-		//default:
-		//	return ::DefWindowProcW(hWnd, message, wParam, lParam);
-		//}
-	}
-	else
-	{
-		return ::DefWindowProcW(hWnd, message, wParam, lParam);
-	}
-
-	return 0;
-
-	//	switch (message)
-//	{
-//	case WM_CLOSE:
-//		::PostQuitMessage(69);
-//		break;
-//	}
-//	return ::DefWindowProc(hWnd, message, wParam, lParam);
-
 }
