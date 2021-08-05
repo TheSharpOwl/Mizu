@@ -90,14 +90,20 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 	Mizu::Application& app = Mizu::Application::Get();
 	
 
-	MSG msg = {};
 	// to print for example
-	while (msg.message != WM_QUIT)
+	BOOL bRet;
+	MSG msg;
+	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
 	{
-		if (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		if (bRet == -1)
 		{
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
+			OutputDebugStringW(L"ERROR\n");
+			break;
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 	}
 

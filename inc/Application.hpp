@@ -16,7 +16,7 @@ namespace Mizu
 	{
 	public:
 		
-		static inline const wchar_t* windowClassName = L"MizuWindowClass";
+		static const wchar_t* windowClassName;
 
 		Application() = delete;
 

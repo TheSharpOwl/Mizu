@@ -1,7 +1,9 @@
+#include "DX12LibPCH.h"
 #include "..\inc\Application.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "Window.hpp"
+#include "winuser.h"
 
 using namespace Mizu;
 using namespace Microsoft::WRL;
@@ -9,6 +11,7 @@ using namespace std;
 
 static Application* App = nullptr;
 static bool isReady = false;
+const wchar_t* Application::windowClassName = L"MizuWindowClass";
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -89,6 +92,7 @@ Application::Application(HINSTANCE hInst) :
 	m_hInstance(hInst),
 	m_IsTearingSupported(false)
 {
+	
 	// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 	// Using this awareness context allows the client area of the window 
 	// to achieve 100% scaling while still allowing non-client window content to 
@@ -104,19 +108,18 @@ Application::Application(HINSTANCE hInst) :
 
 	// register the window class
 
-	WNDCLASSEX windowClass = {};
+	WNDCLASSEXW windowClass = { 0 };
+
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
 	windowClass.lpfnWndProc = &WndProc;
-	windowClass.cbClsExtra = 0;
-	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = hInst;
-	windowClass.hIcon = nullptr; //::LoadIcon(hInstance, NULL);
-	windowClass.hCursor = nullptr;//::LoadCursor(NULL, IDC_ARROW);
+	windowClass.hInstance = m_hInstance;
+	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	windowClass.hIcon = NULL;
 	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	windowClass.lpszMenuName = nullptr;
 	windowClass.lpszClassName = windowClassName;
-	windowClass.hIconSm = nullptr;
+	windowClass.hIconSm = NULL;
 
 	static HRESULT hl = ::RegisterClassExW(&windowClass);
 	assert(SUCCEEDED(hl));
@@ -136,7 +139,7 @@ void Application::Create(HINSTANCE hInst) // static
 		App = new Application(hInst);
 		// create the window
 	
-		App->m_window = make_shared<Window>(L"MizuWindowClass", L"Mizu Demo", hInst, App->Width, App->Height);
+		App->m_window = make_shared<Window>(windowClassName, L"Mizu Demo", hInst, App->Width, App->Height);
 		isReady = true;
 		App->m_window->ShowWindow();
 	}
