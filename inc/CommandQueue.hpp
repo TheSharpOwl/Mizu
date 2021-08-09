@@ -8,7 +8,7 @@
 
 
 
-
+// TODO put inside a namespace Mizu !!!
 class CommandQueue
 {
 public:
@@ -23,16 +23,21 @@ public:
 	bool IsFenceComplete(uint64_t fenceValue);
 	void WaitForFenceValue(uint64_t fenceValue);
 	void Flush();
+	
+	// TODO find a better solution than this one to close the window handle
+	void CloseHandle() { ::CloseHandle(m_FenceEvent); };
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
+// todo make private/protected
 public:
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator(); // was protected
 
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator); // was protected
 
 
-private:
+protected:
+
 	struct CommandAllocatorEntry
 	{
 		uint64_t fenceValue;
@@ -48,4 +53,3 @@ private:
 	std::queue<CommandAllocatorEntry> m_CommandAllocatorQueue;
 	std::queue<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>> m_CommandListQueue;
 };
-
