@@ -15,7 +15,6 @@ const wchar_t* Application::windowClassName = L"MizuWindowClass";
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	OutputDebugStringW(L"CALLBACK");
 	if (isReady)
 	{
 		switch (message)
@@ -77,15 +76,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
-
-	//	switch (message)
-//	{
-//	case WM_CLOSE:
-//		::PostQuitMessage(69);
-//		break;
-//	}
-//	return ::DefWindowProc(hWnd, message, wParam, lParam);
-
 }
 
 Application::Application(HINSTANCE hInst) :
