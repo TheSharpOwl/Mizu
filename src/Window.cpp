@@ -235,11 +235,8 @@ void Window::Render()
 		UINT syncInterval = vSync ? 1 : 0;
 		UINT presentFlags = Application::Get().IsTearingSupported() && !vSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 		ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
-
-
-
-		m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 		commandQueue->WaitForFenceValue(m_frameFenceValues[m_currentBackBufferIndex]);
+		m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	}
 }
 
