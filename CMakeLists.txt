@@ -14,12 +14,14 @@ set(HEADERS
  inc/CommandQueue.hpp
  inc/Window.hpp
  inc/Application.hpp
+ inc/CubeDemo.hpp
  )
 
 set(SOURCES 
 src/CommandQueue.cpp
 src/Window.cpp
 src/Application.cpp
+src/CubeDemo.cpp
 )
 
 include_directories(inc)
@@ -29,13 +31,24 @@ add_library(Engine STATIC
 					${SOURCES})
 
 add_executable(Mizu WIN32 main.cpp)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Mizu)
+
+
+add_executable(CubeDemo WIN32 demo.cpp)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CudeDemo)
+
 
 add_definitions(-D_UNICODE)
 add_definitions(-DUNICODE)
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 target_link_libraries(Mizu
+Engine
+d3d12.lib
+dxgi.lib
+d3dcompiler.lib
+)
+
+target_link_libraries(CubeDemo
 Engine
 d3d12.lib
 dxgi.lib
