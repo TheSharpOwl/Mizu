@@ -119,7 +119,9 @@ Application::Application(HINSTANCE hInst) :
 	m_device = CreateDevice();
 	// create the command queue
 	// TODO create the other 2 types of command queues here
-	m_commandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
+	m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
 }
 void Application::Create(HINSTANCE hInst) // static 
@@ -155,14 +157,34 @@ ComPtr<ID3D12Device2> Application::GetDevice() const
 	return m_device;
 }
 
-shared_ptr<CommandQueue> Application::GetCommandQueue() const
+shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 {
-	return m_commandQueue;
+	switch (type)
+	{
+	case D3D12_COMMAND_LIST_TYPE_COPY:
+		return m_copyCommandQueue;
+
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+		return m_computeCommandQueue;
+
+	default:
+		return m_directCommandQueue;
+	}
 }
 
-Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList()
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 {
-	return m_commandQueue->GetCommandList();
+	switch (type)
+	{
+	case D3D12_COMMAND_LIST_TYPE_COPY:
+		return m_copyCommandQueue->GetCommandList();
+
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+		return m_computeCommandQueue->GetCommandList();
+
+	default:
+		return m_directCommandQueue->GetCommandList();
+	}
 }
 
 
@@ -266,10 +288,14 @@ UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE ty
 
 void Application::Flush()
 {
-	m_commandQueue->Flush();
+	m_directCommandQueue->Flush();
+	m_copyCommandQueue->Flush();
+	m_computeCommandQueue->Flush();
 }
 
 void Mizu::Application::Close()
 {
-	m_commandQueue->CloseHandle();
+	m_directCommandQueue->CloseHandle();
+	m_copyCommandQueue->CloseHandle();
+	m_computeCommandQueue->CloseHandle();
 }
