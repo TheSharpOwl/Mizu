@@ -5,6 +5,9 @@
 using namespace Mizu;
 using namespace DirectX;
 
+template<typename T>
+using cp = Microsoft::WRL::ComPtr<T>;
+
 struct VertexPosColor
 {
 	XMFLOAT3 Position;
@@ -59,6 +62,33 @@ bool CubeDemo::LoadContent()
 	auto commandQueue = Application::Get().GetCommandQueue();
 	// TODO next time : make the command lists 3 because now we need copy one and the one we have already is only direct 
 	auto commandList = Application::Get().GetCommandList();
+
+	// Uploading vertex buffer data
+	cp<ID3D12Resource> intermediateVertexBuffer;
+	UpdateBufferResource(commandList, &m_vertexBuffer, &intermediateVertexBuffer, _countof(Vertices), sizeof(VertexPosColor), Vertices);
+
+	// Create the vertex buffer view
+	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
+	m_vertexBufferView.SizeInBytes = sizeof(Vertices);
+	m_vertexBufferView.StrideInBytes = sizeof(VertexPosColor);
+
+	// Uploading index buffer data
+	cp<ID3D12Resource> intermediateIndexBuffer;
+	UpdateBufferResource(commandList, &m_indexBuffer, &intermediateIndexBuffer, _countof(Indecies), sizeof(WORD), Indecies);
+
+	//Creating the index buffer view
+	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+	m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+	m_indexBufferView.SizeInBytes = sizeof(Indecies);
+
+	// creation of the desc heap for the depth stencil view
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
+
 	return false;
 }
 
@@ -68,7 +98,7 @@ void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsC
 	size_t numElements,
 	size_t elementSize,
 	const void* bufferData,
-	D3D12_RESOURCE_FLAGS flags)
+	D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
 {
 
 	auto device = Application::Get().GetDevice();
