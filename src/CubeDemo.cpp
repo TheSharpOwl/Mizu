@@ -89,6 +89,8 @@ bool CubeDemo::LoadContent()
 
 	ThrowIfFailed(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap)));
 
+
+	// Loading shaders
 	return false;
 }
 
