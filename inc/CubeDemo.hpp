@@ -12,7 +12,7 @@ namespace Mizu
 		bool create(HINSTANCE hInst);
 		bool LoadContent();
 	private:
-		
+	
 		void UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 			ID3D12Resource** ppDestinationRes,
 			ID3D12Resource** ppIntermediateRes,
@@ -20,6 +20,8 @@ namespace Mizu
 			size_t elementSize,
 			const void* bufferData,
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
+
+		void ResizeDepthBuffer(int width, int height);
 
 		int m_width;
 		int m_height;
@@ -31,9 +33,13 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_indexBuffer;
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
-
+		\
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthBuffer;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_piplineState;
 
+		bool m_contentLoaded = false;
 	};
 
 }

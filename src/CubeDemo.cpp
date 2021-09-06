@@ -1,6 +1,6 @@
 #include "..\inc\CubeDemo.hpp"
-#include <Application.hpp>
-
+#include "Application.hpp"
+#include "CommandQueue.hpp"
 
 using namespace Mizu;
 using namespace DirectX;
@@ -59,7 +59,7 @@ bool CubeDemo::create(HINSTANCE hInst)
 bool CubeDemo::LoadContent()
 {
 	auto device = Application::Get().GetDevice();
-	auto commandQueue = Application::Get().GetCommandQueue();
+	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 	// TODO next time : make the command lists 3 because now we need copy one and the one we have already is only direct 
 	auto commandList = Application::Get().GetCommandList();
 
@@ -103,7 +103,74 @@ bool CubeDemo::LoadContent()
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 
-	// TODO FOR NEXT TIME create a root signature
+	// Creating a root signature
+	D3D12_FEATURE_DATA_ROOT_SIGNATURE featureData = {};
+	featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
+	if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &featureData, sizeof(featureData))))
+	{
+		featureData.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
+	}
+
+	// Allow input layout and deny unnecessary access to certain pipeline stages ( minor optimization on some hardware)
+	D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
+
+	CD3DX12_ROOT_PARAMETER1 rootParamters[1];
+	// TODO DELETE first parameter was sizeof(XMatrix)/4
+	rootParamters[0].InitAsConstants(16u, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootsSignatureDescription;
+	rootsSignatureDescription.Init_1_1(_countof(rootParamters), rootParamters, 0, nullptr, rootSignatureFlags);
+
+	// serialization of the root signature (better to convert it to binary before runtime ... TODO)
+	cp<ID3DBlob> rootSignatureBlob;
+	cp<ID3DBlob> errorBlob;
+
+	ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootsSignatureDescription, featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
+
+	// create the root signature
+	ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(), rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+
+	struct PipelineStateStream
+	{
+		CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+		CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT InputLayout;
+		CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopologyType;
+		CD3DX12_PIPELINE_STATE_STREAM_VS VS;
+		CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+		CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DSVFormat;
+		CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+	} pipelineStateStream;
+
+	D3D12_RT_FORMAT_ARRAY rtvFormats = {};
+	rtvFormats.NumRenderTargets = 1;
+	rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+	pipelineStateStream.pRootSignature = m_RootSignature.Get();
+	pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
+	pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
+	pipelineStateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShaderBlob.Get());
+	pipelineStateStream.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+	pipelineStateStream.RTVFormats = rtvFormats;
+
+	D3D12_PIPELINE_STATE_STREAM_DESC pipelineStateStreamDesc = {
+		sizeof(PipelineStateStream), &pipelineStateStream
+	};
+
+	ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_piplineState)));
+
+	auto fenceValue = commandQueue->ExecuteCommandList(commandList);
+	commandQueue->WaitForFenceValue(fenceValue);
+
+	m_contentLoaded = true;
+
+	// Resize/create the depth buffer
+	// TODO ......... NEXT TIME
 
 	return false;
 }
@@ -150,6 +217,39 @@ void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsC
 		subresourceData.RowPitch = subresourceData.SlicePitch = bufferSize;
 
 		UpdateSubresources(commandList.Get(), *ppDestinationRes, *ppIntermediateRes, 0, 0, 1, &subresourceData);
+	}
+}
+
+void Mizu::CubeDemo::ResizeDepthBuffer(int width, int height)
+{
+	if (m_contentLoaded) // will be true only after the descriptor heap is created
+	{
+		// Flush all gpu commands (because they might be referencing the depth buffer)
+		Application::Get().Flush();
+
+		width = std::max(width, 1);
+		height = std::max(height, 1);
+
+		auto device = Application::Get().GetDevice();
+
+		D3D12_CLEAR_VALUE optimizedClearValue = {};
+		optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+		// 1 is for depth (far = 1), and 0 is for stencil
+		optimizedClearValue.DepthStencil = { 1.0f, 0 };
+
+
+		ThrowIfFailed(device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, width, height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE, &optimizedClearValue, IID_PPV_ARGS(&m_depthBuffer)));
+
+		// Updating the depth stencil view
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
+		dsv.Format = DXGI_FORMAT_D32_FLOAT;
+		dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsv.Texture2D.MipSlice = 0;
+		dsv.Flags = D3D12_DSV_FLAG_NONE;
+
+		device->CreateDepthStencilView(m_depthBuffer.Get(), &dsv, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
 	}
 }
 
