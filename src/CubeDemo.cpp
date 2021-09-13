@@ -1,4 +1,4 @@
-#include "..\inc\CubeDemo.hpp"
+﻿#include "..\inc\CubeDemo.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "EventArgs.hpp"
@@ -38,7 +38,11 @@ static WORD Indecies[36] =
 };
 
 CubeDemo::CubeDemo(int width, int height, bool vsync) :
-	m_width(width), m_height(height), m_vsync(vsync)
+	m_width(width), m_height(height), m_vsync(vsync), m_scissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
+	, m_viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
+	, m_fov(45.0)
+	, m_contentLoaded(false)
+
 {
 
 }
@@ -184,9 +188,46 @@ void Mizu::CubeDemo::OnResize(ReizeEventArgs& e)
 
 	m_width = e.Width;
 	m_height = e.Height;
-	m_viewPort = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.Width), static_cast<float>(e.Height));
+	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.Width), static_cast<float>(e.Height));
 
 	ResizeDepthBuffer(e.Width, e.Height);
+}
+
+void Mizu::CubeDemo::OnUpdate(UpdateEventArgs& e)
+{
+	static uint64_t frameCount = 0;
+	static double totalTime = 0.0;
+	
+	totalTime += e.elapsedTime;
+	frameCount++;
+
+	if (totalTime > 1.0)
+	{
+		double fps = frameCount / totalTime;
+
+		char buffer[512];
+		sprintf(buffer, "FPS: %lf\n", fps);
+		OutputDebugStringA(buffer);
+
+		frameCount = 0;
+		totalTime = 0.0;
+	}
+
+	// Updating the model matrix
+	float angle = static_cast<float>(e.totalTime * 90.0);
+	const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
+	m_modelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
+
+	// Update the view matrix
+	const XMVECTOR eyePos = XMVectorSet(0, 0, -10, 1);
+	const XMVECTOR focusPoint = XMVectorSet(0, 0, 0, 1);
+	const XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
+	m_viewMatrix = XMMatrixLookAtLH(eyePos, focusPoint, upDirection);
+
+	// Update the projection martrix
+	float aspectRatio = m_width / static_cast<float>(m_height);
+	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
+
 }
 
 void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,

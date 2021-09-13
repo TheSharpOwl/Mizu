@@ -15,4 +15,14 @@ namespace Mizu
 		int Width;
 		int Height;
 	};
+
+	struct UpdateEventArgs : public EventArgs
+	{
+		UpdateEventArgs(double deltaTime, double totalTime) :
+			elapsedTime(deltaTime),
+			totalTime(totalTime) {}
+
+		double elapsedTime;
+		double totalTime;
+	};
 }

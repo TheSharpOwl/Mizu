@@ -4,6 +4,7 @@
 namespace Mizu
 {
 	struct ReizeEventArgs;
+	struct UpdateEventArgs;
 
 	class CubeDemo
 	{
@@ -17,6 +18,8 @@ namespace Mizu
 	protected:
 
 		void OnResize(ReizeEventArgs& e);
+
+		void OnUpdate(UpdateEventArgs& e);
 
 	private:
 	
@@ -40,7 +43,7 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_indexBuffer;
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
-		\
+
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthBuffer;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
@@ -48,7 +51,15 @@ namespace Mizu
 
 		bool m_contentLoaded = false;
 
-		D3D12_VIEWPORT m_viewPort;
+		D3D12_VIEWPORT m_viewport;
+
+		float m_fov;
+
+		DirectX::XMMATRIX m_modelMatrix;
+		DirectX::XMMATRIX m_viewMatrix;
+		DirectX::XMMATRIX m_projectionMatrix;
+
+		D3D12_RECT m_scissorRect;
 
 	};
 
