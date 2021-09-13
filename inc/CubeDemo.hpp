@@ -3,6 +3,8 @@
 
 namespace Mizu
 {
+	struct ReizeEventArgs;
+
 	class CubeDemo
 	{
 	public:
@@ -11,6 +13,11 @@ namespace Mizu
 
 		bool create(HINSTANCE hInst);
 		bool LoadContent();
+
+	protected:
+
+		void OnResize(ReizeEventArgs& e);
+
 	private:
 	
 		void UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
@@ -40,6 +47,9 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_piplineState;
 
 		bool m_contentLoaded = false;
+
+		D3D12_VIEWPORT m_viewPort;
+
 	};
 
 }

@@ -15,6 +15,7 @@ set(HEADERS
  inc/Window.hpp
  inc/Application.hpp
  inc/CubeDemo.hpp
+ inc/EventArgs.hpp
  )
 
 set(SOURCES 

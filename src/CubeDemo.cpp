@@ -1,6 +1,7 @@
 #include "..\inc\CubeDemo.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
+#include "EventArgs.hpp"
 
 using namespace Mizu;
 using namespace DirectX;
@@ -170,9 +171,22 @@ bool CubeDemo::LoadContent()
 	m_contentLoaded = true;
 
 	// Resize/create the depth buffer
-	// TODO ......... NEXT TIME
+	ResizeDepthBuffer(m_width, m_height);
+
 
 	return false;
+}
+
+void Mizu::CubeDemo::OnResize(ReizeEventArgs& e)
+{
+	if (m_width == e.Width && m_height == e.Height)
+		return;
+
+	m_width = e.Width;
+	m_height = e.Height;
+	m_viewPort = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.Width), static_cast<float>(e.Height));
+
+	ResizeDepthBuffer(e.Width, e.Height);
 }
 
 void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
