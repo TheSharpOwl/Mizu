@@ -8,6 +8,8 @@ namespace Mizu
 
 	class CubeDemo
 	{
+		template<typename T>
+		using cp = Microsoft::WRL::ComPtr<T>;
 	public:
 
 		CubeDemo(int width, int height, bool vsync);
@@ -32,6 +34,8 @@ namespace Mizu
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
 
 		void ResizeDepthBuffer(int width, int height);
+
+		void TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
 		int m_width;
 		int m_height;

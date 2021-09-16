@@ -3,8 +3,8 @@
 #include "CommandQueue.hpp"
 #include "EventArgs.hpp"
 
-using namespace Mizu;
 using namespace DirectX;
+using Mizu::CubeDemo;
 
 template<typename T>
 using cp = Microsoft::WRL::ComPtr<T>;
@@ -181,7 +181,7 @@ bool CubeDemo::LoadContent()
 	return false;
 }
 
-void Mizu::CubeDemo::OnResize(ReizeEventArgs& e)
+void CubeDemo::OnResize(ReizeEventArgs& e)
 {
 	if (m_width == e.Width && m_height == e.Height)
 		return;
@@ -193,7 +193,7 @@ void Mizu::CubeDemo::OnResize(ReizeEventArgs& e)
 	ResizeDepthBuffer(e.Width, e.Height);
 }
 
-void Mizu::CubeDemo::OnUpdate(UpdateEventArgs& e)
+void CubeDemo::OnUpdate(UpdateEventArgs& e)
 {
 	static uint64_t frameCount = 0;
 	static double totalTime = 0.0;
@@ -224,13 +224,13 @@ void Mizu::CubeDemo::OnUpdate(UpdateEventArgs& e)
 	const XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
 	m_viewMatrix = XMMatrixLookAtLH(eyePos, focusPoint, upDirection);
 
-	// Update the projection martrix
+	// Update the projection matrix
 	float aspectRatio = m_width / static_cast<float>(m_height);
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
 
 }
 
-void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
+void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 	ID3D12Resource** ppDestinationRes,
 	ID3D12Resource** ppIntermediateRes,
 	size_t numElements,
@@ -275,7 +275,7 @@ void Mizu::CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsC
 	}
 }
 
-void Mizu::CubeDemo::ResizeDepthBuffer(int width, int height)
+void CubeDemo::ResizeDepthBuffer(int width, int height)
 {
 	if (m_contentLoaded) // will be true only after the descriptor heap is created
 	{
@@ -308,3 +308,8 @@ void Mizu::CubeDemo::ResizeDepthBuffer(int width, int height)
 	}
 }
 
+void CubeDemo::TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+{
+	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), beforeState, afterState);
+	commandList->ResourceBarrier(1, &barrier);
+}
