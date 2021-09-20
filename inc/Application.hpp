@@ -48,6 +48,8 @@ namespace Mizu
 
 		UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
 
+		auto getWindow() -> std::shared_ptr<Window> { return m_window; }
+
 	protected:
 
 		Application(HINSTANCE hInst);

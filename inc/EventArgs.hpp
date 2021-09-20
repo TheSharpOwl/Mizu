@@ -25,4 +25,14 @@ namespace Mizu
 		double elapsedTime;
 		double totalTime;
 	};
+
+	struct RenderEventArgs : public EventArgs
+	{
+		RenderEventArgs(float fDeltaTime, float fTotalTime) :
+			elapsedTime(fDeltaTime),
+			totalTime(fTotalTime) {}
+
+		float elapsedTime;
+		float totalTime;
+	};
 }

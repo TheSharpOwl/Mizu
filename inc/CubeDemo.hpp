@@ -5,6 +5,7 @@ namespace Mizu
 {
 	struct ReizeEventArgs;
 	struct UpdateEventArgs;
+	struct RenderEventArgs;
 
 	class CubeDemo
 	{
@@ -17,11 +18,15 @@ namespace Mizu
 		bool create(HINSTANCE hInst);
 		bool LoadContent();
 
+
+
 	protected:
 
 		void OnResize(ReizeEventArgs& e);
 
 		void OnUpdate(UpdateEventArgs& e);
+
+		void OnRender(RenderEventArgs& e);
 
 	private:
 	
@@ -36,6 +41,10 @@ namespace Mizu
 		void ResizeDepthBuffer(int width, int height);
 
 		void TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
+
+		void ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor);
+
+		void ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth);
 
 		int m_width;
 		int m_height;
@@ -64,7 +73,6 @@ namespace Mizu
 		DirectX::XMMATRIX m_projectionMatrix;
 
 		D3D12_RECT m_scissorRect;
-
 	};
 
 }

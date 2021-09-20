@@ -2,6 +2,7 @@
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "EventArgs.hpp"
+#include "Window.hpp"
 
 using namespace DirectX;
 using Mizu::CubeDemo;
@@ -230,6 +231,19 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 
 }
 
+void CubeDemo::OnRender(RenderEventArgs& e)
+{
+	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	auto commandList = commandQueue->GetCommandList();
+	// no need to reset the command list
+
+	auto window = Application::Get().getWindow();
+	UINT currentBackBufferIndex = window->GetCurrentBackBufferIndex();
+	// TODO continue from here
+	// Get the RTV from the window as in the tutorials....
+
+}
+
 void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 	ID3D12Resource** ppDestinationRes,
 	ID3D12Resource** ppIntermediateRes,
@@ -312,4 +326,15 @@ void CubeDemo::TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp
 {
 	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), beforeState, afterState);
 	commandList->ResourceBarrier(1, &barrier);
+}
+
+
+void CubeDemo::ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor)
+{
+	commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+}
+
+void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth)
+{
+	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr);
 }
