@@ -34,6 +34,10 @@ namespace Mizu
 
 		void ShowWindow();
 
+		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV() const;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> getCurrentBackBuffer();
+
 	protected:
 
 		void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName);

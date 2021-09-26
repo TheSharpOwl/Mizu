@@ -1,5 +1,6 @@
 #pragma once
 #include "DX12LibPCH.h"
+#include "Window.hpp"
 
 namespace Mizu
 {
@@ -44,7 +45,7 @@ namespace Mizu
 
 		void ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor);
 
-		void ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth);
+		void ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth = 1.0f);
 
 		int m_width;
 		int m_height;
@@ -73,6 +74,8 @@ namespace Mizu
 		DirectX::XMMATRIX m_projectionMatrix;
 
 		D3D12_RECT m_scissorRect;
+
+		int64_t m_fenceValues[Window::numberOfBuffers] = {};
 	};
 
 }

@@ -64,7 +64,6 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<IDXGIAdapter4> m_adapter;
 		Microsoft::WRL::ComPtr<ID3D12Device2> m_device;
 
-		// TODO add 3 command queues : direct/compute/copy
 		std::shared_ptr<CommandQueue> m_directCommandQueue;
 		std::shared_ptr<CommandQueue> m_copyCommandQueue;
 		std::shared_ptr<CommandQueue> m_computeCommandQueue;

@@ -98,6 +98,16 @@ void Window::ShowWindow()
 	::ShowWindow(m_hWnd, SW_SHOW);
 }
 
+D3D12_CPU_DESCRIPTOR_HANDLE Mizu::Window::GetRTV() const
+{
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_currentBackBufferIndex, m_RTVDescriptorSize);
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> Mizu::Window::getCurrentBackBuffer()
+{
+	return m_backBuffers[m_currentBackBufferIndex];
+}
+
 ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command_queue_sptr)
 {
 	ComPtr<IDXGIFactory4> f4;

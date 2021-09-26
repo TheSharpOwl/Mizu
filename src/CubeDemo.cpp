@@ -2,7 +2,6 @@
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "EventArgs.hpp"
-#include "Window.hpp"
 
 using namespace DirectX;
 using Mizu::CubeDemo;
@@ -235,13 +234,54 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 {
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = commandQueue->GetCommandList();
-	// no need to reset the command list
+	// no need to reset the command list (check CommandQueue::GetCommandList function above)
 
 	auto window = Application::Get().getWindow();
 	UINT currentBackBufferIndex = window->GetCurrentBackBufferIndex();
-	// TODO continue from here
-	// Get the RTV from the window as in the tutorials....
+	auto backBuffer = window->getCurrentBackBuffer();
+	auto rtv = window->GetRTV();
+	auto dsv = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
 
+	// Clearing render targets
+	{
+		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		FLOAT clearColor[] = { 0.4, 0.6f, 0.9f, 1.0f };
+
+		ClearRTV(commandList, rtv, clearColor);
+		ClearDepth(commandList, dsv);
+	}
+
+	commandList->SetPipelineState(m_piplineState.Get());
+	commandList->SetGraphicsRootSignature(m_RootSignature.Get());
+
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+	commandList->IASetIndexBuffer(&m_indexBufferView);
+
+	commandList->RSSetViewports(1, &m_viewport);
+	commandList->RSSetScissorRects(1, &m_scissorRect);
+
+	commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+
+	// update MVP matrix
+	XMMATRIX mvpMatrix = XMMatrixMultiply(m_modelMatrix, m_viewMatrix);
+	mvpMatrix = XMMatrixMultiply(mvpMatrix, m_projectionMatrix);
+	commandList->SetGraphicsRoot32BitConstants(0, sizeof(XMMATRIX) / 4, &mvpMatrix, 0);
+
+	commandList->DrawIndexedInstanced(_countof(Indecies), 1, 0, 0, 0);
+
+	// presenting
+	{
+		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		m_fenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
+
+		UINT presentFlags = Application::Get().IsTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		window->Present((m_vsync ? 1 : 0), presentFlags);
+		currentBackBufferIndex = window->GetCurrentBackBufferIndex();
+
+		commandQueue->WaitForFenceValue(m_fenceValues[currentBackBufferIndex]);
+	}
 }
 
 void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
@@ -334,7 +374,7 @@ void CubeDemo::ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DE
 	commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
-void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth)
+void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth) // depth = 1.0f default
 {
 	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr);
 }
