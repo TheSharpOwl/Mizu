@@ -10,6 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory f
 
 
 set(HEADERS
+ inc/DX12LibPCH.h
  inc/d3dx12.h
  inc/CommandQueue.hpp
  inc/Window.hpp
@@ -42,16 +43,19 @@ add_definitions(-D_UNICODE)
 add_definitions(-DUNICODE)
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
+# TODO Make a library for the lib files
 target_link_libraries(Mizu
 Engine
 d3d12.lib
-dxgi.lib
-d3dcompiler.lib
+dxguid.lib
+DXGI.lib
+D3DCompiler.lib
 )
 
 target_link_libraries(CubeDemo
 Engine
 d3d12.lib
-dxgi.lib
+dxguid.lib
+DXGI.lib
 d3dcompiler.lib
 )

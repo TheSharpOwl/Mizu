@@ -1,8 +1,9 @@
+#include <windows.h>
 #include "Application.hpp"
 #include "Window.hpp"
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
-{
+{	
 	Mizu::Application::Create(hInstance);
 	Mizu::Application& app = Mizu::Application::Get();
 	

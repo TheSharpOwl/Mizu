@@ -1,4 +1,6 @@
-﻿#include "..\inc\CubeDemo.hpp"
+﻿#include <windows.h>
+#include "directxmath.h"
+#include "..\inc\CubeDemo.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "EventArgs.hpp"
@@ -49,7 +51,7 @@ CubeDemo::CubeDemo(int width, int height, bool vsync) :
 
 bool CubeDemo::create(HINSTANCE hInst)
 {
-	if (DirectX::XMVerifyCPUSupport())
+	if (DirectX::XMVerifyCPUSupport() == false	)
 	{
 		MessageBoxA(NULL, "Failed to verify DirectX math support", "Error", MB_OK | MB_ICONERROR);
 		return false;

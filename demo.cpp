@@ -1,9 +1,14 @@
+#include "CubeDemo.hpp"
 #include "Application.hpp"
-#include "Window.hpp"
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
-	Mizu::Application::Create(hInstance);
+	Mizu::CubeDemo demo(1280, 720,false);
+
+	demo.create(hInstance);
+	demo.LoadContent();
+
+	//Mizu::Application::Create(hInstance);
 	Mizu::Application& app = Mizu::Application::Get();
 
 
