@@ -33,6 +33,8 @@ namespace Mizu
 
 		static void Destroy();
 
+		void DestroyWindow(std::shared_ptr<Window> window);
+
 		static Application& Get();
 
 		bool IsTearingSupported() const;

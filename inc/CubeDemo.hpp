@@ -16,7 +16,7 @@ namespace Mizu
 
 		CubeDemo(int width, int height, bool vsync);
 
-		bool create(HINSTANCE hInst);
+		bool Initialize(HINSTANCE hInst);
 		bool LoadContent();
 
 

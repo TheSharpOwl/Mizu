@@ -7,13 +7,13 @@ namespace Mizu
 	{
 		typedef EventArgs base;
 		ReizeEventArgs(int width, int height) :
-			Width(width),
-			Height(height)
+			width(width),
+			height(height)
 		{}
 
 
-		int Width;
-		int Height;
+		int width;
+		int height;
 	};
 
 	struct UpdateEventArgs : public EventArgs

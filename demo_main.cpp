@@ -5,7 +5,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 {
 	Mizu::CubeDemo demo(1280, 720,false);
 
-	demo.create(hInstance);
+	demo.Initialize(hInstance);
 	demo.LoadContent();
 
 	//Mizu::Application::Create(hInstance);

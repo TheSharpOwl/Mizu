@@ -15,27 +15,31 @@ set(HEADERS
  inc/CommandQueue.hpp
  inc/Window.hpp
  inc/Application.hpp
- inc/CubeDemo.hpp
  inc/EventArgs.hpp
+ inc/Game.hpp
  )
 
 set(SOURCES 
 src/CommandQueue.cpp
 src/Window.cpp
 src/Application.cpp
-src/CubeDemo.cpp
+src/Game.cpp
 )
+
+set(DEMO
+ inc/CubeDemo.hpp
+ src/CubeDemo.cpp
+ )
+
 
 include_directories(inc)
 
-add_library(Engine STATIC
-					${HEADERS}
-					${SOURCES})
+add_library(Engine STATIC ${HEADERS} ${SOURCES})
 
 add_executable(Mizu WIN32 main.cpp)
+add_executable(CubeDemo WIN32 demo_main.cpp)
 
 
-add_executable(CubeDemo WIN32 demo.cpp)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CudeDemo)
 
 
@@ -53,6 +57,7 @@ D3DCompiler.lib
 )
 
 target_link_libraries(CubeDemo
+Demo
 Engine
 d3d12.lib
 dxguid.lib

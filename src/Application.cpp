@@ -145,8 +145,14 @@ std::shared_ptr<Window> Mizu::Application::createRenderWindow()
 
 void Application::Destroy() // static
 {
-
+	// TODO add notification to game + window destruction
 }
+
+void Mizu::Application::DestroyWindow(std::shared_ptr<Window> window)
+{
+	// TODO
+}
+
 Application& Application::Get() // static
 {
 	return *App;

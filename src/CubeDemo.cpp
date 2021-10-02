@@ -44,21 +44,19 @@ CubeDemo::CubeDemo(int width, int height, bool vsync) :
 	, m_viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
 	, m_fov(45.0)
 	, m_contentLoaded(false)
-
 {
 
 }
 
-bool CubeDemo::create(HINSTANCE hInst)
+bool CubeDemo::Initialize(HINSTANCE hInst)
 {
-	if (DirectX::XMVerifyCPUSupport() == false	)
+	if (DirectX::XMVerifyCPUSupport() == false)
 	{
 		MessageBoxA(NULL, "Failed to verify DirectX math support", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
-	// might need to put a pointer to this demo in the window later (for controls of mouse and keyboard for example)
-	Application::Create(hInst);
+	// TODO might need to put a pointer to this demo in the window later (for controls of mouse and keyboard for example)
 
 	return true;
 }
