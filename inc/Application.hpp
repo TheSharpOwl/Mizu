@@ -29,6 +29,8 @@ namespace Mizu
 
 		static void Create(HINSTANCE hInst);
 
+		std::shared_ptr<Window> createRenderWindow();
+
 		static void Destroy();
 
 		static Application& Get();

@@ -6,8 +6,9 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 {	
 	Mizu::Application::Create(hInstance);
 	Mizu::Application& app = Mizu::Application::Get();
+	auto pWindow = app.createRenderWindow();
+	pWindow->ShowWindow();
 	
-
 	// to print for example
 	BOOL bRet;
 	MSG msg;

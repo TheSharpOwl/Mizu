@@ -129,13 +129,18 @@ void Application::Create(HINSTANCE hInst) // static
 	if (!App)
 	{
 		App = new Application(hInst);
-		// create the window
-	
-		App->m_window = make_shared<Window>(windowClassName, L"Mizu Demo", hInst, App->Width, App->Height);
-		isReady = true;
-		App->m_window->ShowWindow();
 	}
 	
+}
+
+std::shared_ptr<Window> Mizu::Application::createRenderWindow()
+{
+
+	// create the window
+	App->m_window = make_shared<Window>(windowClassName, L"Mizu Demo", m_hInstance, App->Width, App->Height);
+	isReady = true;
+
+	return m_window;
 }
 
 void Application::Destroy() // static
