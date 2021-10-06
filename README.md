@@ -11,8 +11,8 @@ Mizu 水 means Water in Japanense :sweat_smile:
 
 ### Resources:
 * [DirectX12 Tutorials by 3dgep](https://www.3dgep.com/category/graphics-programming/directx/)
-* [GPU-Driven Rendering Pipelines](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf)(by Ubisoft)
-* [GPU-DRIVEN RENDERING ](https://on-demand.gputechconf.com/gtc/2016/presentation/s6138-christoph-kubisch-pierre-boudier-gpu-driven-rendering.pdf)(by Nvidia)
+* [GPU-Driven Rendering Pipelines](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf) (by Ubisoft)
+* [GPU-DRIVEN RENDERING ](https://on-demand.gputechconf.com/gtc/2016/presentation/s6138-christoph-kubisch-pierre-boudier-gpu-driven-rendering.pdf) (by Nvidia)
 * [Introduction to Turing Mesh Shaders](https://developer.nvidia.com/blog/introduction-turing-mesh-shaders/)
 * [Turing Mesh Shaders](https://vzout.com/mesh_shading/)
 * [Using Mesh Shaders for Professional Graphics](https://developer.nvidia.com/blog/using-mesh-shaders-for-professional-graphics/)
