@@ -16,5 +16,6 @@ Mizu 水 means Water in Japanense :sweat_smile:
 * [Introduction to Turing Mesh Shaders](https://developer.nvidia.com/blog/introduction-turing-mesh-shaders/)
 * [Turing Mesh Shaders](https://vzout.com/mesh_shading/)
 * [Using Mesh Shaders for Professional Graphics](https://developer.nvidia.com/blog/using-mesh-shaders-for-professional-graphics/)
+* [Coming to DirectX 12— Mesh Shaders and Amplification Shaders: Reinventing the Geometry Pipeline ](https://devblogs.microsoft.com/directx/coming-to-directx-12-mesh-shaders-and-amplification-shaders-reinventing-the-geometry-pipeline/)
 * [A High-Performance Software Graphics Pipeline Architecture
 for the GPU](https://replicability.graphics/papers/10.1145-3197517.3201374/index.html) (paper)
