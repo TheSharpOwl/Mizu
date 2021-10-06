@@ -14,6 +14,7 @@ namespace Mizu
 	{
 		template<typename T>
 		using cp = Microsoft::WRL::ComPtr<T>;
+
 	public:
 
 		CubeDemo(int width, int height, bool vsync);

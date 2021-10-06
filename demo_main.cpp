@@ -3,13 +3,14 @@
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
-	Mizu::CubeDemo demo(1280, 720,false);
 
-	demo.Initialize();
-	demo.LoadContent();
-
+	auto demo = std::make_shared<Mizu::CubeDemo>(1280, 720,false);
 	Mizu::Application::Create(hInstance);
 	Mizu::Application& app = Mizu::Application::Get();
+	demo->Initialize();
+	demo->LoadContent();
+
+
 	{
 		//std::shared_ptr<Mizu::Game> demo = std::make_shared()
 	}
