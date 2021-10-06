@@ -29,6 +29,7 @@ namespace Mizu
 
 		static void Create(HINSTANCE hInst);
 
+		// TODO pass width and height as params
 		std::shared_ptr<Window> createRenderWindow();
 
 		static void Destroy();

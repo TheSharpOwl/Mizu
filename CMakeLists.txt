@@ -8,7 +8,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory f
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for shared lib (.DLL)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for executables (.EXE)
 
-
 set(HEADERS
  inc/DX12LibPCH.h
  inc/d3dx12.h
@@ -26,21 +25,26 @@ src/Application.cpp
 src/Game.cpp
 )
 
-set(DEMO
- inc/CubeDemo.hpp
- src/CubeDemo.cpp
- )
 
+set(GAME_HEADERS
+inc/CubeDemo.hpp
+)
+
+set(GAME_SOURCES
+src/CubeDemo.cpp
+)
 
 include_directories(inc)
 
 add_library(Engine STATIC ${HEADERS} ${SOURCES})
+add_library(DEMO_LIB STATIC ${GAME_HEADERS} ${GAME_SOURCES})
+
 
 add_executable(Mizu WIN32 main.cpp)
 add_executable(CubeDemo WIN32 demo_main.cpp)
 
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CudeDemo)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CubeDemo)
 
 
 add_definitions(-D_UNICODE)
@@ -57,7 +61,7 @@ D3DCompiler.lib
 )
 
 target_link_libraries(CubeDemo
-Demo
+DEMO_LIB
 Engine
 d3d12.lib
 dxguid.lib

@@ -9,6 +9,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
+
+	class Game;
+
 	class Window
 	{
 	public:
@@ -29,6 +32,7 @@ namespace Mizu
 
 		void Render();
 
+		void SetGamePtr(std::shared_ptr<Game> game);
 
 		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -66,5 +70,8 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
 		UINT m_RTVDescriptorSize;
+
+
+		std::shared_ptr<Game> m_game;
 	};
 }

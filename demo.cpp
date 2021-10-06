@@ -5,14 +5,12 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 {
 	Mizu::CubeDemo demo(1280, 720,false);
 
-	demo.Initialize();
+	demo.Initialize(hInstance);
 	demo.LoadContent();
 
-	Mizu::Application::Create(hInstance);
+	//Mizu::Application::Create(hInstance);
 	Mizu::Application& app = Mizu::Application::Get();
-	{
-		//std::shared_ptr<Mizu::Game> demo = std::make_shared()
-	}
+
 
 	// to print for example
 	BOOL bRet;

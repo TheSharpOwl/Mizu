@@ -2,6 +2,7 @@
 #include "Window.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
+#include "Game.hpp"
 #include <algorithm>
 
 using namespace Microsoft::WRL;
@@ -248,6 +249,11 @@ void Window::Render()
 		commandQueue->WaitForFenceValue(m_frameFenceValues[m_currentBackBufferIndex]);
 		m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	}
+}
+
+void Mizu::Window::SetGamePtr(std::shared_ptr<Game> game)
+{
+	m_game = game;
 }
 
 

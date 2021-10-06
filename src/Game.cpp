@@ -15,7 +15,8 @@ Game::Game(const std::wstring& name, int width, int height, bool vSync) :
 
 Game::~Game()
 {
-	// TODO
+	// TODO try calling destroy here
+	assert(!m_window && "call Game::Destroy before destroying the object");
 }
 
 
@@ -26,7 +27,14 @@ bool Game::Initialize()
 		MessageBoxA(NULL, "Failed to verify DirectX math support", "Error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	// TODO create window
+
+	// TODO do it like this
+	//m_window = Application::Get().createRenderWindow(m_name, m_width, m_height, m_vsync);
+
+	m_window = Application::Get().createRenderWindow();
+	m_window->SetGamePtr(shared_from_this());
+	m_window->ShowWindow();
+
 	return true;
 }
 
@@ -48,5 +56,5 @@ void Game::OnResize(Mizu::ReizeEventArgs& e)
 
 void Game::OnWindowDestroy()
 {
-
+	UnloadContent();
 }

@@ -8,8 +8,9 @@ namespace Mizu
 {
 	class Window;
 
-	class Game
+	class Game : public std::enable_shared_from_this<Game>
 	{
+
 	public:
 
 		Game(const std::wstring& name, int width, int height, bool vSync);
@@ -25,7 +26,7 @@ namespace Mizu
 
 		virtual bool LoadContent() = 0;
 
-		virtual bool UnloadContent() = 0;
+		virtual void UnloadContent() = 0;
 
 		virtual void Reset();
 
@@ -49,5 +50,7 @@ namespace Mizu
 		int m_width;
 		int m_height;
 		bool m_vsync;
+
+		bool m_contentLoaded = false;
 	};
 }

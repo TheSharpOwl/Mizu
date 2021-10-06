@@ -40,25 +40,12 @@ static WORD Indecies[36] =
 };
 
 CubeDemo::CubeDemo(int width, int height, bool vsync) :
-	m_width(width), m_height(height), m_vsync(vsync), m_scissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
+	Game(L"CubeDemo", width, height, vsync)
 	, m_viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
 	, m_fov(45.0)
 	, m_contentLoaded(false)
 {
 
-}
-
-bool CubeDemo::Initialize(HINSTANCE hInst)
-{
-	if (DirectX::XMVerifyCPUSupport() == false)
-	{
-		MessageBoxA(NULL, "Failed to verify DirectX math support", "Error", MB_OK | MB_ICONERROR);
-		return false;
-	}
-
-	// TODO might need to put a pointer to this demo in the window later (for controls of mouse and keyboard for example)
-
-	return true;
 }
 
 bool CubeDemo::LoadContent()
@@ -183,14 +170,14 @@ bool CubeDemo::LoadContent()
 
 void CubeDemo::OnResize(ReizeEventArgs& e)
 {
-	if (m_width == e.Width && m_height == e.Height)
+	if (m_width == e.width && m_height == e.height)
 		return;
 
-	m_width = e.Width;
-	m_height = e.Height;
-	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.Width), static_cast<float>(e.Height));
+	m_width = e.width;
+	m_height = e.height;
+	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.width), static_cast<float>(e.height));
 
-	ResizeDepthBuffer(e.Width, e.Height);
+	ResizeDepthBuffer(e.width, e.height);
 }
 
 void CubeDemo::OnUpdate(UpdateEventArgs& e)
@@ -377,4 +364,9 @@ void CubeDemo::ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DE
 void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth) // depth = 1.0f default
 {
 	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr);
+}
+
+void CubeDemo::UnloadContent()
+{
+	m_contentLoaded = false;
 }

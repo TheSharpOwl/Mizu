@@ -1,6 +1,8 @@
 #pragma once
 #include "DX12LibPCH.h"
+#include "Game.hpp"
 #include "Window.hpp"
+
 
 namespace Mizu
 {
@@ -8,7 +10,7 @@ namespace Mizu
 	struct UpdateEventArgs;
 	struct RenderEventArgs;
 
-	class CubeDemo
+	class CubeDemo : public Game
 	{
 		template<typename T>
 		using cp = Microsoft::WRL::ComPtr<T>;
@@ -16,18 +18,17 @@ namespace Mizu
 
 		CubeDemo(int width, int height, bool vsync);
 
-		bool Initialize(HINSTANCE hInst);
 		bool LoadContent();
 
-
+		void UnloadContent() override;
 
 	protected:
 
-		void OnResize(ReizeEventArgs& e);
+		void OnResize(ReizeEventArgs& e) override;
 
-		void OnUpdate(UpdateEventArgs& e);
+		void OnUpdate(UpdateEventArgs& e) override;
 
-		void OnRender(RenderEventArgs& e);
+		void OnRender(RenderEventArgs& e) override;
 
 	private:
 	
@@ -47,10 +48,6 @@ namespace Mizu
 
 		void ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth = 1.0f);
 
-		int m_width;
-		int m_height;
-		bool m_vsync;
-
 		// vertex buffer for our cube
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_vertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
@@ -63,11 +60,11 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_piplineState;
 
-		bool m_contentLoaded = false;
-
 		D3D12_VIEWPORT m_viewport;
 
 		float m_fov;
+
+		bool m_contentLoaded = false;
 
 		DirectX::XMMATRIX m_modelMatrix;
 		DirectX::XMMATRIX m_viewMatrix;
