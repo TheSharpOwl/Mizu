@@ -1,9 +1,11 @@
-#include "DX12LibPCH.h"
-#include "..\inc\Application.hpp"
 #include "Application.hpp"
+
+#include "DX12LibPCH.h"
+#include "winuser.h"
+
 #include "CommandQueue.hpp"
 #include "Window.hpp"
-#include "winuser.h"
+#include "Game.hpp"
 
 using namespace Mizu;
 using namespace Microsoft::WRL;
@@ -141,6 +143,38 @@ std::shared_ptr<Window> Mizu::Application::createRenderWindow()
 	isReady = true;
 
 	return m_window;
+}
+
+int Mizu::Application::Run(std::shared_ptr<Game> game)
+{
+	if (!game->Initialize()) return 1;
+	if (!game->LoadContent()) return 2;
+	
+	// to print for example
+	BOOL bRet;
+	MSG msg;
+	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (bRet == -1)
+		{
+			OutputDebugStringW(L"ERROR\n");
+			break;
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	// TODO check these out
+	// 
+	//game->UnloadContent();
+	//game->Destroy();
+
+	Flush();
+
+	return static_cast<int>(msg.wParam);
 }
 
 void Application::Destroy() // static

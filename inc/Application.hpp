@@ -10,8 +10,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
-
 	class Window;
+	class Game;
+
 	class Application
 	{
 	public:
@@ -31,6 +32,8 @@ namespace Mizu
 
 		// TODO pass width and height as params
 		std::shared_ptr<Window> createRenderWindow();
+
+		int Run(std::shared_ptr<Game> game);
 
 		static void Destroy();
 
