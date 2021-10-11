@@ -183,6 +183,7 @@ shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE ty
 	}
 }
 
+// TODO this should be removed probably just misleading (we should get the command list from the command queue)
 Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 {
 	switch (type)

@@ -53,7 +53,7 @@ bool CubeDemo::LoadContent()
 	auto device = Application::Get().GetDevice();
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 	// TODO next time : make the command lists 3 because now we need copy one and the one we have already is only direct 
-	auto commandList = Application::Get().GetCommandList();
+	auto commandList = commandQueue->GetCommandList();
 
 	// Uploading vertex buffer data
 	cp<ID3D12Resource> intermediateVertexBuffer;
