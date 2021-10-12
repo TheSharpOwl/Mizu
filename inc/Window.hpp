@@ -24,7 +24,7 @@ namespace Mizu
 
 		UINT GetCurrentBackBufferIndex() const;
 
-		void Present(const UINT syncInterval, const UINT presentFlags) const;
+		void Present(const UINT syncInterval, const UINT presentFlags);
 
 		void Resize(uint32_t newWidth, uint32_t newHeight);
 
@@ -72,6 +72,6 @@ namespace Mizu
 		UINT m_RTVDescriptorSize;
 
 
-		std::shared_ptr<Game> m_game;
+		std::weak_ptr<Game> m_game;
 	};
 }

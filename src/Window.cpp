@@ -89,9 +89,10 @@ UINT Window::GetCurrentBackBufferIndex() const
 	return m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void Window::Present(const UINT syncInterval, const UINT presentFlags) const
+void Window::Present(const UINT syncInterval, const UINT presentFlags)
 {
 	ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
+	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
 void Window::ShowWindow()
@@ -219,35 +220,11 @@ void Window::Update()
 
 void Window::Render()
 {
-	auto& backBuffer = m_backBuffers[m_currentBackBufferIndex];
-
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = Application::Get().GetCommandList();
-
-	// clearing the render target
+	if (auto game = m_game.lock())
 	{
-
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		commandList->ResourceBarrier(1, &barrier);
-
-		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_currentBackBufferIndex, m_RTVDescriptorSize);
-		commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
-	}
-	// presenting
-	{
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		commandList->ResourceBarrier(1, &barrier);
-
-		m_frameFenceValues[m_currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
-		// TODO add vSync on/off feature
-		bool vSync = true;
-		UINT syncInterval = vSync ? 1 : 0;
-		UINT presentFlags = Application::Get().IsTearingSupported() && !vSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-		ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
-		commandQueue->WaitForFenceValue(m_frameFenceValues[m_currentBackBufferIndex]);
-		m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+		// TODO fix and pass correct args
+		RenderEventArgs r(0.f, 0.f);
+		game->OnRender(r);
 	}
 }
 

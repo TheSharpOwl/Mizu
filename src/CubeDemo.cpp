@@ -1,5 +1,8 @@
 ﻿#include <windows.h>
 #include "directxmath.h"
+
+#include <string>
+
 #include "..\inc\CubeDemo.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
@@ -42,6 +45,7 @@ static WORD Indecies[36] =
 CubeDemo::CubeDemo(int width, int height, bool vsync) :
 	Game(L"CubeDemo", width, height, vsync)
 	, m_viewport(CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)))
+	, m_scissorRect(CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX))
 	, m_fov(45.0)
 	, m_contentLoaded(false)
 {
@@ -165,7 +169,7 @@ bool CubeDemo::LoadContent()
 	ResizeDepthBuffer(m_width, m_height);
 
 
-	return false;
+	return true;
 }
 
 void CubeDemo::OnResize(ReizeEventArgs& e)

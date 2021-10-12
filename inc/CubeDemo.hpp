@@ -32,7 +32,7 @@ namespace Mizu
 		void OnRender(RenderEventArgs& e) override;
 
 	private:
-	
+		
 		void UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 			ID3D12Resource** ppDestinationRes,
 			ID3D12Resource** ppIntermediateRes,

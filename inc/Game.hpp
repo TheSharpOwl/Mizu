@@ -32,6 +32,8 @@ namespace Mizu
 
 	protected:
 
+		friend class Window;
+
 		virtual void OnUpdate(UpdateEventArgs& e) = 0;
 
 		virtual void OnRender(RenderEventArgs& e) = 0;
