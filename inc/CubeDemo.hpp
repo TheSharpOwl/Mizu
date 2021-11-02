@@ -59,7 +59,7 @@ namespace Mizu
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthBuffer;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
-		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_piplineState;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 
 		D3D12_VIEWPORT m_viewport;
 

@@ -158,7 +158,7 @@ bool CubeDemo::LoadContent()
 		sizeof(PipelineStateStream), &pipelineStateStream
 	};
 
-	ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_piplineState)));
+	ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_pipelineState)));
 
 	auto fenceValue = commandQueue->ExecuteCommandList(commandList);
 	commandQueue->WaitForFenceValue(fenceValue);
@@ -216,7 +216,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 	m_viewMatrix = XMMatrixLookAtLH(eyePos, focusPoint, upDirection);
 
 	// Update the projection matrix
-	float aspectRatio = m_width / static_cast<float>(m_height);
+	float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
 
 }
@@ -237,13 +237,13 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 	{
 		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-		FLOAT clearColor[] = { 0.4, 0.6f, 0.9f, 1.0f };
+		FLOAT clearColor[] = { 0.9, 0.9f, 0.9f, 1.0f };
 
 		ClearRTV(commandList, rtv, clearColor);
 		ClearDepth(commandList, dsv);
 	}
 
-	commandList->SetPipelineState(m_piplineState.Get());
+	commandList->SetPipelineState(m_pipelineState.Get());
 	commandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -268,9 +268,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 		m_fenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
 
 		UINT presentFlags = Application::Get().IsTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-		window->Present((m_vsync ? 1 : 0), presentFlags);
-		currentBackBufferIndex = window->GetCurrentBackBufferIndex();
-
+		currentBackBufferIndex = window->Present((m_vsync ? 1 : 0), presentFlags);
 		commandQueue->WaitForFenceValue(m_fenceValues[currentBackBufferIndex]);
 	}
 }

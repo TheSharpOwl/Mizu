@@ -22,9 +22,9 @@ namespace Mizu
 
 		static bool CheckTearingSupport();
 
-		UINT GetCurrentBackBufferIndex() const;
+		UINT GetCurrentBackBufferIndex();
 
-		void Present(const UINT syncInterval, const UINT presentFlags);
+		UINT Present(const UINT syncInterval, const UINT presentFlags);
 
 		void Resize(uint32_t newWidth, uint32_t newHeight);
 

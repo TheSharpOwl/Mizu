@@ -84,15 +84,15 @@ bool Window::CheckTearingSupport()
 	return allowTearing == TRUE;
 }
 
-UINT Window::GetCurrentBackBufferIndex() const
+UINT Window::GetCurrentBackBufferIndex()
 {
-	return m_swapChain->GetCurrentBackBufferIndex();
+	return m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void Window::Present(const UINT syncInterval, const UINT presentFlags)
+UINT Window::Present(const UINT syncInterval, const UINT presentFlags)
 {
 	ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
-	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+	return m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
 void Window::ShowWindow()
@@ -193,10 +193,12 @@ void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 
 void Window::Update()
 {
+
 	static uint64_t frameCounter = 0;
 	static double secondsPassed = 0;
 	static std::chrono::high_resolution_clock clock;
 	static auto t0 = clock.now();
+	static double totalPassed = 0;
 
 	frameCounter++;
 	auto t1 = clock.now();
@@ -205,16 +207,32 @@ void Window::Update()
 
 	secondsPassed += delta.count() * 1e-9;
 
+	if (auto game = m_game.lock())
+	{
+		// TODO next time:
+		// 
+		// 1. fix and pass correct args and fix total time
+		// 2. fix position of the cube to be in the middle
+		// 3. fix rendering args
+		// 4. fix fps
+		// 5. fix the destructors
+
+		UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
+		game->OnUpdate(updateEventArgs);
+	}
+
 	if (secondsPassed > 1.0)
 	{
 		wchar_t buffer[500];
 		auto fps = frameCounter / secondsPassed;
 		swprintf_s(buffer, 500, L"FPS: %f\n", fps);
 		OutputDebugString(buffer);
-
+		totalPassed += secondsPassed;
 		frameCounter = 0;
 		secondsPassed = 0.0;
 	}
+
+
 }
 
 
