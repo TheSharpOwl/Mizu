@@ -29,9 +29,9 @@ bool Game::Initialize()
 	}
 
 	// TODO do it like this
-	//m_window = Application::Get().createRenderWindow(m_name, m_width, m_height, m_vsync);
+	m_window = Application::Get().createRenderWindow(m_name, m_width, m_height);
 
-	m_window = Application::Get().createRenderWindow();
+	//m_window = Application::Get().createRenderWindow();
 	m_window->SetGamePtr(shared_from_this());
 	m_window->ShowWindow();
 

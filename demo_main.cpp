@@ -5,7 +5,7 @@ int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdL
 {
 
 	Mizu::Application::Create(hInstance);
-	auto demo = std::make_shared<Mizu::CubeDemo>(1280, 720,false);
+	auto demo = std::make_shared<Mizu::CubeDemo>(1280, 720, false);
 	Mizu::Application& app = Mizu::Application::Get();
 
 	auto ret = app.Run(demo);

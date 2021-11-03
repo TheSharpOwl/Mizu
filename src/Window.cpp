@@ -205,7 +205,7 @@ void Window::Update()
 		// TODO next time:
 		// 
 		// 1. fix and pass correct args and fix total time (done)
-		// 2. fix position of the cube to be in the middle
+		// 2. fix position of the cube to be in the middle (done)
 		// 3. fix rendering args
 		// 4. fix fps (done)
 		// 5. fix the destructors

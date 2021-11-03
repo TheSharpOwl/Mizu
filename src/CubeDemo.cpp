@@ -23,16 +23,15 @@ struct VertexPosColor
 static VertexPosColor Vertices[8] = {
 	{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f) }, // 0
 	{ XMFLOAT3(-1.0f,  1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f) }, // 1
-	{ XMFLOAT3(1.0f,  1.0f, -1.0f),  XMFLOAT3(1.0f, 1.0f, 0.0f) }, // 2
-	{ XMFLOAT3(1.0f, -1.0f, -1.0f),  XMFLOAT3(1.0f, 0.0f, 0.0f) }, // 3
+	{ XMFLOAT3(1.0f,  1.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 0.0f) }, // 2
+	{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f) }, // 3
 	{ XMFLOAT3(-1.0f, -1.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f) }, // 4
 	{ XMFLOAT3(-1.0f,  1.0f,  1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f) }, // 5
-	{ XMFLOAT3(1.0f,  1.0f,  1.0f),  XMFLOAT3(1.0f, 1.0f, 1.0f) }, // 6
-	{ XMFLOAT3(1.0f, -1.0f,  1.0f),  XMFLOAT3(1.0f, 0.0f, 1.0f) }  // 7
+	{ XMFLOAT3(1.0f,  1.0f,  1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f) }, // 6
+	{ XMFLOAT3(1.0f, -1.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f) }  // 7
 };
 
-
-static WORD Indecies[36] =
+static WORD Indicies[36] =
 {
 	0, 1, 2, 0, 2, 3,
 	4, 6, 5, 4, 7, 6,
@@ -70,12 +69,12 @@ bool CubeDemo::LoadContent()
 
 	// Uploading index buffer data
 	cp<ID3D12Resource> intermediateIndexBuffer;
-	UpdateBufferResource(commandList, &m_indexBuffer, &intermediateIndexBuffer, _countof(Indecies), sizeof(WORD), Indecies);
+	UpdateBufferResource(commandList, &m_indexBuffer, &intermediateIndexBuffer, _countof(Indicies), sizeof(WORD), Indicies);
 
 	//Creating the index buffer view
 	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
 	m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
-	m_indexBufferView.SizeInBytes = sizeof(Indecies);
+	m_indexBufferView.SizeInBytes = sizeof(Indicies);
 
 	// creation of the desc heap for the depth stencil view
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -116,7 +115,7 @@ bool CubeDemo::LoadContent()
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 
 	CD3DX12_ROOT_PARAMETER1 rootParamters[1];
-	// TODO DELETE first parameter was sizeof(XMatrix)/4
+	// TODO DELETE first parameter was sizeof(XMatrix)/4 (same number)
 	rootParamters[0].InitAsConstants(16u, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootsSignatureDescription;
@@ -186,7 +185,6 @@ void CubeDemo::OnResize(ReizeEventArgs& e)
 
 void CubeDemo::OnUpdate(UpdateEventArgs& e)
 {
-	// Updating the model matrix
 	float angle = static_cast<float>(e.totalTime * 90.0);
 	const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
 	m_modelMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
@@ -198,7 +196,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 	m_viewMatrix = XMMatrixLookAtLH(eyePos, focusPoint, upDirection);
 
 	// Update the projection matrix
-	float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+	float aspectRatio = m_width / static_cast<float>(m_height);
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
 }
 
@@ -218,7 +216,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 	{
 		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-		FLOAT clearColor[] = { 0.9, 0.9f, 0.9f, 1.0f };
+		FLOAT clearColor[] = { 0.7, 0.6f, 0.9f, 1.0f };
 
 		ClearRTV(commandList, rtv, clearColor);
 		ClearDepth(commandList, dsv);
@@ -241,7 +239,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 	mvpMatrix = XMMatrixMultiply(mvpMatrix, m_projectionMatrix);
 	commandList->SetGraphicsRoot32BitConstants(0, sizeof(XMMATRIX) / 4, &mvpMatrix, 0);
 
-	commandList->DrawIndexedInstanced(_countof(Indecies), 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(_countof(Indicies), 1, 0, 0, 0);
 
 	// presenting
 	{

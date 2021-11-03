@@ -24,14 +24,10 @@ namespace Mizu
 		Application(const Application& copy) = delete;
 		Application& operator=(const Application& other) = delete;
 
-
-		uint32_t Width = 1080;
-		uint32_t Height = 720;
-
 		static void Create(HINSTANCE hInst);
 
 		// TODO pass width and height as params
-		std::shared_ptr<Window> createRenderWindow();
+		std::shared_ptr<Window> createRenderWindow(const std::wstring& appName, int width, int height);
 
 		int Run(std::shared_ptr<Game> game);
 
