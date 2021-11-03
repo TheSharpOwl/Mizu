@@ -136,7 +136,7 @@ ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command
 	scDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	scDesc.Flags = CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-	// get the comptr
+	// get the COM ptr
 	auto commandQueue = command_queue_sptr->GetCommandQueue();
 
 	ThrowIfFailed(f4->CreateSwapChainForHwnd(commandQueue.Get(), m_hWnd, &scDesc, nullptr, nullptr, &swapChain1));
@@ -200,26 +200,26 @@ void Window::Update()
 	static auto t0 = clock.now();
 	static double totalPassed = 0;
 
-	frameCounter++;
-	auto t1 = clock.now();
-	auto delta = t1 - t0;
-	t0 = t1;
-
-	secondsPassed += delta.count() * 1e-9;
-
 	if (auto game = m_game.lock())
 	{
 		// TODO next time:
 		// 
-		// 1. fix and pass correct args and fix total time
+		// 1. fix and pass correct args and fix total time (done)
 		// 2. fix position of the cube to be in the middle
 		// 3. fix rendering args
-		// 4. fix fps
+		// 4. fix fps (done)
 		// 5. fix the destructors
 
 		UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
 		game->OnUpdate(updateEventArgs);
 	}
+
+	frameCounter++;
+	auto t1 = clock.now();
+	auto delta = t1 - t0;
+	t0 = t1;
+	secondsPassed += delta.count() * 1e-9;
+
 
 	if (secondsPassed > 1.0)
 	{

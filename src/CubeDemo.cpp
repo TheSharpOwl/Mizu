@@ -186,24 +186,6 @@ void CubeDemo::OnResize(ReizeEventArgs& e)
 
 void CubeDemo::OnUpdate(UpdateEventArgs& e)
 {
-	static uint64_t frameCount = 0;
-	static double totalTime = 0.0;
-	
-	totalTime += e.elapsedTime;
-	frameCount++;
-
-	if (totalTime > 1.0)
-	{
-		double fps = frameCount / totalTime;
-
-		char buffer[512];
-		sprintf(buffer, "FPS: %lf\n", fps);
-		OutputDebugStringA(buffer);
-
-		frameCount = 0;
-		totalTime = 0.0;
-	}
-
 	// Updating the model matrix
 	float angle = static_cast<float>(e.totalTime * 90.0);
 	const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
@@ -218,7 +200,6 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 	// Update the projection matrix
 	float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
-
 }
 
 void CubeDemo::OnRender(RenderEventArgs& e)
