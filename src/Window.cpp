@@ -208,7 +208,9 @@ void Window::Update()
 		// 2. fix position of the cube to be in the middle (done)
 		// 3. fix rendering args
 		// 4. fix fps (done)
-		// 5. fix the destructors
+		// 5. fix the destructors (done)
+		// 6. add unordered_map for windows in application
+		// 7. fix exception when making window bigger for mat multiplication
 
 		UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
 		game->OnUpdate(updateEventArgs);

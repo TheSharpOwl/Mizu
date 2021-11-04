@@ -15,8 +15,10 @@ Game::Game(const std::wstring& name, int width, int height, bool vSync) :
 
 Game::~Game()
 {
-	// TODO try calling destroy here
-	assert(!m_window && "call Game::Destroy before destroying the object");
+	assert(!m_contentLoaded && "Content should be unloaded before destroying game object");
+	assert(m_window.use_count() == 1 && "There should be only m_window pointing to the window object");
+	Application::Get().DestroyWindow(m_window);
+	m_window.reset();
 }
 
 
@@ -43,8 +45,6 @@ bool Game::Initialize()
 void Game::Reset()
 {
 	Mizu::Application::Get().DestroyWindow(m_window);
-	m_window.reset();
-
 }
 
 

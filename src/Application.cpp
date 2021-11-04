@@ -169,7 +169,7 @@ int Mizu::Application::Run(std::shared_ptr<Game> game)
 
 	// TODO check these out
 	// 
-	//game->UnloadContent();
+	game->UnloadContent();
 	//game->Destroy();
 
 	Flush();
@@ -184,7 +184,7 @@ void Application::Destroy() // static
 
 void Mizu::Application::DestroyWindow(std::shared_ptr<Window> window)
 {
-	// TODO
+	m_window.reset();
 }
 
 Application& Application::Get() // static
@@ -344,4 +344,6 @@ void Mizu::Application::Close()
 	m_directCommandQueue->CloseHandle();
 	m_copyCommandQueue->CloseHandle();
 	m_computeCommandQueue->CloseHandle();
+
+	m_window.reset();
 }
