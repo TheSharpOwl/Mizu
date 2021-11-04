@@ -30,6 +30,8 @@ namespace Mizu
 
 		virtual void Reset();
 
+		auto getWindow() { return m_window; }
+
 	protected:
 
 		friend class Window;
@@ -38,7 +40,7 @@ namespace Mizu
 
 		virtual void OnRender(RenderEventArgs& e) = 0;
 
-		virtual void OnResize(ReizeEventArgs& e);
+		virtual void OnResize(ResizeEventArgs& e);
 
 		virtual void OnWindowDestroy();
 

@@ -6,7 +6,7 @@
 
 namespace Mizu
 {
-	struct ReizeEventArgs;
+	struct ResizeEventArgs;
 	struct UpdateEventArgs;
 	struct RenderEventArgs;
 
@@ -25,7 +25,7 @@ namespace Mizu
 
 	protected:
 
-		void OnResize(ReizeEventArgs& e) override;
+		void OnResize(ResizeEventArgs& e) override;
 
 		void OnUpdate(UpdateEventArgs& e) override;
 

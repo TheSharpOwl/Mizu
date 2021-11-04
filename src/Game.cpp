@@ -17,7 +17,6 @@ Game::~Game()
 {
 	assert(!m_contentLoaded && "Content should be unloaded before destroying game object");
 	assert(m_window.use_count() == 1 && "There should be only m_window pointing to the window object");
-	Application::Get().DestroyWindow(m_window->getName());
 	m_window.reset();
 }
 
@@ -47,12 +46,12 @@ void Game::Reset()
 }
 
 
-void Game::OnResize(Mizu::ReizeEventArgs& e)
+void Game::OnResize(Mizu::ResizeEventArgs& e)
 {
 	m_width = e.width;
 	m_height = e.height;
 }
-
+// TODO use this later instead of manually doing it
 void Game::OnWindowDestroy()
 {
 	UnloadContent();

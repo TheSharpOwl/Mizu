@@ -171,7 +171,7 @@ bool CubeDemo::LoadContent()
 	return true;
 }
 
-void CubeDemo::OnResize(ReizeEventArgs& e)
+void CubeDemo::OnResize(ResizeEventArgs& e)
 {
 	if (m_width == e.width && m_height == e.height)
 		return;

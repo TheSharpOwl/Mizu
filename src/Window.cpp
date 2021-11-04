@@ -3,6 +3,7 @@
 #include "Application.hpp"
 #include "CommandQueue.hpp"
 #include "Game.hpp"
+
 #include <algorithm>
 
 using namespace Microsoft::WRL;
@@ -182,7 +183,7 @@ void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 	for (uint32_t i = 0; i < numberOfBuffers; i++)
 	{
 		m_backBuffers[i].Reset();
-		m_frameFenceValues[i] = m_frameFenceValues[m_currentBackBufferIndex];
+		//m_frameFenceValues[i] = m_frameFenceValues[m_currentBackBufferIndex];
 	}
 
 
@@ -192,6 +193,11 @@ void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 
 	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	UpdateRenderTargetViews();
+
+	if (auto pGame = m_game.lock())
+	{
+		pGame->OnResize(ResizeEventArgs(newWidth, newHeight));
+	}
 }
 
 void Window::Update()

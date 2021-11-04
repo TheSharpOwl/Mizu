@@ -36,9 +36,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			switch (wParam)
 			{
-				//case 'V':
-				//	g_VSync = !g_VSync;
-				//	break;
+			//case 'V':
+			//	g_VSync = !g_VSync;
+			//	break;
 			case VK_ESCAPE:
 				::PostQuitMessage(0);
 				break;
@@ -175,10 +175,9 @@ int Mizu::Application::Run(std::shared_ptr<Game> game)
 		}
 	}
 
-	// TODO check these out
-	// 
+	// TODO notify game about window destruction
 	game->UnloadContent();
-	//game->Destroy();
+	DestroyWindow(game->getWindow()->getName());
 
 	Flush();
 

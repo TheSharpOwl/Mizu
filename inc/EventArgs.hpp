@@ -4,10 +4,10 @@ namespace Mizu
 {
 	struct EventArgs {};
 
-	struct ReizeEventArgs : public EventArgs
+	struct ResizeEventArgs : public EventArgs
 	{
 		typedef EventArgs base;
-		ReizeEventArgs(int width, int height) :
+		ResizeEventArgs(int width, int height) :
 			width(width),
 			height(height)
 		{}
