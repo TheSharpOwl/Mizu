@@ -206,10 +206,9 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 	auto commandList = commandQueue->GetCommandList();
 	// no need to reset the command list (check CommandQueue::GetCommandList function above)
 
-	auto window = Application::Get().getWindow();
-	UINT currentBackBufferIndex = window->GetCurrentBackBufferIndex();
-	auto backBuffer = window->getCurrentBackBuffer();
-	auto rtv = window->GetRTV();
+	UINT currentBackBufferIndex = m_window->GetCurrentBackBufferIndex();
+	auto backBuffer = m_window->getCurrentBackBuffer();
+	auto rtv = m_window->GetRTV();
 	auto dsv = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
 
 	// Clearing render targets
@@ -247,7 +246,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 		m_fenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
 
 		UINT presentFlags = Application::Get().IsTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-		currentBackBufferIndex = window->Present((m_vsync ? 1 : 0), presentFlags);
+		currentBackBufferIndex = m_window->Present((m_vsync ? 1 : 0), presentFlags);
 		commandQueue->WaitForFenceValue(m_fenceValues[currentBackBufferIndex]);
 	}
 }

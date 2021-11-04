@@ -19,11 +19,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (isReady)
 	{
+		std::shared_ptr<Window> window = Application::Get().getWindow(hWnd);
+		assert(window && "there is no window with this hwnd");
+
 		switch (message)
 		{
 		case WM_PAINT:
-			App->m_window->Update();
-			App->m_window->Render();
+			window->Update();
+			window->Render();
 			break;
 
 		case WM_SYSKEYDOWN:
@@ -61,7 +64,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int width = clientRect.right - clientRect.left;
 			int height = clientRect.bottom - clientRect.top;
 
-			App->m_window->Resize(width, height);
+			window->Resize(width, height);
 		}
 		break;
 
@@ -83,8 +86,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 Application::Application(HINSTANCE hInst) :
 	m_hInstance(hInst),
 	m_IsTearingSupported(false)
-{
-	
+{	
 	// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 	// Using this awareness context allows the client area of the window 
 	// to achieve 100% scaling while still allowing non-client window content to 
@@ -98,14 +100,12 @@ Application::Application(HINSTANCE hInst) :
 	debugInterface->EnableDebugLayer();
 #endif
 
-	// register the window class
-
 	WNDCLASSEXW windowClass = { 0 };
 
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
 	windowClass.lpfnWndProc = &WndProc;
-	windowClass.hInstance = m_hInstance;
+	windowClass.hInstance = hInst;
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hIcon = NULL;
 	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -114,13 +114,15 @@ Application::Application(HINSTANCE hInst) :
 	windowClass.hIconSm = NULL;
 
 	static HRESULT hl = ::RegisterClassExW(&windowClass);
-	assert(SUCCEEDED(hl));
+	if (!hl)
+	{
+		MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
+	}
 	// get the adapter
 	m_adapter = GetAdapter();
 	// make a device
 	m_device = CreateDevice();
-	// create the command queue
-	// TODO create the other 2 types of command queues here
+	// create the command queues
 	m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
 	m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
@@ -128,21 +130,27 @@ Application::Application(HINSTANCE hInst) :
 }
 void Application::Create(HINSTANCE hInst) // static 
 {
+	// make sure we have an app singleton already
 	if (!App)
 	{
 		App = new Application(hInst);
 	}
-	
 }
 
-std::shared_ptr<Window> Mizu::Application::createRenderWindow(const std::wstring& appName, int width, int height)
+std::shared_ptr<Window> Mizu::Application::createRenderWindow(const std::wstring& windowName, int width, int height)
 {
 
 	// create the window
-	App->m_window = make_shared<Window>(windowClassName, appName.c_str(), m_hInstance, width, height);
+	// TODO maybe we can return the existing one ?
+	assert(m_windowsNameMap.find(windowName) == m_windowsNameMap.end() && "A window with the same name already exists");
+
+	auto window = make_shared<Window>(windowClassName, windowName.c_str(), m_hInstance, width, height);
+	m_windowsNameMap[windowName] = window;
+	m_windowsHwndMap[window->getHWnd()] = window;
+
 	isReady = true;
 
-	return m_window;
+	return window;
 }
 
 int Mizu::Application::Run(std::shared_ptr<Game> game)
@@ -182,9 +190,11 @@ void Application::Destroy() // static
 	// TODO add notification to game + window destruction
 }
 
-void Mizu::Application::DestroyWindow(std::shared_ptr<Window> window)
+void Mizu::Application::DestroyWindow(const std::wstring& name)
 {
-	m_window.reset();
+	auto window = getWindow(name);
+	m_windowsHwndMap.erase(window->getHWnd());
+	m_windowsNameMap.erase(name);
 }
 
 Application& Application::Get() // static
@@ -345,5 +355,6 @@ void Mizu::Application::Close()
 	m_copyCommandQueue->CloseHandle();
 	m_computeCommandQueue->CloseHandle();
 
-	m_window.reset();
+	m_windowsNameMap.clear();
+	m_windowsHwndMap.clear();
 }

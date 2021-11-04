@@ -17,7 +17,7 @@ Game::~Game()
 {
 	assert(!m_contentLoaded && "Content should be unloaded before destroying game object");
 	assert(m_window.use_count() == 1 && "There should be only m_window pointing to the window object");
-	Application::Get().DestroyWindow(m_window);
+	Application::Get().DestroyWindow(m_window->getName());
 	m_window.reset();
 }
 
@@ -30,7 +30,6 @@ bool Game::Initialize()
 		return false;
 	}
 
-	// TODO do it like this
 	m_window = Application::Get().createRenderWindow(m_name, m_width, m_height);
 
 	//m_window = Application::Get().createRenderWindow();
@@ -44,7 +43,7 @@ bool Game::Initialize()
 
 void Game::Reset()
 {
-	Mizu::Application::Get().DestroyWindow(m_window);
+	Mizu::Application::Get().DestroyWindow(m_window->getName());
 }
 
 

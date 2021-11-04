@@ -4,6 +4,8 @@
 #include <memory>
 #include <utility>
 
+#include <unordered_map>
+
 class CommandQueue;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -26,14 +28,13 @@ namespace Mizu
 
 		static void Create(HINSTANCE hInst);
 
-		// TODO pass width and height as params
 		std::shared_ptr<Window> createRenderWindow(const std::wstring& appName, int width, int height);
 
 		int Run(std::shared_ptr<Game> game);
 
 		static void Destroy();
 
-		void DestroyWindow(std::shared_ptr<Window> window);
+		void DestroyWindow(const std::wstring& name);
 
 		static Application& Get();
 
@@ -52,7 +53,8 @@ namespace Mizu
 
 		UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
 
-		auto getWindow() -> std::shared_ptr<Window> { return m_window; }
+		auto getWindow(const std::wstring name) -> std::shared_ptr<Window> { auto it = m_windowsNameMap.find(name);  return (it != m_windowsNameMap.end() ? it->second : nullptr); }
+		auto getWindow(HWND hWnd) -> std::shared_ptr<Window> { auto it = m_windowsHwndMap.find(hWnd);  return (it != m_windowsHwndMap.end() ? it->second : nullptr); }
 
 	protected:
 
@@ -72,7 +74,8 @@ namespace Mizu
 		std::shared_ptr<CommandQueue> m_copyCommandQueue;
 		std::shared_ptr<CommandQueue> m_computeCommandQueue;
 
-		std::shared_ptr<Window> m_window;
+		std::unordered_map<std::wstring, std::shared_ptr<Window>> m_windowsNameMap;
+		std::unordered_map<HWND, std::shared_ptr<Window>> m_windowsHwndMap;
 
 		bool m_IsTearingSupported;
 

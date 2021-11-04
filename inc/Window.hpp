@@ -42,6 +42,9 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> getCurrentBackBuffer();
 
+		auto getHWnd() { return m_hWnd; }
+		auto getName() { return m_name; }
+
 	protected:
 
 		void RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName);
@@ -73,5 +76,7 @@ namespace Mizu
 
 
 		std::weak_ptr<Game> m_game;
+
+		std::wstring m_name;
 	};
 }

@@ -28,6 +28,8 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 
 	/*DWORD d = GetLastError();*/ //left in case of debugging an error
 
+	m_name = windowTitle;
+
 	assert(m_hWnd && "Failed To create a window");
 
 	Application& app = Application::Get();
@@ -41,6 +43,7 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 	m_RTVDescriptorSize = descriptorSize;
 
 	UpdateRenderTargetViews();
+
 }
 
 void Window::RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
@@ -209,7 +212,7 @@ void Window::Update()
 		// 3. fix rendering args
 		// 4. fix fps (done)
 		// 5. fix the destructors (done)
-		// 6. add unordered_map for windows in application
+		// 6. add unordered_map for windows in application (done)
 		// 7. fix exception when making window bigger for mat multiplication
 
 		UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
