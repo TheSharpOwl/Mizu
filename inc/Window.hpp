@@ -9,6 +9,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
+
+	class Game;
+
 	class Window
 	{
 	public:
@@ -19,9 +22,9 @@ namespace Mizu
 
 		static bool CheckTearingSupport();
 
-		UINT GetCurrentBackBufferIndex() const;
+		UINT GetCurrentBackBufferIndex();
 
-		void Present(const UINT syncInterval, const UINT presentFlags) const;
+		UINT Present(const UINT syncInterval, const UINT presentFlags);
 
 		void Resize(uint32_t newWidth, uint32_t newHeight);
 
@@ -29,10 +32,18 @@ namespace Mizu
 
 		void Render();
 
+		void SetGamePtr(std::shared_ptr<Game> game);
 
 		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 		void ShowWindow();
+
+		D3D12_CPU_DESCRIPTOR_HANDLE GetRTV() const;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> getCurrentBackBuffer();
+
+		auto getHWnd() { return m_hWnd; }
+		auto getName() { return m_name; }
 
 	protected:
 
@@ -62,5 +73,10 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
 		UINT m_RTVDescriptorSize;
+
+
+		std::weak_ptr<Game> m_game;
+
+		std::wstring m_name;
 	};
 }

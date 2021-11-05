@@ -2,6 +2,8 @@
 #include "Window.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"
+#include "Game.hpp"
+
 #include <algorithm>
 
 using namespace Microsoft::WRL;
@@ -27,6 +29,8 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 
 	/*DWORD d = GetLastError();*/ //left in case of debugging an error
 
+	m_name = windowTitle;
+
 	assert(m_hWnd && "Failed To create a window");
 
 	Application& app = Application::Get();
@@ -40,6 +44,7 @@ Window::Window(const wchar_t* windowClassName, const wchar_t* windowTitle, HINST
 	m_RTVDescriptorSize = descriptorSize;
 
 	UpdateRenderTargetViews();
+
 }
 
 void Window::RegisterWindowClass(HINSTANCE hInstance, const wchar_t* windowClassName)
@@ -83,19 +88,30 @@ bool Window::CheckTearingSupport()
 	return allowTearing == TRUE;
 }
 
-UINT Window::GetCurrentBackBufferIndex() const
+UINT Window::GetCurrentBackBufferIndex()
 {
-	return m_swapChain->GetCurrentBackBufferIndex();
+	return m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void Window::Present(const UINT syncInterval, const UINT presentFlags) const
+UINT Window::Present(const UINT syncInterval, const UINT presentFlags)
 {
 	ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
+	return m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
 void Window::ShowWindow()
 {
 	::ShowWindow(m_hWnd, SW_SHOW);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE Mizu::Window::GetRTV() const
+{
+	return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_currentBackBufferIndex, m_RTVDescriptorSize);
+}
+
+Microsoft::WRL::ComPtr<ID3D12Resource> Mizu::Window::getCurrentBackBuffer()
+{
+	return m_backBuffers[m_currentBackBufferIndex];
 }
 
 ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command_queue_sptr)
@@ -124,7 +140,7 @@ ComPtr<IDXGISwapChain4> Window::CreateSwapChain(shared_ptr<CommandQueue> command
 	scDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	scDesc.Flags = CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-	// get the comptr
+	// get the COM ptr
 	auto commandQueue = command_queue_sptr->GetCommandQueue();
 
 	ThrowIfFailed(f4->CreateSwapChainForHwnd(commandQueue.Get(), m_hWnd, &scDesc, nullptr, nullptr, &swapChain1));
@@ -167,7 +183,7 @@ void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 	for (uint32_t i = 0; i < numberOfBuffers; i++)
 	{
 		m_backBuffers[i].Reset();
-		m_frameFenceValues[i] = m_frameFenceValues[m_currentBackBufferIndex];
+		//m_frameFenceValues[i] = m_frameFenceValues[m_currentBackBufferIndex];
 	}
 
 
@@ -177,21 +193,44 @@ void Window::Resize(uint32_t newWidth, uint32_t newHeight)
 
 	m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 	UpdateRenderTargetViews();
+
+	if (auto pGame = m_game.lock())
+	{
+		pGame->OnResize(ResizeEventArgs(newWidth, newHeight));
+	}
 }
 
 void Window::Update()
 {
+
 	static uint64_t frameCounter = 0;
 	static double secondsPassed = 0;
 	static std::chrono::high_resolution_clock clock;
 	static auto t0 = clock.now();
+	static double totalPassed = 0;
+
+	if (auto game = m_game.lock())
+	{
+		// TODO next time:
+		// 
+		// 1. fix and pass correct args and fix total time (done)
+		// 2. fix position of the cube to be in the middle (done)
+		// 3. fix rendering args
+		// 4. fix fps (done)
+		// 5. fix the destructors (done)
+		// 6. add unordered_map for windows in application (done)
+		// 7. fix exception when making window bigger for mat multiplication
+
+		UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
+		game->OnUpdate(updateEventArgs);
+	}
 
 	frameCounter++;
 	auto t1 = clock.now();
 	auto delta = t1 - t0;
 	t0 = t1;
-
 	secondsPassed += delta.count() * 1e-9;
+
 
 	if (secondsPassed > 1.0)
 	{
@@ -199,45 +238,28 @@ void Window::Update()
 		auto fps = frameCounter / secondsPassed;
 		swprintf_s(buffer, 500, L"FPS: %f\n", fps);
 		OutputDebugString(buffer);
-
+		totalPassed += secondsPassed;
 		frameCounter = 0;
 		secondsPassed = 0.0;
 	}
+
+
 }
 
 
 void Window::Render()
 {
-	auto& backBuffer = m_backBuffers[m_currentBackBufferIndex];
-
-	auto commandQueue = Application::Get().GetCommandQueue();
-	auto commandList = Application::Get().GetCommandList();
-
-	// clearing the render target
+	if (auto game = m_game.lock())
 	{
-
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		commandList->ResourceBarrier(1, &barrier);
-
-		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtv(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_currentBackBufferIndex, m_RTVDescriptorSize);
-		commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
+		// TODO fix and pass correct args
+		RenderEventArgs r(0.f, 0.f);
+		game->OnRender(r);
 	}
-	// presenting
-	{
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		commandList->ResourceBarrier(1, &barrier);
+}
 
-		m_frameFenceValues[m_currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
-		// TODO add vSync on/off feature
-		bool vSync = true;
-		UINT syncInterval = vSync ? 1 : 0;
-		UINT presentFlags = Application::Get().IsTearingSupported() && !vSync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-		ThrowIfFailed(m_swapChain->Present(syncInterval, presentFlags));
-		commandQueue->WaitForFenceValue(m_frameFenceValues[m_currentBackBufferIndex]);
-		m_currentBackBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
-	}
+void Mizu::Window::SetGamePtr(std::shared_ptr<Game> game)
+{
+	m_game = game;
 }
 
 

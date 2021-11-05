@@ -1,9 +1,11 @@
-#include "DX12LibPCH.h"
-#include "..\inc\Application.hpp"
 #include "Application.hpp"
+
+#include "DX12LibPCH.h"
+#include "winuser.h"
+
 #include "CommandQueue.hpp"
 #include "Window.hpp"
-#include "winuser.h"
+#include "Game.hpp"
 
 using namespace Mizu;
 using namespace Microsoft::WRL;
@@ -17,11 +19,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (isReady)
 	{
+		std::shared_ptr<Window> window = Application::Get().getWindow(hWnd);
+		assert(window && "there is no window with this hwnd");
+
 		switch (message)
 		{
 		case WM_PAINT:
-			App->m_window->Update();
-			App->m_window->Render();
+			window->Update();
+			window->Render();
 			break;
 
 		case WM_SYSKEYDOWN:
@@ -31,9 +36,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			switch (wParam)
 			{
-				//case 'V':
-				//	g_VSync = !g_VSync;
-				//	break;
+			//case 'V':
+			//	g_VSync = !g_VSync;
+			//	break;
 			case VK_ESCAPE:
 				::PostQuitMessage(0);
 				break;
@@ -59,7 +64,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int width = clientRect.right - clientRect.left;
 			int height = clientRect.bottom - clientRect.top;
 
-			App->m_window->Resize(width, height);
+			window->Resize(width, height);
 		}
 		break;
 
@@ -81,8 +86,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 Application::Application(HINSTANCE hInst) :
 	m_hInstance(hInst),
 	m_IsTearingSupported(false)
-{
-	
+{	
 	// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 	// Using this awareness context allows the client area of the window 
 	// to achieve 100% scaling while still allowing non-client window content to 
@@ -96,14 +100,12 @@ Application::Application(HINSTANCE hInst) :
 	debugInterface->EnableDebugLayer();
 #endif
 
-	// register the window class
-
 	WNDCLASSEXW windowClass = { 0 };
 
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
 	windowClass.lpfnWndProc = &WndProc;
-	windowClass.hInstance = m_hInstance;
+	windowClass.hInstance = hInst;
 	windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	windowClass.hIcon = NULL;
 	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -112,34 +114,88 @@ Application::Application(HINSTANCE hInst) :
 	windowClass.hIconSm = NULL;
 
 	static HRESULT hl = ::RegisterClassExW(&windowClass);
-	assert(SUCCEEDED(hl));
+	if (!hl)
+	{
+		MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
+	}
 	// get the adapter
 	m_adapter = GetAdapter();
 	// make a device
 	m_device = CreateDevice();
-	// create the command queue
-	// TODO create the other 2 types of command queues here
-	m_commandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	// create the command queues
+	m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
+	m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
 }
 void Application::Create(HINSTANCE hInst) // static 
 {
+	// make sure we have an app singleton already
 	if (!App)
 	{
 		App = new Application(hInst);
-		// create the window
-	
-		App->m_window = make_shared<Window>(windowClassName, L"Mizu Demo", hInst, App->Width, App->Height);
-		isReady = true;
-		App->m_window->ShowWindow();
 	}
+}
+
+std::shared_ptr<Window> Mizu::Application::createRenderWindow(const std::wstring& windowName, int width, int height)
+{
+
+	// create the window
+	// TODO maybe we can return the existing one ?
+	assert(m_windowsNameMap.find(windowName) == m_windowsNameMap.end() && "A window with the same name already exists");
+
+	auto window = make_shared<Window>(windowClassName, windowName.c_str(), m_hInstance, width, height);
+	m_windowsNameMap[windowName] = window;
+	m_windowsHwndMap[window->getHWnd()] = window;
+
+	isReady = true;
+
+	return window;
+}
+
+int Mizu::Application::Run(std::shared_ptr<Game> game)
+{
+	if (!game->Initialize()) return 1;
+	if (!game->LoadContent()) return 2;
 	
+	// to print for example
+	BOOL bRet;
+	MSG msg;
+	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
+	{
+		if (bRet == -1)
+		{
+			OutputDebugStringW(L"ERROR\n");
+			break;
+		}
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	// TODO notify game about window destruction
+	game->UnloadContent();
+	DestroyWindow(game->getWindow()->getName());
+
+	Flush();
+
+	return static_cast<int>(msg.wParam);
 }
 
 void Application::Destroy() // static
 {
-
+	// TODO add notification to game + window destruction
 }
+
+void Mizu::Application::DestroyWindow(const std::wstring& name)
+{
+	auto window = getWindow(name);
+	m_windowsHwndMap.erase(window->getHWnd());
+	m_windowsNameMap.erase(name);
+}
+
 Application& Application::Get() // static
 {
 	return *App;
@@ -155,14 +211,35 @@ ComPtr<ID3D12Device2> Application::GetDevice() const
 	return m_device;
 }
 
-shared_ptr<CommandQueue> Application::GetCommandQueue() const
+shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 {
-	return m_commandQueue;
+	switch (type)
+	{
+	case D3D12_COMMAND_LIST_TYPE_COPY:
+		return m_copyCommandQueue;
+
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+		return m_computeCommandQueue;
+
+	default:
+		return m_directCommandQueue;
+	}
 }
 
-Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList()
+// TODO this should be removed probably just misleading (we should get the command list from the command queue)
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 {
-	return m_commandQueue->GetCommandList();
+	switch (type)
+	{
+	case D3D12_COMMAND_LIST_TYPE_COPY:
+		return m_copyCommandQueue->GetCommandList();
+
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+		return m_computeCommandQueue->GetCommandList();
+
+	default:
+		return m_directCommandQueue->GetCommandList();
+	}
 }
 
 
@@ -266,10 +343,17 @@ UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE ty
 
 void Application::Flush()
 {
-	m_commandQueue->Flush();
+	m_directCommandQueue->Flush();
+	m_copyCommandQueue->Flush();
+	m_computeCommandQueue->Flush();
 }
 
 void Mizu::Application::Close()
 {
-	m_commandQueue->CloseHandle();
+	m_directCommandQueue->CloseHandle();
+	m_copyCommandQueue->CloseHandle();
+	m_computeCommandQueue->CloseHandle();
+
+	m_windowsNameMap.clear();
+	m_windowsHwndMap.clear();
 }

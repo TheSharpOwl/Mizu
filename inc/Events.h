@@ -146,9 +146,9 @@ public:
 	{}
 
 	// The new width of the window
-	int Width;
+	int width;
 	// The new height of the window.
-	int Height;
+	int height;
 
 };
 
