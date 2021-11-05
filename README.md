@@ -3,7 +3,9 @@ A Simple Game Engine with DirectX12
 
 Mizu 水 means Water in Japanense :sweat_smile:
 
+### How to run
 
+Just run `cmake` (using visual studio generator), open .sln and run it.
 
 ![](https://images7.alphacoders.com/425/425648.jpg)
 
