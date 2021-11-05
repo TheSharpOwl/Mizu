@@ -1,32 +1,14 @@
-#include <windows.h>
+#include "CubeDemo.hpp"
 #include "Application.hpp"
-#include "Window.hpp"
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
-{	
-	Mizu::Application::Create(hInstance);
-	Mizu::Application& app = Mizu::Application::Get();
-	auto pWindow = app.createRenderWindow();
-	pWindow->ShowWindow();
-	
-	// to print for example
-	BOOL bRet;
-	MSG msg;
-	while ((bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
-	{
-		if (bRet == -1)
-		{
-			OutputDebugStringW(L"ERROR\n");
-			break;
-		}
-		else
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
+{
 
-	app.Flush();
+	Mizu::Application::Create(hInstance);
+	auto demo = std::make_shared<Mizu::CubeDemo>(1280, 720, false);
+	Mizu::Application& app = Mizu::Application::Get();
+
+	auto ret = app.Run(demo);
 
 	// TODO find a better way to handle that close handle
 	app.Close();

@@ -4,6 +4,9 @@ project(Mizu LANGUAGES CXX C)
 
 set (CMAKE_CXX_STANDARD 17)
 
+# Use solution folders to organize projects
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib) # Output directory for static lib (.LIB)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for shared lib (.DLL)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output directory for executables (.EXE)
@@ -34,15 +37,30 @@ set(GAME_SOURCES
 src/CubeDemo.cpp
 )
 
+set(SHADER_FILES
+    shaders/VertexShader.hlsl
+    shaders/PixelShader.hlsl
+)
+
+source_group("Shaders" FILES ${SHADER_FILES})
+
+set_source_files_properties(shaders/VertexShader.hlsl PROPERTIES 
+    VS_SHADER_TYPE Vertex
+    VS_SHADER_MODEL 5.1
+)
+
+set_source_files_properties(shaders/PixelShader.hlsl PROPERTIES 
+    VS_SHADER_TYPE Pixel
+    VS_SHADER_MODEL 5.1
+)
+
 include_directories(inc)
 
 add_library(Engine STATIC ${HEADERS} ${SOURCES})
 add_library(DEMO_LIB STATIC ${GAME_HEADERS} ${GAME_SOURCES})
 
 
-add_executable(Mizu WIN32 main.cpp)
-add_executable(CubeDemo WIN32 demo_main.cpp)
-
+add_executable(CubeDemo WIN32 main.cpp ${SHADER_FILES})
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CubeDemo)
 set_property(TARGET CubeDemo PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:CubeDemo>")
@@ -54,14 +72,6 @@ add_definitions(-DUNICODE)
 #pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
 # TODO Make a library for the lib files
-target_link_libraries(Mizu
-Engine
-d3d12.lib
-dxguid.lib
-DXGI.lib
-D3DCompiler.lib
-)
-
 target_link_libraries(CubeDemo
 DEMO_LIB
 Engine
