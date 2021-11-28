@@ -3,7 +3,15 @@ A Simple Game Engine with DirectX12
 
 Mizu 水 means Water in Japanense :sweat_smile:
 
+### Prerequisites
 
+* Visual Studio 2017 or newer with C++17 compiler version
+
+### How to Run
+
+1. `cmake [path to main CMakeLists.txt]`
+2. Copy shaders.hlsl file to the binary directory `bin` (with the exe)
+2. Run it in VS
 
 ![](https://images7.alphacoders.com/425/425648.jpg)
 
