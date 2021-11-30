@@ -15,6 +15,7 @@
 #include "stdafx.h"
 #include "D3D12HelloTriangle.h"
 
+// Run on the external GPU (for laptops which have Optimus like me xD)
 extern "C"
 {
     __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;

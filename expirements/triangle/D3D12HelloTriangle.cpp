@@ -72,6 +72,12 @@ void D3D12HelloTriangle::LoadPipeline()
             IID_PPV_ARGS(&m_device)
             ));
     }
+    // Create the query heap
+    D3D12_QUERY_HEAP_DESC queryHeapDesc = {};
+    queryHeapDesc.Count = 1;
+    // TODO trying out this type for now and will use the suitable one for pixel counting
+    queryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_OCCLUSION;
+    ThrowIfFailed(m_device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&m_queryHeap)));
 
     // Describe and create the command queue.
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
@@ -249,6 +255,21 @@ void D3D12HelloTriangle::LoadAssets()
         // complete before continuing.
         WaitForPreviousFrame();
     }
+
+    // Create the query result buffer.
+    {
+        D3D12_RESOURCE_DESC queryResultDesc = CD3DX12_RESOURCE_DESC::Buffer(8);
+        ThrowIfFailed(m_device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            D3D12_HEAP_FLAG_NONE,
+            &queryResultDesc,
+            D3D12_RESOURCE_STATE_PREDICATION,
+            nullptr,
+            IID_PPV_ARGS(&m_queryResult)
+        ));
+
+        NAME_D3D12_OBJECT(m_queryResult);
+    }
 }
 
 // Update frame-based values.
@@ -309,11 +330,20 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+    m_commandList->BeginQuery(m_queryHeap.Get(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0);
     m_commandList->DrawInstanced(3, 1, 0, 0);
-
+    m_commandList->EndQuery(m_queryHeap.Get(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0);
     // Indicate that the back buffer will now be used to present.
-    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
+    //m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_PREDICATION, D3D12_RESOURCE_STATE_COPY_DEST));
+    //m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+    D3D12_RESOURCE_BARRIER barriers[] =
+    {
+        CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT),
+        CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_PREDICATION, D3D12_RESOURCE_STATE_COPY_DEST)
+    };
+    m_commandList->ResourceBarrier(2, barriers);
+    m_commandList->ResolveQueryData(m_queryHeap.Get(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, 1, m_queryResult.Get(), 0);
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION));
     ThrowIfFailed(m_commandList->Close());
 }
 

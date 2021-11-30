@@ -54,7 +54,9 @@ private:
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12GraphicsCommandList> m_commandList;
     UINT m_rtvDescriptorSize;
-
+    // Describe and create a heap for counting the pixel shader invocations.
+    ComPtr<ID3D12QueryHeap> m_queryHeap;
+    ComPtr<ID3D12Resource> m_queryResult;
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
