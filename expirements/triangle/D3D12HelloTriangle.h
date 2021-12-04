@@ -57,6 +57,7 @@ private:
     // Describe and create a heap for counting the pixel shader invocations.
     ComPtr<ID3D12QueryHeap> m_queryHeap;
     ComPtr<ID3D12Resource> m_queryResult;
+    ComPtr<ID3D12Resource> m_readbackBuffer;
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;

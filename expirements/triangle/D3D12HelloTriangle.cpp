@@ -258,7 +258,7 @@ void D3D12HelloTriangle::LoadAssets()
 
     // Create the query result buffer.
     {
-        D3D12_RESOURCE_DESC queryResultDesc = CD3DX12_RESOURCE_DESC::Buffer(8);
+        D3D12_RESOURCE_DESC queryResultDesc = CD3DX12_RESOURCE_DESC::Buffer(8);// call it a refrernce area (1)
         ThrowIfFailed(m_device->CreateCommittedResource(
             &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
             D3D12_HEAP_FLAG_NONE,
@@ -269,6 +269,31 @@ void D3D12HelloTriangle::LoadAssets()
         ));
 
         NAME_D3D12_OBJECT(m_queryResult);
+    }
+
+    // Create the readback buffer
+    {
+        CD3DX12_HEAP_PROPERTIES readBackHeapProperties(D3D12_HEAP_TYPE_READBACK);
+
+        // Readback resources must be buffers
+        D3D12_RESOURCE_DESC bufferDesc = {};
+        bufferDesc.DepthOrArraySize = 1;
+        bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+        bufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+        bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+        bufferDesc.Height = 1;
+        bufferDesc.Width = 8; // according to reference area (1)
+        bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+        bufferDesc.MipLevels = 1;
+        bufferDesc.SampleDesc.Count = 1;
+
+        ThrowIfFailed(m_device->CreateCommittedResource(
+            &readBackHeapProperties,
+            D3D12_HEAP_FLAG_NONE,
+            &bufferDesc,
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            nullptr,
+            IID_PPV_ARGS(&m_readbackBuffer)));
     }
 }
 
@@ -343,6 +368,9 @@ void D3D12HelloTriangle::PopulateCommandList()
     };
     m_commandList->ResourceBarrier(2, barriers);
     m_commandList->ResolveQueryData(m_queryHeap.Get(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, 1, m_queryResult.Get(), 0);
+    // TODO next time I don't know what is before state and this function should just be firectly CD3DX12_RESOURCE_BARRIER::Transition (without the commandlist) :(
+    TransitionResource(commandList.Get(), m_readbackBuffer, beforeState, D3D12_RESOURCE_STATE_COPY_SOURCE);
+
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION));
     ThrowIfFailed(m_commandList->Close());
 }
