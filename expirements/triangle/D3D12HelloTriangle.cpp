@@ -11,6 +11,7 @@
 
 #include "stdafx.h"
 #include "D3D12HelloTriangle.h"
+#include <string>
 
 D3D12HelloTriangle::D3D12HelloTriangle(UINT width, UINT height, std::wstring name) :
     DXSample(width, height, name),
@@ -294,6 +295,9 @@ void D3D12HelloTriangle::LoadAssets()
             D3D12_RESOURCE_STATE_COPY_DEST,
             nullptr,
             IID_PPV_ARGS(&m_readbackBuffer)));
+
+        m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_readbackBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE));
+
     }
 }
 
@@ -369,10 +373,15 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ResourceBarrier(2, barriers);
     m_commandList->ResolveQueryData(m_queryHeap.Get(), D3D12_QUERY_TYPE_BINARY_OCCLUSION, 0, 1, m_queryResult.Get(), 0);
     // TODO next time I don't know what is before state and this function should just be firectly CD3DX12_RESOURCE_BARRIER::Transition (without the commandlist) :(
-    TransitionResource(commandList.Get(), m_readbackBuffer, beforeState, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    //CD3DX12_RESOURCE_BARRIER::Transition(m_readbackBuffer.Get(), beforeState, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PREDICATION));
+    m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_queryResult.Get(), D3D12_RESOURCE_STATE_PREDICATION, D3D12_RESOURCE_STATE_COPY_SOURCE));
+
+    m_commandList->CopyResource(m_readbackBuffer.Get(), m_queryResult.Get());
+
     ThrowIfFailed(m_commandList->Close());
+
 }
 
 void D3D12HelloTriangle::WaitForPreviousFrame()
@@ -395,4 +404,20 @@ void D3D12HelloTriangle::WaitForPreviousFrame()
     }
 
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+    static bool t = false;
+    if (!t) {
+        t = true;
+        return;
+    }
+    // Get the results from the result buffer
+    UINT8* pResultDataBegin;
+    CD3DX12_RANGE readRange(0, 8);        // We do not intend to read from this resource on the CPU.
+    ThrowIfFailed(m_readbackBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pResultDataBegin)));
+    UINT8 tempDest[8];
+    memcpy(tempDest, pResultDataBegin, 8 * sizeof(UINT8));
+    m_readbackBuffer->Unmap(0, nullptr);
+    for(int i = 0; i < 8; i++)
+        OutputDebugString(std::to_wstring(tempDest[i]).c_str());
+    OutputDebugString(L"\n");
 }
