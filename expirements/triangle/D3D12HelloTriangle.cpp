@@ -163,34 +163,10 @@ void D3D12HelloTriangle::LoadAssets()
 #else
         UINT compileFlags = 0;
 #endif
-        // TODO make a function for compiling shaders and printing their error messages in general not only for this geoemetry shader
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, &vertexShader, nullptr));
-        ThrowIfFailed(D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, &pixelShader, nullptr));
-        ID3DBlob* errorMessages;
-        HRESULT hr = D3DCompileFromFile(GetAssetFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "GSMain", "gs_5_0", compileFlags, 0, &geomertyShader, &errorMessages);
 
-        if (FAILED(hr))
-        {
-            if (errorMessages)
-            {
-                wchar_t message[1024] = { 0 };
-                char* blobdata = reinterpret_cast<char*>(errorMessages->GetBufferPointer());
-
-                MultiByteToWideChar(CP_ACP, 0, blobdata, static_cast<int>(errorMessages->GetBufferSize()), message, 1024);
-                std::wstring fullMessage = L"Error compiling geometry shader \"";
-                fullMessage += L"\" - ";
-                fullMessage += message;
-
-                // Pop up a message box allowing user to retry compilation
-                int retVal = MessageBoxW(nullptr, fullMessage.c_str(), L"Shader Compilation Error", MB_RETRYCANCEL);
-                if (retVal != IDRETRY)
-                {
-                    std::string str(fullMessage.begin(), fullMessage.end());
-                    throw std::runtime_error(str);
-                }
-            }
-        }
-
+        Mizu::CompileShader(GetAssetFullPath(L"shaders.hlsl").c_str(), "GSMain", "gs_5_0", compileFlags, &geomertyShader);
+        Mizu::CompileShader(GetAssetFullPath(L"shaders.hlsl").c_str(), "VSMain", "vs_5_0", compileFlags, &vertexShader);
+        Mizu::CompileShader(GetAssetFullPath(L"shaders.hlsl").c_str(), "PSMain", "ps_5_0", compileFlags, &pixelShader);
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
         {
