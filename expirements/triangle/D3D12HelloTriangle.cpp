@@ -13,6 +13,7 @@
 #include "D3D12HelloTriangle.h"
 #include <stdexcept>
 #include <string>
+#include "Utils.hpp"
 
 D3D12HelloTriangle::D3D12HelloTriangle(UINT width, UINT height, std::wstring name) :
     DXSample(width, height, name),

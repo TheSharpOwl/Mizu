@@ -19,6 +19,8 @@ set(HEADERS
  inc/Application.hpp
  inc/EventArgs.hpp
  inc/Game.hpp
+ inc/Helpers.h
+ inc/Utils.hpp
  )
 
 set(SOURCES 
