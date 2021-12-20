@@ -1,7 +1,28 @@
+#pragma once
 #include<string>
-
+#include <atlstr.h>
 namespace Mizu
 {
+    static std::wstring resources_dir = L"";
+
+    void ParseCommandLineArguments()
+    {
+        int argc;
+        wchar_t** argv = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+
+        for (size_t i = 0; i < argc; ++i)
+        {
+            if (::wcscmp(argv[i], L"--res_dir") == 0)
+            {
+                resources_dir = argv[++i];
+                OutputDebugString(L"Hey now you are an all star!\n");
+                OutputDebugString(resources_dir.c_str());
+            }
+        }
+
+        // Free memory allocated by CommandLineToArgvW
+        ::LocalFree(argv);
+    }
 
     std::wstring to_wstring(LPCSTR s)
     {
@@ -18,10 +39,19 @@ namespace Mizu
 	/// <param name="targetType">IN type of the shader as in https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/specifying-compiler-targets </param>
 	/// <param name="compileFlags">IN as in https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/d3dcompile-constants </param>
 	/// <param name="shaderBlob">OUT a pointer to a pointer (or to the ComPtr) which will point to the shaderBlob object as a result</param>
+
+   
+
 	void CompileShader(LPCWSTR filename, LPCSTR entryPoint, LPCSTR targetType, UINT compileFlags, ID3DBlob** shaderBlob)
 	{
+        ParseCommandLineArguments(); // to get the resources directory
+
         ID3DBlob* errorMessages;
-        HRESULT hr = D3DCompileFromFile(filename, nullptr, nullptr, entryPoint, targetType, compileFlags, 0, shaderBlob, &errorMessages);
+
+        auto temp = resources_dir + std::wstring(filename);
+        LPCWSTR fullFileDir = temp.c_str();
+        std::string temp_debug = std::string(temp.begin(), temp.end());
+        HRESULT hr = D3DCompileFromFile(temp.c_str(), nullptr, nullptr, entryPoint, targetType, compileFlags, 0, shaderBlob, &errorMessages);
 
         if (FAILED(hr))
         {

@@ -10,7 +10,10 @@ Mizu 水 means Water in Japanense :sweat_smile:
 ### How to Run
 
 1. `cmake [path to main CMakeLists.txt]`
-2. Copy shaders.hlsl file to the binary directory `bin` (with the exe)
+2. Pass `shaders.hlsl` directory to HelloTriangle `--res_dir [where is shaders hlsl ending with \\]` for example in case you put repo in C: 
+```
+--res_dir C:\\Mizu\\expirements\\triangle\\resources\\
+```
 2. Run it in VS
 
 ![](https://images7.alphacoders.com/425/425648.jpg)

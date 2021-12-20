@@ -8,13 +8,10 @@
 // PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 //
 //*********************************************************
-// 
-// Indicates to hybrid graphics systems to prefer the discrete part by default
-
-
 #include "stdafx.h"
 #include "D3D12HelloTriangle.h"
 
+// Indicates to hybrid graphics systems to prefer the discrete part by default
 extern "C"
 {
     __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;

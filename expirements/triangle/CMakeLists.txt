@@ -15,7 +15,7 @@ Win32Application.h
 )
 
 set(EXP_SHADERS
-shaders.hlsl
+resources/shaders.hlsl
 )
 # -------------------------------------------------
 # To make Cmake stop trying to compile the shaders file
