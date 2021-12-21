@@ -41,6 +41,16 @@ private:
         XMFLOAT4 color;
     };
 
+    Vertex m_firstTriangle[3] = {
+    { { 0.0f, 0.25f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+    { { 0.25f, -0.25f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+    { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
+    };
+
+    Vertex m_triangles[100][3];
+
+    void generateTriangles();
+
     // Pipeline objects.
     CD3DX12_VIEWPORT m_viewport;
     CD3DX12_RECT m_scissorRect;
@@ -69,4 +79,6 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
+
+    void getNextTriangle(Vertex result[]);
 };

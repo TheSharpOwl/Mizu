@@ -13,6 +13,7 @@
 #include "D3D12HelloTriangle.h"
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include "Utils.hpp"
 
 D3D12HelloTriangle::D3D12HelloTriangle(UINT width, UINT height, std::wstring name) :
@@ -203,12 +204,14 @@ void D3D12HelloTriangle::LoadAssets()
     // Create the vertex buffer.
     {
         // Define the geometry for a triangle.
-        Vertex triangleVertices[] =
-        {
+		Vertex triangleVertices[] =
+		{
             { { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
             { { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
             { { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-        };
+		};
+
+        getNextTriangle(triangleVertices);
 
         const UINT vertexBufferSize = sizeof(triangleVertices);
 
@@ -286,6 +289,22 @@ void D3D12HelloTriangle::OnDestroy()
     CloseHandle(m_fenceEvent);
 }
 
+void D3D12HelloTriangle::generateTriangles()
+{
+    // TODO move to the class
+    int xTriangles = 5, yTriangles = 5;
+    float xShift = 0.01, yShift = 0.01;
+
+	for (int i = 0; i < yTriangles; i++)
+        for (int j = 0; j < xTriangles; j++)
+        {
+            m_triangles[i * xTriangles + j][0]= m_firstTriangle[0]; // take intial position
+            // shift it on x and y axis
+            m_triangles[i * xTriangles + j][0].position.x = m_firstTriangle[0].position.x + j * xShift;
+            m_triangles[i * xTriangles + j][0].position.y = m_firstTriangle[0].position.y + i * yShift;
+        }
+}
+
 void D3D12HelloTriangle::PopulateCommandList()
 {
     // Command list allocators can only be reset when the associated 
@@ -342,4 +361,35 @@ void D3D12HelloTriangle::WaitForPreviousFrame()
     }
 
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void D3D12HelloTriangle::getNextTriangle(D3D12HelloTriangle::Vertex result[])
+{
+    static Vertex intitial_list[] =
+    {
+        //{ { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+        //{ { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+        //{ { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+        { { 0.0f, 0.25f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+        { { 0.25f, -0.25f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+        { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+    };
+    // for 2 the size is 0.01
+    static float triangle_size = 0.01f;
+    //triangle_size += 0.1;
+
+    for (int i = 0; i < 3; i++)
+    {
+        result[i].color = intitial_list[i].color;
+        result[i].position = XMFLOAT3(triangle_size * intitial_list[i].position.x, triangle_size * intitial_list[i].position.y, intitial_list[i].position.z);
+    }
+
+    //static XMMATRIX init_pos(
+    //    0.0f, 0.25f * m_aspectRatio, 0.0f, 0.0f,
+    //    0.25f, -0.25f * m_aspectRatio, 0.0f, 0.0f,
+    //    -0.25f, -0.25f * m_aspectRatio, 0.0f, 0.0f,
+    //    0.f, 0.f, 0.f, 0.f
+    //);
+
+    //XMMATRIX current = init_pos * XMMatrixScaling(triangle_size, triangle_size, 0.f);
 }
