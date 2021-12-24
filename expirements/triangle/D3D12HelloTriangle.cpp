@@ -303,16 +303,8 @@ void D3D12HelloTriangle::generateTriangles()
             {
 				m_triangles[pos] = m_firstTriangle[k]; // take intial position
 				// shift it on x and y axis
-                if (pos)
-                {
-                    m_triangles[pos].position.x = m_firstTriangle[k].position.x;
-                    m_triangles[pos].position.y = m_firstTriangle[k].position.y;
-                }
-                else
-                {
-                    m_triangles[pos].position.x = m_firstTriangle[k].position.x + 0.1f;
-                    m_triangles[pos].position.y = m_firstTriangle[k].position.y + 0.1f;
-                }
+				m_triangles[pos].position.x = m_firstTriangle[k].position.x + float(j * xShift);
+				m_triangles[pos].position.y = m_firstTriangle[k].position.y + float(i * yShift);
                 pos++;
             }
 
