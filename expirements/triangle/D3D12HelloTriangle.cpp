@@ -156,7 +156,7 @@ void D3D12HelloTriangle::LoadAssets()
     {
         ComPtr<ID3DBlob> vertexShader;
         ComPtr<ID3DBlob> pixelShader;
-        ComPtr<ID3DBlob> geomertyShader;
+        //ComPtr<ID3DBlob> geomertyShader;
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -165,7 +165,7 @@ void D3D12HelloTriangle::LoadAssets()
         UINT compileFlags = 0;
 #endif
 
-        Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
+        //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
         Mizu::CompileShader(L"shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
         Mizu::CompileShader(L"shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
         // Define the vertex input layout.
@@ -181,7 +181,7 @@ void D3D12HelloTriangle::LoadAssets()
         psoDesc.pRootSignature = m_rootSignature.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-        psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
+        //psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = FALSE;
@@ -204,14 +204,14 @@ void D3D12HelloTriangle::LoadAssets()
     // Create the vertex buffer.
     {
         // Define the geometry for a triangle.
-		Vertex triangleVertices[] =
+		/*Vertex triangleVertices[] =
 		{
             { { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
             { { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
             { { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-		};
+		};*/
 
-        getNextTriangle(triangleVertices);
+        getNextTriangle();
         generateTriangles();
 
         const UINT vertexBufferSize = sizeof(m_triangles);
@@ -295,17 +295,27 @@ void D3D12HelloTriangle::generateTriangles()
     // TODO move to the class
     // TODO generate triangles with different positions (for now redrawing on the same one)
     int xTriangles = 5, yTriangles = 5;
-    float xShift = 0.01, yShift = 0.01;
-
+    float xShift = 0.01f, yShift = 0.01f;
+    int pos = 0;
 	for (int i = 0; i < yTriangles; i++)
         for (int j = 0; j < xTriangles; j++)
-            for(int k = 0; k < 2; k++)
+            for(int k = 0; k < 3; k++)
             {
-				m_triangles[k][i * xTriangles + j] = m_firstTriangle[0]; // take intial position
+				m_triangles[pos] = m_firstTriangle[k]; // take intial position
 				// shift it on x and y axis
-				m_triangles[k][i * xTriangles + j].position.x = m_firstTriangle[0].position.x ; //+ j * xShift;
-				m_triangles[k][i * xTriangles + j].position.y = m_firstTriangle[0].position.y ; //+ i * yShift;
+                if (pos)
+                {
+                    m_triangles[pos].position.x = m_firstTriangle[k].position.x;
+                    m_triangles[pos].position.y = m_firstTriangle[k].position.y;
+                }
+                else
+                {
+                    m_triangles[pos].position.x = m_firstTriangle[k].position.x + 0.1f;
+                    m_triangles[pos].position.y = m_firstTriangle[k].position.y + 0.1f;
+                }
+                pos++;
             }
+
 }
 
 void D3D12HelloTriangle::PopulateCommandList()
@@ -336,7 +346,7 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-    m_commandList->DrawInstanced(3, 1, 0, 0);
+    m_commandList->DrawInstanced(3, 25, 0, 0);
 
     // Indicate that the back buffer will now be used to present.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -366,25 +376,25 @@ void D3D12HelloTriangle::WaitForPreviousFrame()
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 }
 
-void D3D12HelloTriangle::getNextTriangle(D3D12HelloTriangle::Vertex result[])
+void D3D12HelloTriangle::getNextTriangle()
 {
     static Vertex intitial_list[] =
     {
         //{ { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
         //{ { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
         //{ { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-        { { 0.0f, 0.25f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-        { { 0.25f, -0.25f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-        { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+        { { 0.0f, 0.05f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+        { { 0.05f, -0.05f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+        { { -0.05f, -0.05f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
     };
     // for 2 the size is 0.01
-    static float triangle_size = 0.01f;
+    static float triangle_size = 0.9f;
     //triangle_size += 0.1;
 
     for (int i = 0; i < 3; i++)
     {
-        result[i].color = intitial_list[i].color;
-        result[i].position = XMFLOAT3(triangle_size * intitial_list[i].position.x, triangle_size * intitial_list[i].position.y, intitial_list[i].position.z);
+        m_firstTriangle[i].color = intitial_list[i].color;
+        m_firstTriangle[i].position = XMFLOAT3(triangle_size * intitial_list[i].position.x, triangle_size * intitial_list[i].position.y, intitial_list[i].position.z);
     }
 
     //static XMMATRIX init_pos(

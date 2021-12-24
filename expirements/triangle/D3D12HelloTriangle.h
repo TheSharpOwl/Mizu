@@ -47,7 +47,7 @@ private:
     { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
     };
 
-    Vertex m_triangles[3][25];
+    Vertex m_triangles[75];
 
     void generateTriangles();
 
@@ -80,5 +80,5 @@ private:
     void PopulateCommandList();
     void WaitForPreviousFrame();
 
-    void getNextTriangle(Vertex result[]);
+    void getNextTriangle();
 };
