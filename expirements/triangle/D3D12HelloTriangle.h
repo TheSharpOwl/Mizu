@@ -47,7 +47,7 @@ private:
     { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
     };
 
-    Vertex m_triangles[100][3];
+    Vertex m_triangles[3][25];
 
     void generateTriangles();
 

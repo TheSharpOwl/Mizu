@@ -212,8 +212,9 @@ void D3D12HelloTriangle::LoadAssets()
 		};
 
         getNextTriangle(triangleVertices);
+        generateTriangles();
 
-        const UINT vertexBufferSize = sizeof(triangleVertices);
+        const UINT vertexBufferSize = sizeof(m_triangles);
 
         // Note: using upload heaps to transfer static data like vert buffers is not 
         // recommended. Every time the GPU needs it, the upload heap will be marshalled 
@@ -231,7 +232,7 @@ void D3D12HelloTriangle::LoadAssets()
         UINT8* pVertexDataBegin;
         CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.
         ThrowIfFailed(m_vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin)));
-        memcpy(pVertexDataBegin, triangleVertices, sizeof(triangleVertices));
+        memcpy(pVertexDataBegin, m_triangles, sizeof(m_triangles));
         m_vertexBuffer->Unmap(0, nullptr);
 
         // Initialize the vertex buffer view.
@@ -292,17 +293,19 @@ void D3D12HelloTriangle::OnDestroy()
 void D3D12HelloTriangle::generateTriangles()
 {
     // TODO move to the class
+    // TODO generate triangles with different positions (for now redrawing on the same one)
     int xTriangles = 5, yTriangles = 5;
     float xShift = 0.01, yShift = 0.01;
 
 	for (int i = 0; i < yTriangles; i++)
         for (int j = 0; j < xTriangles; j++)
-        {
-            m_triangles[i * xTriangles + j][0]= m_firstTriangle[0]; // take intial position
-            // shift it on x and y axis
-            m_triangles[i * xTriangles + j][0].position.x = m_firstTriangle[0].position.x + j * xShift;
-            m_triangles[i * xTriangles + j][0].position.y = m_firstTriangle[0].position.y + i * yShift;
-        }
+            for(int k = 0; k < 2; k++)
+            {
+				m_triangles[k][i * xTriangles + j] = m_firstTriangle[0]; // take intial position
+				// shift it on x and y axis
+				m_triangles[k][i * xTriangles + j].position.x = m_firstTriangle[0].position.x ; //+ j * xShift;
+				m_triangles[k][i * xTriangles + j].position.y = m_firstTriangle[0].position.y ; //+ i * yShift;
+            }
 }
 
 void D3D12HelloTriangle::PopulateCommandList()
