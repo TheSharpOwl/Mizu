@@ -22,10 +22,10 @@ using namespace DirectX;
 // An example of this can be found in the class method: OnDestroy().
 using Microsoft::WRL::ComPtr;
 
-class D3D12HelloTriangle : public DXSample
+class ThousandTriangles : public DXSample
 {
 public:
-    D3D12HelloTriangle(UINT width, UINT height, std::wstring name);
+    ThousandTriangles(UINT width, UINT height, float resizeAmount);
 
     virtual void OnInit();
     virtual void OnUpdate();
@@ -42,29 +42,26 @@ private:
     };
 
     Vertex m_firstTriangle[3] = {
-    { { 0.0f, 0.1f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-    { { 0.1f, -0.1f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-    { { -0.1f, -0.1f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
+    { {0.0f,  0.0f, 0.0f} , { 1.0f, 0.0f, 0.0f, 1.0f } },
+    { {0.25f, 0.f, 0.0f}, { 0.0f, 1.0f, 0.0f, 1.0f } },
+    { {0.f,  -0.25f, 0.0f}, { 0.0f, 0.0f, 1.0f, 1.0f } }
     };
 
 
-    static const int N = 70;
-    static const int M = 50;
-    static constexpr float resize_amount = 0.1f;
-    Vertex grid[N + 1][M + 1];
-    Vertex m_triangles[N * M * 6];
+    static const int T = 1000;
+    float m_resizeAmount;
+
+    Vertex m_triangles[T * 3];
+
     Vertex movePoint(const Vertex& point, float xDif, float yDif)
     {
         Vertex ans = point;
         ans.position.x += xDif;
         ans.position.y += yDif;
-        assert((ans.position.x >= -1.f && ans.position.x <= 1.f) && "Point should stay on screen");
-        assert((ans.position.y >= -1.f && ans.position.y <= 1.f) && "Point should stay on screen");
         return ans;
     }
 
     void generateTriangles();
-    void generateGrid();
     Vertex resizePoint(Vertex v);
 
     // Pipeline objects.
@@ -95,6 +92,4 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
-
-    void getNextTriangle();
 };

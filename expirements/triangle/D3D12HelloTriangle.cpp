@@ -16,8 +16,9 @@
 #include <vector>
 #include "Utils.hpp"
 
-D3D12HelloTriangle::D3D12HelloTriangle(UINT width, UINT height, std::wstring name) :
-    DXSample(width, height, name),
+ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
+    DXSample(width, height, L"Thousand Triangles Experiment"),
+    m_resizeAmount(resizeAmount),
     m_frameIndex(0),
     m_viewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height)),
     m_scissorRect(0, 0, static_cast<LONG>(width), static_cast<LONG>(height)),
@@ -25,14 +26,14 @@ D3D12HelloTriangle::D3D12HelloTriangle(UINT width, UINT height, std::wstring nam
 {
 }
 
-void D3D12HelloTriangle::OnInit()
+void ThousandTriangles::OnInit()
 {
     LoadPipeline();
     LoadAssets();
 }
 
 // Load the rendering pipeline dependencies.
-void D3D12HelloTriangle::LoadPipeline()
+void ThousandTriangles::LoadPipeline()
 {
     UINT dxgiFactoryFlags = 0;
 
@@ -139,7 +140,7 @@ void D3D12HelloTriangle::LoadPipeline()
 }
 
 // Load the sample assets.
-void D3D12HelloTriangle::LoadAssets()
+void ThousandTriangles::LoadAssets()
 {
     // Create an empty root signature.
     {
@@ -203,17 +204,7 @@ void D3D12HelloTriangle::LoadAssets()
 
     // Create the vertex buffer.
     {
-        // Define the geometry for a triangle.
-		/*Vertex triangleVertices[] =
-		{
-            { { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-            { { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-            { { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-		};*/
-
-        getNextTriangle();
         generateTriangles();
-        generateGrid();
         const UINT vertexBufferSize = sizeof(m_triangles);
 
         // Note: using upload heaps to transfer static data like vert buffers is not 
@@ -261,12 +252,12 @@ void D3D12HelloTriangle::LoadAssets()
 }
 
 // Update frame-based values.
-void D3D12HelloTriangle::OnUpdate()
+void ThousandTriangles::OnUpdate()
 {
 }
 
 // Render the scene.
-void D3D12HelloTriangle::OnRender()
+void ThousandTriangles::OnRender()
 {
     // Record all the commands we need to render the scene into the command list.
     PopulateCommandList();
@@ -281,7 +272,7 @@ void D3D12HelloTriangle::OnRender()
     WaitForPreviousFrame();
 }
 
-void D3D12HelloTriangle::OnDestroy()
+void ThousandTriangles::OnDestroy()
 {
     // Ensure that the GPU is no longer referencing resources that are about to be
     // cleaned up by the destructor.
@@ -290,74 +281,40 @@ void D3D12HelloTriangle::OnDestroy()
     CloseHandle(m_fenceEvent);
 }
 
-void D3D12HelloTriangle::generateTriangles()
+void ThousandTriangles::generateTriangles()
 {
-    // TODO move to the class
-    // TODO generate triangles with different positions (for now redrawing on the same one)
-    int xTriangles = 5, yTriangles = 5;
-    float xShift = 0.01f, yShift = 0.01f;
-    int pos = 0;
-	for (int i = 0; i < yTriangles; i++)
-        for (int j = 0; j < xTriangles; j++)
-            for(int k = 0; k < 3; k++)
-            {
-				m_triangles[pos] = m_firstTriangle[k]; // take intial position
-				// shift it on x and y axis
-                m_triangles[pos].position.x = m_firstTriangle[k].position.x + -0.98f;// +float(j * xShift);
-                m_triangles[pos].position.y = m_firstTriangle[k].position.y + 0.98f;// +float(i * yShift);
-                pos++;
-            }
+    auto onScreen = [](Vertex v) {return v.position.x >= -1.f && v.position.x <= 1.f && v.position.y >= -1.f && v.position.y <= 1.f; };
 
-}
-
-void D3D12HelloTriangle::generateGrid()
-{
-    int pos = 0;
-    for (int i = 0; i <= N; i++)
+    for (int i = 0; i < T * 3; i += 3)
     {
-        for (int j = 0; j <= M; j++)
+        while (true)
         {
-            // shift numbers [0, N] to a different range [-1,1] using f(t) = (2t/N) - 1
-            grid[i][j].position.x = Mizu::mapToScreen(j, 0, M);
-            grid[i][j].position.y = Mizu::mapToScreen(i, 0, N);
-            grid[i][j].position.z = 0.f;
-            grid[i][j].color = XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f }; // TODO get rid of the color from the first place in the non shader code
-
-            if (i > 0 && j > 0)
-            {
-                // add the grid square
-                // first triangle
-                float xDif= grid[i][j].position.x - resizePoint(grid[i][j]).position.x;
-                float yDif= grid[i][j].position.y - resizePoint(grid[i][j]).position.y;
-
-                m_triangles[pos++] = movePoint(resizePoint(grid[i - 1][j - 1]), xDif, yDif);
-                m_triangles[pos++] = movePoint(resizePoint(grid[i][j - 1]), xDif, yDif);
-                m_triangles[pos++] = movePoint(resizePoint(grid[i][j]), xDif, yDif);
-                //second triangle
-                //change its color to see the sizes
-                xDif = grid[i - 1][j - 1].position.x - resizePoint(grid[i - 1][j - 1]).position.x;
-                yDif = grid[i - 1][j - 1].position.y - resizePoint(grid[i - 1][j - 1]).position.y;
-
-                m_triangles[pos++] = movePoint(resizePoint(grid[i][j]), xDif, yDif);
-                m_triangles[pos++] = movePoint(resizePoint(grid[i-1][j]), xDif, yDif);
-                m_triangles[pos++] = movePoint(resizePoint(grid[i - 1][j - 1]), xDif, yDif);
-                m_triangles[pos-1].color = m_triangles[pos - 2].color = m_triangles[pos - 3].color = XMFLOAT4{ 0.0f, 1.0f, 1.0f, 1.0f };
-            }
+            // get a random point on screen
+            float x = Mizu::mapToScreen(rand() % 1280, 0, 1279);
+            float y = Mizu::mapToScreen(rand() % 720,  0,  719);
+            // try it
+            m_triangles[i]     = movePoint(resizePoint(m_firstTriangle[0]), x, y);
+            m_triangles[i + 1] = movePoint(resizePoint(m_firstTriangle[1]), x, y);
+            m_triangles[i + 2] = movePoint(resizePoint(m_firstTriangle[2]), x, y);
+            // break if it is according to the conditions
+            if (onScreen(m_triangles[i]) && onScreen(m_triangles[i + 1]) && onScreen(m_triangles[i + 2]))
+                break;
         }
-    }
 
+
+    }
 }
 
-D3D12HelloTriangle::Vertex D3D12HelloTriangle::resizePoint(Vertex v)
+ThousandTriangles::Vertex ThousandTriangles::resizePoint(Vertex v)
 {
     Vertex ans = v;
-    ans.position.x *= resize_amount;
-    ans.position.y *= resize_amount;
-    ans.position.z *= resize_amount;
+    ans.position.x *= m_resizeAmount;
+    ans.position.y *= m_resizeAmount;
+    ans.position.z *= m_resizeAmount;
     return ans;
 }
 
-void D3D12HelloTriangle::PopulateCommandList()
+void ThousandTriangles::PopulateCommandList()
 {
     // Command list allocators can only be reset when the associated 
     // command lists have finished execution on the GPU; apps should use 
@@ -385,7 +342,7 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-    m_commandList->DrawInstanced(N * M * 6, N * M * 2, 0, 0);
+    m_commandList->DrawInstanced(T * 3, T, 0, 0);
 
     // Indicate that the back buffer will now be used to present.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -393,7 +350,7 @@ void D3D12HelloTriangle::PopulateCommandList()
     ThrowIfFailed(m_commandList->Close());
 }
 
-void D3D12HelloTriangle::WaitForPreviousFrame()
+void ThousandTriangles::WaitForPreviousFrame()
 {
     // WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
     // This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
@@ -413,35 +370,4 @@ void D3D12HelloTriangle::WaitForPreviousFrame()
     }
 
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
-}
-
-void D3D12HelloTriangle::getNextTriangle()
-{
-    static Vertex intitial_list[] =
-    {
-        //{ { 0.0f, 0.25f * m_aspectRatio, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-        //{ { 0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-        //{ { -0.25f, -0.25f * m_aspectRatio, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-        { { 0.0f, 0.05f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-        { { 0.05f, -0.05f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-        { { -0.05f, -0.05f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
-    };
-    // for 2 the size is 0.01
-    static float triangle_size = 0.9f;
-    //triangle_size += 0.1;
-
-    for (int i = 0; i < 3; i++)
-    {
-        m_firstTriangle[i].color = intitial_list[i].color;
-        m_firstTriangle[i].position = XMFLOAT3(triangle_size * intitial_list[i].position.x, triangle_size * intitial_list[i].position.y, intitial_list[i].position.z);
-    }
-
-    //static XMMATRIX init_pos(
-    //    0.0f, 0.25f * m_aspectRatio, 0.0f, 0.0f,
-    //    0.25f, -0.25f * m_aspectRatio, 0.0f, 0.0f,
-    //    -0.25f, -0.25f * m_aspectRatio, 0.0f, 0.0f,
-    //    0.f, 0.f, 0.f, 0.f
-    //);
-
-    //XMMATRIX current = init_pos * XMMatrixScaling(triangle_size, triangle_size, 0.f);
 }
