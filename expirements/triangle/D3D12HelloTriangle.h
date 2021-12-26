@@ -47,13 +47,25 @@ private:
     { { -0.1f, -0.1f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
     };
 
-    Vertex m_triangles[3750];
 
-    static const int N = 25;
-    Vertex grid[N + 1][N + 1];
+    static const int N = 70;
+    static const int M = 50;
+    static constexpr float resize_amount = 0.1f;
+    Vertex grid[N + 1][M + 1];
+    Vertex m_triangles[N * M * 6];
+    Vertex movePoint(const Vertex& point, float xDif, float yDif)
+    {
+        Vertex ans = point;
+        ans.position.x += xDif;
+        ans.position.y += yDif;
+        assert((ans.position.x >= -1.f && ans.position.x <= 1.f) && "Point should stay on screen");
+        assert((ans.position.y >= -1.f && ans.position.y <= 1.f) && "Point should stay on screen");
+        return ans;
+    }
 
     void generateTriangles();
     void generateGrid();
+    Vertex resizePoint(Vertex v);
 
     // Pipeline objects.
     CD3DX12_VIEWPORT m_viewport;

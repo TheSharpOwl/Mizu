@@ -315,10 +315,10 @@ void D3D12HelloTriangle::generateGrid()
     int pos = 0;
     for (int i = 0; i <= N; i++)
     {
-        for (int j = 0; j <= N; j++)
+        for (int j = 0; j <= M; j++)
         {
             // shift numbers [0, N] to a different range [-1,1] using f(t) = (2t/N) - 1
-            grid[i][j].position.x = Mizu::mapToScreen(j, 0, N);
+            grid[i][j].position.x = Mizu::mapToScreen(j, 0, M);
             grid[i][j].position.y = Mizu::mapToScreen(i, 0, N);
             grid[i][j].position.z = 0.f;
             grid[i][j].color = XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f }; // TODO get rid of the color from the first place in the non shader code
@@ -326,19 +326,37 @@ void D3D12HelloTriangle::generateGrid()
             if (i > 0 && j > 0)
             {
                 // add the grid square
-                // first triangle 
-                m_triangles[pos++] = grid[i - 1][j - 1];
-                m_triangles[pos++] = grid[i][j - 1];
-                m_triangles[pos++] = grid[i][j];
+                // first triangle
+                float xDif= grid[i][j].position.x - resizePoint(grid[i][j]).position.x;
+                float yDif= grid[i][j].position.y - resizePoint(grid[i][j]).position.y;
+
+                m_triangles[pos++] = movePoint(resizePoint(grid[i - 1][j - 1]), xDif, yDif);
+                m_triangles[pos++] = movePoint(resizePoint(grid[i][j - 1]), xDif, yDif);
+                m_triangles[pos++] = movePoint(resizePoint(grid[i][j]), xDif, yDif);
                 //second triangle
-                m_triangles[pos++] = grid[i][j];
-                m_triangles[pos++] = grid[i-1][j];
-                m_triangles[pos++] = grid[i - 1][j - 1];
+                //change its color to see the sizes
+                xDif = grid[i - 1][j - 1].position.x - resizePoint(grid[i - 1][j - 1]).position.x;
+                yDif = grid[i - 1][j - 1].position.y - resizePoint(grid[i - 1][j - 1]).position.y;
+
+                m_triangles[pos++] = movePoint(resizePoint(grid[i][j]), xDif, yDif);
+                m_triangles[pos++] = movePoint(resizePoint(grid[i-1][j]), xDif, yDif);
+                m_triangles[pos++] = movePoint(resizePoint(grid[i - 1][j - 1]), xDif, yDif);
+                m_triangles[pos-1].color = m_triangles[pos - 2].color = m_triangles[pos - 3].color = XMFLOAT4{ 0.0f, 1.0f, 1.0f, 1.0f };
             }
         }
     }
 
 }
+
+D3D12HelloTriangle::Vertex D3D12HelloTriangle::resizePoint(Vertex v)
+{
+    Vertex ans = v;
+    ans.position.x *= resize_amount;
+    ans.position.y *= resize_amount;
+    ans.position.z *= resize_amount;
+    return ans;
+}
+
 void D3D12HelloTriangle::PopulateCommandList()
 {
     // Command list allocators can only be reset when the associated 
@@ -367,7 +385,7 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-    m_commandList->DrawInstanced(3750, 1250, 0, 0);
+    m_commandList->DrawInstanced(N * M * 6, N * M * 2, 0, 0);
 
     // Indicate that the back buffer will now be used to present.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
