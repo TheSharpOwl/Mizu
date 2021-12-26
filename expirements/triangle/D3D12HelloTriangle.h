@@ -42,14 +42,18 @@ private:
     };
 
     Vertex m_firstTriangle[3] = {
-    { { 0.0f, 0.25f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-    { { 0.25f, -0.25f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-    { { -0.25f, -0.25f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
+    { { 0.0f, 0.1f   , 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+    { { 0.1f, -0.1f  , 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+    { { -0.1f, -0.1f , 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } } 
     };
 
-    Vertex m_triangles[75];
+    Vertex m_triangles[3750];
+
+    static const int N = 25;
+    Vertex grid[N + 1][N + 1];
 
     void generateTriangles();
+    void generateGrid();
 
     // Pipeline objects.
     CD3DX12_VIEWPORT m_viewport;

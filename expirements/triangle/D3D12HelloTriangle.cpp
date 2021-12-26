@@ -213,7 +213,7 @@ void D3D12HelloTriangle::LoadAssets()
 
         getNextTriangle();
         generateTriangles();
-
+        generateGrid();
         const UINT vertexBufferSize = sizeof(m_triangles);
 
         // Note: using upload heaps to transfer static data like vert buffers is not 
@@ -303,13 +303,42 @@ void D3D12HelloTriangle::generateTriangles()
             {
 				m_triangles[pos] = m_firstTriangle[k]; // take intial position
 				// shift it on x and y axis
-				m_triangles[pos].position.x = m_firstTriangle[k].position.x + float(j * xShift);
-				m_triangles[pos].position.y = m_firstTriangle[k].position.y + float(i * yShift);
+                m_triangles[pos].position.x = m_firstTriangle[k].position.x + -0.98f;// +float(j * xShift);
+                m_triangles[pos].position.y = m_firstTriangle[k].position.y + 0.98f;// +float(i * yShift);
                 pos++;
             }
 
 }
 
+void D3D12HelloTriangle::generateGrid()
+{
+    int pos = 0;
+    for (int i = 0; i <= N; i++)
+    {
+        for (int j = 0; j <= N; j++)
+        {
+            // shift numbers [0, N] to a different range [-1,1] using f(t) = (2t/N) - 1
+            grid[i][j].position.x = Mizu::mapToScreen(j, 0, N);
+            grid[i][j].position.y = Mizu::mapToScreen(i, 0, N);
+            grid[i][j].position.z = 0.f;
+            grid[i][j].color = XMFLOAT4{ 1.0f, 0.0f, 0.0f, 1.0f }; // TODO get rid of the color from the first place in the non shader code
+
+            if (i > 0 && j > 0)
+            {
+                // add the grid square
+                // first triangle 
+                m_triangles[pos++] = grid[i - 1][j - 1];
+                m_triangles[pos++] = grid[i][j - 1];
+                m_triangles[pos++] = grid[i][j];
+                //second triangle
+                m_triangles[pos++] = grid[i][j];
+                m_triangles[pos++] = grid[i-1][j];
+                m_triangles[pos++] = grid[i - 1][j - 1];
+            }
+        }
+    }
+
+}
 void D3D12HelloTriangle::PopulateCommandList()
 {
     // Command list allocators can only be reset when the associated 
@@ -338,7 +367,7 @@ void D3D12HelloTriangle::PopulateCommandList()
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-    m_commandList->DrawInstanced(75, 25, 0, 0);
+    m_commandList->DrawInstanced(3750, 1250, 0, 0);
 
     // Indicate that the back buffer will now be used to present.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

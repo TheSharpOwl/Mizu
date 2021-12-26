@@ -1,6 +1,8 @@
 #pragma once
 #include<string>
 #include <atlstr.h>
+#include <cassert>
+
 namespace Mizu
 {
     static std::wstring resources_dir = L"";
@@ -77,4 +79,16 @@ namespace Mizu
             }
         }
 	}
+    /// <summary>
+    /// Maps t from range [x,y] to [-1,1] (screen coordinates
+    /// </summary>
+    /// <param name="t"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    float mapToScreen(float t, float x, float y)
+    {
+        assert((t >= x && t <= y) && "t should be in range [x,y]");
+        return (2.f * t) / (y - x) - 1;
+    }
 }
