@@ -157,7 +157,7 @@ void ThousandTriangles::LoadAssets()
     {
         ComPtr<ID3DBlob> vertexShader;
         ComPtr<ID3DBlob> pixelShader;
-        //ComPtr<ID3DBlob> geomertyShader;
+        ComPtr<ID3DBlob> geomertyShader;
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -166,7 +166,7 @@ void ThousandTriangles::LoadAssets()
         UINT compileFlags = 0;
 #endif
 
-        //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
+        Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
         Mizu::CompileShader(L"shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
         Mizu::CompileShader(L"shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
         // Define the vertex input layout.
@@ -182,7 +182,7 @@ void ThousandTriangles::LoadAssets()
         psoDesc.pRootSignature = m_rootSignature.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-        //psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
+        psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = FALSE;
@@ -303,6 +303,11 @@ void ThousandTriangles::generateTriangles()
 
 
     }
+    // Might be needed later...
+    //float fArea = 0.5f * abs(m_triangles[0].position.x * (m_triangles[1].position.y - m_triangles[2].position.y)
+    //    + m_triangles[1].position.x * (m_triangles[2].position.y - m_triangles[0].position.y)
+    //    + m_triangles[2].position.x * (m_triangles[0].position.y - m_triangles[1].position.y));
+
 }
 
 ThousandTriangles::Vertex ThousandTriangles::resizePoint(Vertex v)

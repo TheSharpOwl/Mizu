@@ -48,7 +48,7 @@ private:
     };
 
 
-    static const int T = 1000;
+    static const int T = 1;
     float m_resizeAmount;
 
     Vertex m_triangles[T * 3];
