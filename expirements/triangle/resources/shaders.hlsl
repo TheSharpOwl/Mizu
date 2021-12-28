@@ -1,16 +1,18 @@
 struct PSInput // same as GS output
 {
     float4 position : SV_POSITION;
-    float4 color : COLOR; // TODO remove color area from passing it to the shaders to save time
+    float4 color : COLOR;
 };
 
-PSInput VSMain(float4 position : POSITION, float4 color : COLOR)
+struct VSInput // same as GS output
 {
-    PSInput result;
+    float4 position : SV_POSITION;
+};
 
+VSInput VSMain(float4 position : POSITION)
+{
+    VSInput result;
     result.position = position;
-    result.color = color;
-
     return result;
 }
 
@@ -20,7 +22,7 @@ float4 PSMain(PSInput input) : SV_TARGET
 }
 
 [maxvertexcount(3)]
-void GSMain(triangle PSInput input[3], inout TriangleStream<PSInput> outStream)
+void GSMain(triangle VSInput input[3], inout TriangleStream<PSInput> outStream)
 {
     PSInput output;
     [unroll(3)]
@@ -37,8 +39,9 @@ void GSMain(triangle PSInput input[3], inout TriangleStream<PSInput> outStream)
 
     for (int i = 0; i < 3; ++i)
     {
+        // using position to represent color from this stage to save memory
         output.position = input[i].position;
-        output.color = float4(fArea, 1.f, fArea, input[i].color.w);
+        output.color = float4(fArea, 1.f, fArea, 1.f);
         outStream.Append(output);
     }
 
