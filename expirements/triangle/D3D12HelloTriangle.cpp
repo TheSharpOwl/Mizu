@@ -166,13 +166,14 @@ void ThousandTriangles::LoadAssets()
         UINT compileFlags = 0;
 #endif
 
-        Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
+        //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
         Mizu::CompileShader(L"shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
         Mizu::CompileShader(L"shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
         {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+            { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
         };
 
         // Describe and create the graphics pipeline state object (PSO).
@@ -181,7 +182,7 @@ void ThousandTriangles::LoadAssets()
         psoDesc.pRootSignature = m_rootSignature.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-        psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
+        //psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = FALSE;
@@ -282,6 +283,8 @@ void ThousandTriangles::OnDestroy()
 
 void ThousandTriangles::generateTriangles()
 {
+    double fArea = -1.f;
+
     auto onScreen = [](Vertex v) {return v.position.x >= -1.f && v.position.x <= 1.f && v.position.y >= -1.f && v.position.y <= 1.f; };
 
     for (int i = 0; i < T * 3; i += 3)
@@ -299,14 +302,30 @@ void ThousandTriangles::generateTriangles()
             if (onScreen(m_triangles[i]) && onScreen(m_triangles[i + 1]) && onScreen(m_triangles[i + 2]))
                 break;
         }
+        
+        if (i < 3) // only calculate area once
+        {
+            fArea = 0.5f * abs(m_triangles[0].position.x * (m_triangles[1].position.y - m_triangles[2].position.y)
+                + m_triangles[1].position.x * (m_triangles[2].position.y - m_triangles[0].position.y)
+                + m_triangles[2].position.x * (m_triangles[0].position.y - m_triangles[1].position.y));
 
+            assert(fArea > 0.f);
 
+            double a = 3.1250528991222382e-06;// min size of the triangle
+            double b = 0.031250000000000000; // max size of the triangle
+
+            // map fArea between [0,1] 
+            fArea = (fArea - a);
+            fArea /= (b - a);
+            assert(fArea >= 0.0);
+        }
+        // put the green color depening on the size
+        for (int j = 0; j < 3; j++)
+        {
+            assert(fArea >= 0.0);
+            m_triangles[i + j].color.x = m_triangles[i + j].color.z = static_cast<float>(fArea);
+        }
     }
-    // Might be needed later...
-    //float fArea = 0.5f * abs(m_triangles[0].position.x * (m_triangles[1].position.y - m_triangles[2].position.y)
-    //    + m_triangles[1].position.x * (m_triangles[2].position.y - m_triangles[0].position.y)
-    //    + m_triangles[2].position.x * (m_triangles[0].position.y - m_triangles[1].position.y));
-
 }
 
 ThousandTriangles::Vertex ThousandTriangles::resizePoint(Vertex v)

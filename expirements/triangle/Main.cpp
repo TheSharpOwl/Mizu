@@ -22,6 +22,6 @@ _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
     // for one pixel triangle 0.01 thrid parameter
-    ThousandTriangles sample(1280, 720, 1.f);
+    ThousandTriangles sample(1280, 720, 0.1f);
     return Win32Application::Run(&sample, hInstance, nCmdShow);
 }

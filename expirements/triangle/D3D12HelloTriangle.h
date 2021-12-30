@@ -38,16 +38,17 @@ private:
     struct Vertex
     {
         XMFLOAT3 position;
+        XMFLOAT4 color;
     };
 
     Vertex m_firstTriangle[3] = {
-    { {0.0f,  0.0f, 0.0f}},
-    { {0.25f, 0.f, 0.0f}},
-    { {0.f,  -0.25f, 0.0f}}
+    { {0.0f,  0.0f, 0.0f} ,{0.0f,  1.0f, 0.0f, 1.0f}},
+    { {0.25f, 0.f, 0.0f}  ,{0.0f,  1.0f, 0.0f, 1.0f}},
+    { {0.f,  -0.25f, 0.0f},{0.0f,  1.0f, 0.0f, 1.0f}}
     };
 
     // TODO next time : rename the file of this class
-    static const int T = 5000;
+    static const int T = 1;
     float m_resizeAmount;
 
     Vertex m_triangles[T * 3];
