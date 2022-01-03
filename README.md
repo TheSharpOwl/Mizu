@@ -3,7 +3,23 @@ A Simple Game Engine with DirectX12
 
 Mizu 水 means Water in Japanense :sweat_smile:
 
-### How to run
+### Prerequisites
+
+* Visual Studio 2017 or newer with C++17 compiler version
+
+### How to build everything
+
+`cmake [path to main CMakeLists.txt]`
+
+* #### How to build Mizu
+just run it nothing else is needed :smile:
+
+* #### How to Run ThousandTriangles project
+a. Pass `shaders.hlsl` directory to HelloTriangle `--res_dir [where is shaders hlsl ending with \\]` for example in case you put repo in C: 
+```
+--res_dir C:\\Mizu\\expirements\\triangle\\resources\\
+```
+b. Run it in VS
 
 Just run `cmake` (using visual studio generator), open .sln and run it.
 

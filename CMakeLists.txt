@@ -19,6 +19,8 @@ set(HEADERS
  inc/Application.hpp
  inc/EventArgs.hpp
  inc/Game.hpp
+ inc/Helpers.h
+ inc/Utils.hpp
  )
 
 set(SOURCES 
@@ -90,3 +92,5 @@ macro(print_all_variables)
     endforeach()
     message(STATUS "print_all_variables------------------------------------------}")
 endmacro()
+
+add_subdirectory(expirements/triangle)
