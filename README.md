@@ -7,14 +7,21 @@ Mizu 水 means Water in Japanense :sweat_smile:
 
 * Visual Studio 2017 or newer with C++17 compiler version
 
-### How to Run
+### How to build everything
 
-1. `cmake [path to main CMakeLists.txt]`
-2. Pass `shaders.hlsl` directory to HelloTriangle `--res_dir [where is shaders hlsl ending with \\]` for example in case you put repo in C: 
+`cmake [path to main CMakeLists.txt]`
+
+* #### How to build Mizu
+just run it nothing else is needed :smile:
+
+* #### How to Run ThousandTriangles project
+a. Pass `shaders.hlsl` directory to HelloTriangle `--res_dir [where is shaders hlsl ending with \\]` for example in case you put repo in C: 
 ```
 --res_dir C:\\Mizu\\expirements\\triangle\\resources\\
 ```
-2. Run it in VS
+b. Run it in VS
+
+Just run `cmake` (using visual studio generator), open .sln and run it.
 
 ![](https://images7.alphacoders.com/425/425648.jpg)
 
