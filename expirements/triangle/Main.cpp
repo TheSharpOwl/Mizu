@@ -9,7 +9,7 @@
 //
 //*********************************************************
 #include "stdafx.h"
-#include "D3D12HelloTriangle.h"
+#include "ThousandTriangles.h"
 
 // Indicates to hybrid graphics systems to prefer the discrete part by default
 extern "C"
@@ -22,6 +22,6 @@ _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
     // for one pixel triangle 0.01 thrid parameter
-    ThousandTriangles sample(1280, 720, 0.1f);
+    ThousandTriangles sample(1280, 720, 0.1625f);
     return Win32Application::Run(&sample, hInstance, nCmdShow);
 }

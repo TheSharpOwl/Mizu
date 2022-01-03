@@ -48,7 +48,7 @@ private:
     };
 
     // TODO next time : rename the file of this class
-    static const int T = 1;
+    static const int T = 4800/200;
     float m_resizeAmount;
 
     Vertex m_triangles[T * 3];

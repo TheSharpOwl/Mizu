@@ -10,7 +10,7 @@
 //*********************************************************
 
 #include "stdafx.h"
-#include "D3D12HelloTriangle.h"
+#include "ThousandTriangles.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -267,7 +267,7 @@ void ThousandTriangles::OnRender()
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
     // Present the frame.
-    ThrowIfFailed(m_swapChain->Present(1, 0));
+    ThrowIfFailed(m_swapChain->Present(0, 0));
 
     WaitForPreviousFrame();
 }
@@ -312,7 +312,8 @@ void ThousandTriangles::generateTriangles()
             assert(fArea > 0.f);
 
             double a = 3.1250528991222382e-06;// min size of the triangle
-            double b = 0.031250000000000000; // max size of the triangle
+            double b = 0.00025594513863325119; // max size of the triangle (for rgb time)
+            //double b = 0.031250000000000000; // for 1.f
 
             // map fArea between [0,1] 
             fArea = (fArea - a);
@@ -323,7 +324,7 @@ void ThousandTriangles::generateTriangles()
         for (int j = 0; j < 3; j++)
         {
             assert(fArea >= 0.0);
-            m_triangles[i + j].color.x = m_triangles[i + j].color.z = static_cast<float>(fArea);
+            m_triangles[i + j].color.x = m_triangles[i + j].color.z = static_cast<float>(fArea); // bigger = more white
         }
     }
 }

@@ -1,12 +1,12 @@
 set(EXP_SRC 
-D3D12HelloTriangle.cpp
+ThousandTriangles.cpp
 DXSample.cpp
 stdafx.cpp
 Win32Application.cpp
 )
 
 set(EXP_HEADERS
-D3D12HelloTriangle.h
+ThousandTriangles.h
 d3dx12.h
 DXSample.h
 DXSampleHelper.h
