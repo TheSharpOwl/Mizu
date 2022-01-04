@@ -14,7 +14,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "Utils.hpp"
+#include "Mizu/Utils.hpp"
 
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
     DXSample(width, height, L"Thousand Triangles Experiment"),
@@ -167,8 +167,8 @@ void ThousandTriangles::LoadAssets()
 #endif
 
         //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
-        Mizu::CompileShader(L"shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
-        Mizu::CompileShader(L"shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
+        Mizu::CompileShader(L"resources/shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
+        Mizu::CompileShader(L"resources/shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
         {

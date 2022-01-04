@@ -16,6 +16,9 @@ add_definitions(-DUNICODE)
 # add Direct3D helper headers
 include_directories("${CMAKE_SOURCE_DIR}/DX")
 
+# access the engien headers
+include_directories("${CMAKE_SOURCE_DIR}/Engine/include")
+
 # link ALL targets to directx
 link_libraries(
 d3d12.lib
@@ -26,9 +29,7 @@ d3dcompiler.lib
 
 add_subdirectory(Engine)
 add_subdirectory(CubeDemo)
-# add_subdirectory(Experiments)
-
-#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+add_subdirectory(Experiments)
 
 # Make cube demo the default project
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT CubeDemo)

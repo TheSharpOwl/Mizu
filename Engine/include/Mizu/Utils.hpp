@@ -49,8 +49,7 @@ namespace Mizu
         ParseCommandLineArguments(); // to get the resources directory
 
         ID3DBlob* errorMessages;
-
-        auto temp = resources_dir + std::wstring(filename);
+        auto temp = std::wstring(filename);
         LPCWSTR fullFileDir = temp.c_str();
         std::string temp_debug = std::string(temp.begin(), temp.end());
         HRESULT hr = D3DCompileFromFile(temp.c_str(), nullptr, nullptr, entryPoint, targetType, compileFlags, 0, shaderBlob, &errorMessages);
