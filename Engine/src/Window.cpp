@@ -1,4 +1,3 @@
-#include "..\inc\Window.hpp"
 #include "Window.hpp"
 #include "Application.hpp"
 #include "CommandQueue.hpp"

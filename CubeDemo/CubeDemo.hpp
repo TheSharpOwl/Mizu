@@ -1,7 +1,7 @@
 #pragma once
 #include "DX12LibPCH.h"
-#include "Game.hpp"
-#include "Window.hpp"
+#include "Mizu/Game.hpp"
+#include "Mizu/Window.hpp"
 
 
 namespace Mizu

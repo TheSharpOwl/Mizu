@@ -354,3 +354,4 @@ CMakeCache.txt
 Mizu.sln
 *.vcxproj
 *.filters
+build/

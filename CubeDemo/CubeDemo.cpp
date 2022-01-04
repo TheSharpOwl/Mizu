@@ -1,12 +1,12 @@
-﻿#include <windows.h>
-#include "directxmath.h"
+﻿#include "CubeDemo.hpp"
 
+#include <windows.h>
+#include "directxmath.h"
 #include <string>
 
-#include "..\inc\CubeDemo.hpp"
-#include "Application.hpp"
-#include "CommandQueue.hpp"
-#include "EventArgs.hpp"
+#include "Mizu/Application.hpp"
+#include "Mizu/CommandQueue.hpp"
+#include "Mizu/EventArgs.hpp"
 
 using namespace DirectX;
 using Mizu::CubeDemo;

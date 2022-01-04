@@ -1,5 +1,5 @@
 #include "CubeDemo.hpp"
-#include "Application.hpp"
+#include "Mizu/Application.hpp"
 
 int CALLBACK wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
