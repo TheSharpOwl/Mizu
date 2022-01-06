@@ -171,7 +171,7 @@ bool CubeDemo::LoadContent()
 	return true;
 }
 
-void CubeDemo::OnResize(ResizeEventArgs& e)
+void CubeDemo::OnResize(const ResizeEventArgs& e)
 {
 	if (m_width == e.width && m_height == e.height)
 		return;
@@ -183,7 +183,7 @@ void CubeDemo::OnResize(ResizeEventArgs& e)
 	ResizeDepthBuffer(e.width, e.height);
 }
 
-void CubeDemo::OnUpdate(UpdateEventArgs& e)
+void CubeDemo::OnUpdate(const UpdateEventArgs& e)
 {
 	float angle = static_cast<float>(e.totalTime * 90.0);
 	const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
@@ -200,7 +200,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
 }
 
-void CubeDemo::OnRender(RenderEventArgs& e)
+void CubeDemo::OnRender(const RenderEventArgs& e)
 {
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = commandQueue->GetCommandList();

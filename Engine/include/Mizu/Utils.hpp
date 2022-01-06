@@ -1,12 +1,24 @@
 #pragma once
-#include<string>
+#include <string>
 #include <atlstr.h>
 #include <cassert>
+#include <stdexcept>
+
+#include "d3dcompiler.h"
 
 namespace Mizu
 {
-    static std::wstring resources_dir = L"";
+    auto kb = [](auto x) constexpr
+    {
+        return x * 1024; 
+    };
 
+    auto mb = [](auto x) constexpr
+    {
+        return kb(x) * 1024;
+    };
+
+    // left for further usuage later
     void ParseCommandLineArguments()
     {
         int argc;
@@ -16,9 +28,7 @@ namespace Mizu
         {
             if (::wcscmp(argv[i], L"--res_dir") == 0)
             {
-                resources_dir = argv[++i];
-                OutputDebugString(L"Hey now you are an all star!\n");
-                OutputDebugString(resources_dir.c_str());
+
             }
         }
 

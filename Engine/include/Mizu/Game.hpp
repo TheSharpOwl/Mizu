@@ -36,11 +36,11 @@ namespace Mizu
 
 		friend class Window;
 
-		virtual void OnUpdate(UpdateEventArgs& e) = 0;
+		virtual void OnUpdate(const UpdateEventArgs& e) = 0;
 
-		virtual void OnRender(RenderEventArgs& e) = 0;
+		virtual void OnRender(const RenderEventArgs& e) = 0;
 
-		virtual void OnResize(ResizeEventArgs& e);
+		virtual void OnResize(const ResizeEventArgs& e);
 
 		virtual void OnWindowDestroy();
 
