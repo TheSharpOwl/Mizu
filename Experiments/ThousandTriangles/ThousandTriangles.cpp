@@ -158,6 +158,9 @@ void ThousandTriangles::LoadAssets()
         ComPtr<ID3DBlob> vertexShader;
         ComPtr<ID3DBlob> pixelShader;
         ComPtr<ID3DBlob> geomertyShader;
+        ComPtr<ID3DBlob> meshShader;
+
+        
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -169,12 +172,62 @@ void ThousandTriangles::LoadAssets()
         //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
         Mizu::CompileShader(L"resources/shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
         Mizu::CompileShader(L"resources/shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
+        //Mizu::CompileShader(L"resources/shaders.hlsl", "MSMain", "ms_5_0", compileFlags, &meshShader);
+
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
         {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
         };
+
+        bool supportMeshShaders = false; // TODO change it to input dependent variable
+        if (supportMeshShaders)
+        {
+            Microsoft::WRL::ComPtr<ID3D12PipelineState>         m_meshShaderPipelineState;
+            struct PSO_STREAM
+            {
+                CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
+                CD3DX12_PIPELINE_STATE_STREAM_MS MS;
+                CD3DX12_PIPELINE_STATE_STREAM_PS PS;
+                CD3DX12_PIPELINE_STATE_STREAM_RASTERIZER RasterizerState;
+                CD3DX12_PIPELINE_STATE_STREAM_BLEND_DESC BlendState;
+                CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL DepthStencilState;
+                CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_MASK SampleMask;
+                CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY PrimitiveTopology;
+                CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RenderTargetFormats;
+                CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT DepthStencilFormat;
+                CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
+            } stateStream;
+
+            stateStream.pRootSignature = m_rootSignature.Get();
+            stateStream.MS = CD3DX12_SHADER_BYTECODE(meshShader.Get());
+            stateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+            stateStream.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+            stateStream.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+            stateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+            stateStream.SampleMask = UINT_MAX;
+            stateStream.PrimitiveTopology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+            D3D12_RT_FORMAT_ARRAY rtFormatArray{};
+            rtFormatArray.NumRenderTargets = 1;
+            rtFormatArray.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+            stateStream.RenderTargetFormats = rtFormatArray;
+
+            //stateStream.DepthStencilFormat = m_deviceResources->GetDepthBufferFormat();
+            CD3DX12_DEPTH_STENCIL_DESC& depthStencilState = stateStream.DepthStencilState;
+            depthStencilState.DepthEnable = FALSE;
+            depthStencilState.StencilEnable = FALSE;
+
+            DXGI_SAMPLE_DESC sampleDesc{};
+            sampleDesc.Count = 1;
+            stateStream.SampleDesc = sampleDesc;
+
+            D3D12_PIPELINE_STATE_STREAM_DESC StreamDesc;
+            StreamDesc.pPipelineStateSubobjectStream = &stateStream;
+            StreamDesc.SizeInBytes = sizeof(stateStream);
+            ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_meshShaderPipelineState)));
+        }
 
         // Describe and create the graphics pipeline state object (PSO).
         D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
