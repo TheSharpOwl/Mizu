@@ -179,8 +179,8 @@ void ThousandTriangles::LoadAssets()
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
         };
-
-        bool supportMeshShaders = false; // TODO change it to input dependent variable
+        // TODO next time make the mesh shader actually work from here and render the triangles
+        bool supportMeshShaders = true; // TODO change it to input dependent variable
         if (supportMeshShaders)
         {
             ThrowIfFailed(D3DReadFileToBlob(L"MeshShader.cso", &meshShader));
@@ -205,7 +205,12 @@ void ThousandTriangles::LoadAssets()
             stateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
             stateStream.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
             stateStream.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-            stateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+            //stateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+            // disable depth stencil buffer instead
+            CD3DX12_DEPTH_STENCIL_DESC& depthStencilState = stateStream.DepthStencilState;
+            depthStencilState.DepthEnable = FALSE;
+            depthStencilState.StencilEnable = FALSE;
+
             stateStream.SampleMask = UINT_MAX;
             stateStream.PrimitiveTopology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
@@ -215,9 +220,7 @@ void ThousandTriangles::LoadAssets()
             stateStream.RenderTargetFormats = rtFormatArray;
 
             //stateStream.DepthStencilFormat = m_deviceResources->GetDepthBufferFormat();
-            CD3DX12_DEPTH_STENCIL_DESC& depthStencilState = stateStream.DepthStencilState;
-            depthStencilState.DepthEnable = FALSE;
-            depthStencilState.StencilEnable = FALSE;
+
 
             DXGI_SAMPLE_DESC sampleDesc{};
             sampleDesc.Count = 1;

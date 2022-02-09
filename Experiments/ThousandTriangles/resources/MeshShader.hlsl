@@ -1,7 +1,7 @@
 struct MSvert
 {
 	float4 pos : SV_POSITION;
-	float3 color : COLOR0;
+	float4 color : COLOR;
 };
 
 [outputtopology("triangle")]
@@ -29,15 +29,15 @@ void main(
 		float4(0.5f, 0.5f, 0.5f, 1.0f)
 	};
 
-	const float3 allColors[] = {
-		float3(0.0f, 0.0f, 0.0f),
-		float3(0.0f, 0.0f, 1.0f),
-		float3(0.0f, 1.0f, 0.0f),
-		float3(0.0f, 1.0f, 1.0f),
-		float3(1.0f, 0.0f, 0.0f),
-		float3(1.0f, 0.0f, 1.0f),
-		float3(1.0f, 1.0f, 0.0f),
-		float3(1.0f, 1.0f, 1.0f)
+	const float4 allColors[] = {
+		float4(0.0f, 0.0f, 0.0f, 1.0),
+		float4(0.0f, 0.0f, 1.0f, 1.0),
+		float4(0.0f, 1.0f, 0.0f, 1.0),
+		float4(0.0f, 1.0f, 1.0f, 1.0),
+		float4(1.0f, 0.0f, 0.0f, 1.0),
+		float4(1.0f, 0.0f, 1.0f, 1.0),
+		float4(1.0f, 1.0f, 0.0f, 1.0),
+		float4(1.0f, 1.0f, 1.0f, 1.0)
 	};
 
 	const uint3 allIndices[] = {
