@@ -16,6 +16,7 @@
 #include <vector>
 #include "Mizu/Utils.hpp"
 
+
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
     DXSample(width, height, L"Thousand Triangles Experiment"),
     m_resizeAmount(resizeAmount),
@@ -155,12 +156,11 @@ void ThousandTriangles::LoadAssets()
 
     // Create the pipeline state, which includes compiling and loading shaders.
     {
+
         ComPtr<ID3DBlob> vertexShader;
         ComPtr<ID3DBlob> pixelShader;
         ComPtr<ID3DBlob> geomertyShader;
         ComPtr<ID3DBlob> meshShader;
-
-        
 
 #if defined(_DEBUG)
         // Enable better shader debugging with the graphics debugging tools.
@@ -168,11 +168,10 @@ void ThousandTriangles::LoadAssets()
 #else
         UINT compileFlags = 0;
 #endif
+         
+        ThrowIfFailed(D3DReadFileToBlob(L"ThousandTrianglesPixelShader.cso", &pixelShader));
+        ThrowIfFailed(D3DReadFileToBlob(L"ThousandTrianglesVertexShader.cso", &vertexShader));
 
-        //Mizu::CompileShader(L"shaders.hlsl", "GSMain", "gs_5_0", compileFlags, &geomertyShader);
-        Mizu::CompileShader(L"resources/shaders.hlsl", "VSMain", "vs_5_0", compileFlags, &vertexShader);
-        Mizu::CompileShader(L"resources/shaders.hlsl", "PSMain", "ps_5_0", compileFlags, &pixelShader);
-        //Mizu::CompileShader(L"resources/shaders.hlsl", "MSMain", "ms_5_0", compileFlags, &meshShader);
 
         // Define the vertex input layout.
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -184,6 +183,7 @@ void ThousandTriangles::LoadAssets()
         bool supportMeshShaders = false; // TODO change it to input dependent variable
         if (supportMeshShaders)
         {
+            ThrowIfFailed(D3DReadFileToBlob(L"MeshShader.cso", &meshShader));
             Microsoft::WRL::ComPtr<ID3D12PipelineState>         m_meshShaderPipelineState;
             struct PSO_STREAM
             {
@@ -235,7 +235,6 @@ void ThousandTriangles::LoadAssets()
         psoDesc.pRootSignature = m_rootSignature.Get();
         psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
         psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-        //psoDesc.GS = CD3DX12_SHADER_BYTECODE(geomertyShader.Get());
         psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
         psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
         psoDesc.DepthStencilState.DepthEnable = FALSE;
