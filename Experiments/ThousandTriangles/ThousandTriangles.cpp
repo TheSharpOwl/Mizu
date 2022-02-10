@@ -179,12 +179,10 @@ void ThousandTriangles::LoadAssets()
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
             { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
         };
-        // TODO next time make the mesh shader actually work from here and render the triangles
-        bool supportMeshShaders = true; // TODO change it to input dependent variable
-        if (supportMeshShaders)
+
+        if (m_supportMeshShaders)
         {
             ThrowIfFailed(D3DReadFileToBlob(L"MeshShader.cso", &meshShader));
-            Microsoft::WRL::ComPtr<ID3D12PipelineState>         m_meshShaderPipelineState;
             struct PSO_STREAM
             {
                 CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
@@ -403,7 +401,14 @@ void ThousandTriangles::PopulateCommandList()
     // However, when ExecuteCommandList() is called on a particular command 
     // list, that command list can then be reset at any time and must be before 
     // re-recording.
-    ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+    if (m_supportMeshShaders)
+    {
+        ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_meshShaderPipelineState.Get()));
+    }
+    else
+    {
+        ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+    }
 
     // Set necessary state.
     m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());

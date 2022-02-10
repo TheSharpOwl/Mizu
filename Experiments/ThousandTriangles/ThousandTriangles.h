@@ -92,4 +92,8 @@ private:
     void LoadAssets();
     void PopulateCommandList();
     void WaitForPreviousFrame();
+
+    // mesh shader related stuff
+    bool m_supportMeshShaders = true; // TODO change it to input dependent variable
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_meshShaderPipelineState;
 };
