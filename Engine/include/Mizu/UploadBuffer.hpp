@@ -84,7 +84,7 @@ namespace Mizu
 			void* m_pCpu;
 			D3D12_GPU_VIRTUAL_ADDRESS m_pGpu;
 
-			size_t m_pageSize;
+			const size_t m_pageSize;
 
 			size_t m_offset;
 		};
@@ -98,7 +98,7 @@ namespace Mizu
 
 		std::shared_ptr<Page> m_curPage;
 
-		size_t m_pageSize;
+		const size_t m_pageSize;
 
 		std::mutex m_mutex;
 	};
