@@ -220,14 +220,39 @@ void ThousandTriangles::LoadAssets()
             //stateStream.DepthStencilFormat = m_deviceResources->GetDepthBufferFormat();
 
 
-            DXGI_SAMPLE_DESC sampleDesc{};
-            sampleDesc.Count = 1;
-            stateStream.SampleDesc = sampleDesc;
+			DXGI_SAMPLE_DESC sampleDesc{};
+			sampleDesc.Count = 1;
+			stateStream.SampleDesc = sampleDesc;
 
-            D3D12_PIPELINE_STATE_STREAM_DESC StreamDesc;
-            StreamDesc.pPipelineStateSubobjectStream = &stateStream;
-            StreamDesc.SizeInBytes = sizeof(stateStream);
-            ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_meshShaderPipelineState)));
+			D3D12_PIPELINE_STATE_STREAM_DESC StreamDesc;
+			StreamDesc.pPipelineStateSubobjectStream = &stateStream;
+			StreamDesc.SizeInBytes = sizeof(stateStream);
+			ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_meshShaderPipelineState)));
+
+			// create the constant buffer
+
+			const UINT64 constantBufferSize = sizeof(m_triangles);
+
+			const CD3DX12_HEAP_PROPERTIES constantBufferHeapProps(D3D12_HEAP_TYPE_UPLOAD);
+			const CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(constantBufferSize);
+
+			ThrowIfFailed(m_device->CreateCommittedResource(
+				&constantBufferHeapProps,
+				D3D12_HEAP_FLAG_NONE,
+				&constantBufferDesc,
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&m_constantBuffer)));
+
+			// Describe and create a constant buffer view.
+			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+			cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
+			cbvDesc.SizeInBytes = constantBufferSize;
+
+			// Map and initialize the constant buffer. We don't unmap this until the
+			// app closes. Keeping things mapped for the lifetime of the resource is okay.
+			CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.
+			ThrowIfFailed(m_constantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&m_cbvDataBegin)));
         }
 
         // Describe and create the graphics pipeline state object (PSO).
@@ -301,6 +326,13 @@ void ThousandTriangles::LoadAssets()
         // list in our main loop but for now, we just want to wait for setup to 
         // complete before continuing.
         WaitForPreviousFrame();
+    }
+
+    if (m_supportMeshShaders)
+    {
+        // copy the data to the constant buffer 
+
+        memcpy(m_cbvDataBegin + sizeof(Vertex2) * m_frameIndex, &m_triangles, sizeof(m_triangles));
     }
 }
 

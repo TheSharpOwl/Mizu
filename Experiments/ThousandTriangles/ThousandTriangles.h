@@ -41,6 +41,13 @@ private:
         XMFLOAT4 color;
     };
 
+    // TODO make vertex work as this one instead or (if it works just leave it be and change it later)
+    _declspec(align(256u)) struct Vertex2
+    {
+        XMFLOAT3 position;
+        XMFLOAT4 color;
+    };
+
     Vertex m_firstTriangle[3] = {
     { {0.0f,  0.0f, 0.0f} ,{0.0f,  1.0f, 0.0f, 1.0f}},
     { {0.25f, 0.f, 0.0f}  ,{0.0f,  1.0f, 0.0f, 1.0f}},
@@ -77,6 +84,10 @@ private:
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12GraphicsCommandList> m_commandList;
     UINT m_rtvDescriptorSize;
+
+    // to upload triangles to the mesh shader
+    ComPtr<ID3D12Resource> m_constantBuffer;
+    UINT8* m_cbvDataBegin;
 
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;

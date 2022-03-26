@@ -4,6 +4,14 @@ struct MSvert
 	float4 color : COLOR;
 };
 
+struct Node
+{
+	float3 pos;
+	float4 color;
+};
+ConstantBuffer<Node> Globals : register(b0);
+
+
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]
 void main(
