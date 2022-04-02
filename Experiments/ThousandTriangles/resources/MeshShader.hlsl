@@ -48,12 +48,12 @@ void main(
 
 	if (tid < numVertices)
 	{
-		//verts[tid].pos = float4(Globals[tid].pos, 0.f);
-		//verts[tid].color = Globals[tid].color;
-		//idx[tid] = tid;
+		verts[tid].pos = float4(Globals[tid].pos, 0.f);
+		verts[tid].color = Globals[tid].color;
+		idx[tid] = tid;
 
-		verts[tid].pos = allVertices[tid];
-		verts[tid].color = allColors[tid];
-		idx[tid] = allIndices[tid];
+		//verts[tid].pos = allVertices[tid];
+		//verts[tid].color = allColors[tid];
+		//idx[tid] = allIndices[tid];
 	}
 }

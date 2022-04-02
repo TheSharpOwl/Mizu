@@ -144,17 +144,7 @@ void ThousandTriangles::LoadPipeline()
 void ThousandTriangles::LoadAssets()
 {
     // Create an empty root signature.
-    if(!m_supportMeshShaders)
-    {
-        CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-        rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-        ComPtr<ID3DBlob> signature;
-        ComPtr<ID3DBlob> error;
-        ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
-        ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
-    }
-    else 
+    if(m_supportMeshShaders)
     {
         //CD3DX12_ROOT_PARAMETER rootParamters[1];
         //// TODO DELETE first parameter was sizeof(XMatrix)/4 (same number)
@@ -179,6 +169,18 @@ void ThousandTriangles::LoadAssets()
         ReadDataFromFile(L"MeshShader.cso", &meshShaderData.data, &meshShaderData.size);
         ThrowIfFailed(m_device->CreateRootSignature(0, meshShaderData.data, meshShaderData.size, IID_PPV_ARGS(&m_rootSignature2)));
     }
+    else 
+    {
+        CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+        rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+        ComPtr<ID3DBlob> signature;
+        ComPtr<ID3DBlob> error;
+        ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+        ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
+    }
+
+
     // Create the pipeline state, which includes compiling and loading shaders.
     {
 
@@ -257,8 +259,30 @@ void ThousandTriangles::LoadAssets()
 			ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_meshShaderPipelineState)));
 
 			// create the constant buffer
+            // TODO MAYBE SHOULD NOT BE /sizeof(Vertex)
+            auto trianglesDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeof(m_triangles)/sizeof(Vertex));
+            auto defaultHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+            ThrowIfFailed(m_device->CreateCommittedResource(&defaultHeap, D3D12_HEAP_FLAG_NONE, &trianglesDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_trianglesResource)));
+            auto trianglesBufferLocation = m_trianglesResource->GetGPUVirtualAddress();
+            auto trianglesBufferFormat = DXGI_FORMAT_R32_FLOAT;
+            auto trianglesBufferSizeInBytes = sizeof(m_triangles);
 
+
+            // create the upload resources
+            // (added to the members already)
+           /* ComPtr<ID3D12Resource> m_trianglesUpload;*/
+            
+            auto uploadHeap = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+            ThrowIfFailed(m_device->CreateCommittedResource(&uploadHeap, D3D12_HEAP_FLAG_NONE, &trianglesDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&m_trianglesUpload)));
+
+            // map and copy memory to upload heap
+            {
+                uint8_t* memory = nullptr;
+                m_trianglesUpload->Map(0, nullptr, reinterpret_cast<void**>(&memory));
+                std::memcpy(memory, m_triangles, sizeof(m_triangles) / sizeof(Vertex));
+            }
 			const UINT64 constantBufferSize = sizeof(m_triangles);
+
 
 			const CD3DX12_HEAP_PROPERTIES constantBufferHeapProps(D3D12_HEAP_TYPE_UPLOAD);
 			const CD3DX12_RESOURCE_DESC constantBufferDesc = CD3DX12_RESOURCE_DESC::Buffer(constantBufferSize);
@@ -309,7 +333,23 @@ void ThousandTriangles::LoadAssets()
     // to record yet. The main loop expects it to be closed, so close it now.
     ThrowIfFailed(m_commandList->Close());
 
+    if (m_supportMeshShaders)
+    {
+        // upload the resource command
+        D3D12_RESOURCE_BARRIER postCopyBarrier;
+        // populate the command list
+        m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+        m_commandList->CopyResource(m_trianglesResource.Get(), m_trianglesUpload.Get());
+        postCopyBarrier = CD3DX12_RESOURCE_BARRIER::Transition(m_trianglesResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+        m_commandList->ResourceBarrier(1, &postCopyBarrier);
+
+        ThrowIfFailed(m_commandList->Close());
+        ID3D12CommandList* ppCommandLists[] = { m_commandList.Get() };
+        m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+    }
     // Create the vertex buffer.
+    //if(m_supportMeshShaders == false)
     {
         generateTriangles();
         const UINT vertexBufferSize = sizeof(m_triangles);
@@ -381,6 +421,7 @@ void ThousandTriangles::OnRender()
     m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
     // Present the frame.
+    // TODO maybe wrong and should be 1, 0
     ThrowIfFailed(m_swapChain->Present(0, 0));
 
     WaitForPreviousFrame();
@@ -465,14 +506,15 @@ void ThousandTriangles::PopulateCommandList()
     if (m_supportMeshShaders)
     {
         ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_meshShaderPipelineState.Get()));
+        m_commandList->SetGraphicsRootSignature(m_rootSignature2.Get());
     }
     else
     {
         ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
+        m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
     }
 
     // Set necessary state.
-    m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
     m_commandList->RSSetViewports(1, &m_viewport);
     m_commandList->RSSetScissorRects(1, &m_scissorRect);
 
@@ -486,8 +528,24 @@ void ThousandTriangles::PopulateCommandList()
     const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
     m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
     m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-    m_commandList->DrawInstanced(T * 3, T, 0, 0);
+    if (m_supportMeshShaders)
+    {
+        m_commandList->SetGraphicsRootShaderResourceView(0, m_trianglesResource->GetGPUVirtualAddress());
+        for (int i = 0; i < T; i++)
+        {
+            // TODO these are not working (without them it works but without drawing anything (just clearing screen)
+            // maybe mistake is not here 
+            m_commandList->SetGraphicsRoot32BitConstant(1, i * 3, 1);
+            // TODO maybe 1 because 1 triangle I don't know ??
+            m_commandList->DispatchMesh(3, 1, 1);
+        }
+    }
+    else
+    {
+        m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
+        m_commandList->DrawInstanced(T * 3, T, 0, 0);
+    }
+
 
     // Indicate that the back buffer will now be used to present.
     m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

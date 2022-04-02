@@ -83,7 +83,7 @@ private:
     ComPtr<ID3D12RootSignature> m_rootSignature2;
     ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
     ComPtr<ID3D12PipelineState> m_pipelineState;
-    ComPtr<ID3D12GraphicsCommandList> m_commandList;
+    ComPtr<ID3D12GraphicsCommandList6> m_commandList;
     UINT m_rtvDescriptorSize;
 
     // to upload triangles to the mesh shader
@@ -106,6 +106,8 @@ private:
     void WaitForPreviousFrame();
 
     // mesh shader related stuff
-    bool m_supportMeshShaders = true; // TODO change it to input dependent variable
+	bool m_supportMeshShaders = true; // TODO change it to input dependent variable
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_meshShaderPipelineState;
+	Microsoft::WRL::ComPtr<ID3D12Resource>      m_trianglesResource; // for mesh shader for now
+	Microsoft::WRL::ComPtr<ID3D12Resource>      m_trianglesUpload;
 };
