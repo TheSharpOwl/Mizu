@@ -144,6 +144,7 @@ void ThousandTriangles::LoadPipeline()
 void ThousandTriangles::LoadAssets()
 {
     // Create an empty root signature.
+    if(!m_supportMeshShaders)
     {
         CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
         rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -153,7 +154,31 @@ void ThousandTriangles::LoadAssets()
         ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
         ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
     }
+    else 
+    {
+        //CD3DX12_ROOT_PARAMETER rootParamters[1];
+        //// TODO DELETE first parameter was sizeof(XMatrix)/4 (same number)
+        //rootParamters[0].InitAsConstants(sizeof(m_triangles)/4, 0, 0, D3D12_SHADER_VISIBILITY_MESH);
 
+        //CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+        //// TODO add deny flags to the last parameter
+        //rootSignatureDesc.Init(_countof(rootParamters), rootParamters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+        //ComPtr<ID3DBlob> signature;
+        //ComPtr<ID3DBlob> error;
+        //ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
+        //ThrowIfFailed(m_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
+
+        // Try to use the root signature of the precompiled mesh shader
+        struct
+        {
+            byte* data;
+            uint32_t size;
+        } meshShaderData;
+
+        ReadDataFromFile(L"MeshShader.cso", &meshShaderData.data, &meshShaderData.size);
+        ThrowIfFailed(m_device->CreateRootSignature(0, meshShaderData.data, meshShaderData.size, IID_PPV_ARGS(&m_rootSignature2)));
+    }
     // Create the pipeline state, which includes compiling and loading shaders.
     {
 
@@ -182,6 +207,7 @@ void ThousandTriangles::LoadAssets()
 
         if (m_supportMeshShaders)
         {
+
             ThrowIfFailed(D3DReadFileToBlob(L"MeshShader.cso", &meshShader));
             struct PSO_STREAM
             {
@@ -198,7 +224,8 @@ void ThousandTriangles::LoadAssets()
                 CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC SampleDesc;
             } stateStream;
 
-            stateStream.pRootSignature = m_rootSignature.Get();
+            stateStream.pRootSignature = m_rootSignature2.Get();
+            // TODO use the data and size like in the sample
             stateStream.MS = CD3DX12_SHADER_BYTECODE(meshShader.Get());
             stateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
             stateStream.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -254,23 +281,25 @@ void ThousandTriangles::LoadAssets()
 			CD3DX12_RANGE readRange(0, 0);        // We do not intend to read from this resource on the CPU.
 			ThrowIfFailed(m_constantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&m_cbvDataBegin)));
         }
-
-        // Describe and create the graphics pipeline state object (PSO).
-        D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-        psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-        psoDesc.pRootSignature = m_rootSignature.Get();
-        psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-        psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-        psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-        psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-        psoDesc.DepthStencilState.DepthEnable = FALSE;
-        psoDesc.DepthStencilState.StencilEnable = FALSE;
-        psoDesc.SampleMask = UINT_MAX;
-        psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-        psoDesc.NumRenderTargets = 1;
-        psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-        psoDesc.SampleDesc.Count = 1;
-        ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+        else
+        {
+            // Describe and create the graphics pipeline state object (PSO).
+            D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+            psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+            psoDesc.pRootSignature = m_rootSignature.Get();
+            psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+            psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+            psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+            psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+            psoDesc.DepthStencilState.DepthEnable = FALSE;
+            psoDesc.DepthStencilState.StencilEnable = FALSE;
+            psoDesc.SampleMask = UINT_MAX;
+            psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+            psoDesc.NumRenderTargets = 1;
+            psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+            psoDesc.SampleDesc.Count = 1;
+            ThrowIfFailed(m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&m_pipelineState)));
+        }
     }
 
     // Create the command list.

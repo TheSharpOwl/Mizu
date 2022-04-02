@@ -1,17 +1,21 @@
+
+#define ROOT_SIG "SRV(t0)"
+
 struct MSvert
 {
 	float4 pos : SV_POSITION;
 	float4 color : COLOR;
 };
 
-struct Node
+struct Vertex
 {
 	float3 pos;
 	float4 color;
 };
-ConstantBuffer<Node> Globals : register(b0);
 
+StructuredBuffer<Vertex> Globals : register(t0);
 
+[RootSignature(ROOT_SIG)]
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]
 void main(
@@ -44,6 +48,10 @@ void main(
 
 	if (tid < numVertices)
 	{
+		//verts[tid].pos = float4(Globals[tid].pos, 0.f);
+		//verts[tid].color = Globals[tid].color;
+		//idx[tid] = tid;
+
 		verts[tid].pos = allVertices[tid];
 		verts[tid].color = allColors[tid];
 		idx[tid] = allIndices[tid];
