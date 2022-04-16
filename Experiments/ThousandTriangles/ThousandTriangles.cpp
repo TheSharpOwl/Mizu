@@ -535,7 +535,7 @@ void ThousandTriangles::PopulateCommandList()
         {
             // TODO these are not working (without them it works but without drawing anything (just clearing screen)
             // maybe mistake is not here 
-            m_commandList->SetGraphicsRoot32BitConstant(1, i * 3, 1);
+            m_commandList->SetGraphicsRoot32BitConstant(0, i * 3, 1);
             // TODO maybe 1 because 1 triangle I don't know ??
             m_commandList->DispatchMesh(3, 1, 1);
         }
