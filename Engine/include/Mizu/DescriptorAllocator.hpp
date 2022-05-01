@@ -9,7 +9,7 @@
 
 namespace Mizu {
 
-	class DescrptorAllocatorPage;
+	class DescriptorAllocatorPage;
 
 	class DescriptorAllocator
 	{
@@ -25,10 +25,17 @@ namespace Mizu {
 
 	private:
 		// TODO maybe find a better name
-		using DescriptorHeapPool = std::vector<std::shared_ptr<DescrptorAllocatorPage>>;
+		using DescriptorHeapPool = std::vector<std::shared_ptr<DescriptorAllocatorPage>>;
 
-		std::set<size_t> m_availablePages;
+		DescriptorHeapPool m_heapPool;
 
-		std::mutex allocationMutex;
+		D3D12_DESCRIPTOR_HEAP_TYPE m_heapType;
+		uint32_t m_numDescriptorsPerHeap;
+
+		std::shared_ptr<DescriptorAllocatorPage> createAllocatorPage();
+
+		std::set<size_t> m_availableHeaps;
+
+		std::mutex m_allocationMutex;
 	};
 }
