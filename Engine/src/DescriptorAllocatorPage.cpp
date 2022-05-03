@@ -44,15 +44,15 @@ namespace Mizu
 
     void DescriptorAllocatorPage::addNewblock(uint32_t offset, uint32_t numDescriptors)
     {
-        auto offsetIt = m_freelistByOffset.emplace(offset, numDescriptors);
+        auto offsetIt = m_freeListByOffset.emplace(offset, numDescriptors);
         auto sizeIt = m_freeListBySize.emplace(numDescriptors, offsetIt.first);
-        offsetIt.first->second.FreeListBySize = sizeIt;
+        offsetIt.first->second.freeListBySizeIt = sizeIt;
 
     }
 
     DescriptorAllocation DescriptorAllocatorPage::allocate(uint32_t numDescriptors)
     {
-        std::lock_guard<std::mutex>(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
 
         if (numDescriptors > m_numFreeHandles)
         {
@@ -68,22 +68,22 @@ namespace Mizu
             return DescriptorAllocation();
         }
 
-        auto blockSize = smallestBlockIt->first;
+        auto blocksize = smallestBlockIt->first;
 
         auto offsetIt = smallestBlockIt->second;
 
         auto offset = offsetIt->first;
 
         m_freeListBySize.erase(smallestBlockIt);
-        m_freelistByOffset.erase(offsetIt);
+        m_freeListByOffset.erase(offsetIt);
 
         auto newOffset = offset + numDescriptors;
-        auto newSize = blockSize - numDescriptors;
+        auto newsize = blocksize - numDescriptors;
 
-        if(newSize > 0)
+        if(newsize > 0)
         {
             // if the allocation didn't match exactly the requested size, return the left over to the free size
-            addNewblock(newOffset, newSize);
+            addNewblock(newOffset, newsize);
         }
 
         m_numFreeHandles -= numDescriptors;
@@ -97,10 +97,10 @@ namespace Mizu
         return static_cast<uint32_t>(handle.ptr - m_baseDescriptor.ptr) / m_descriptorHandleIncrementSize;
     }
 
-    void DescriptorAllocatorPage::free( DescriptorAllocation&& descriptor, uint64_t frameNumber )
+    void DescriptorAllocatorPage::freePage(DescriptorAllocation&& descriptor, uint64_t frameNumber )
     {
         // Compute the offset of the descriptor within the descriptor heap.
-        auto offset = ComputeOffset( descriptor.getDescriptorHandle() );
+        auto offset = computeOffset( descriptor.getDescriptorHandle() );
 
         std::lock_guard<std::mutex> lock( m_mutex );
 
@@ -110,54 +110,54 @@ namespace Mizu
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t numDescriptors)
     {
-        auto nextBlockIt = m_freeListBySize.upper_bound(offset);
+        auto nextBlockIt = m_freeListByOffset.upper_bound(offset);
 
         auto prevBlockIt = nextBlockIt;
 
-        if(prevBlockIt != m_freeListBySize.begin())
+        if(prevBlockIt != m_freeListByOffset.begin())
         {
             prevBlockIt--;
         }
         else
         {
-            prevBlockIt = m_freeListBySize.end();
+            prevBlockIt = m_freeListByOffset.end();
         }
 
         m_numFreeHandles += numDescriptors;
 
 
-        if ( prevBlockIt != m_FreeListByOffset.end() &&
-             offset == prevBlockIt->first + prevBlockIt->second.Size )
+        if ( prevBlockIt != m_freeListByOffset.end() &&
+             offset == prevBlockIt->first + prevBlockIt->second.size )
         {
             // The previous block is exactly behind the block that is to be freed.
             // Increase the block size by the size of merging with the previous block.
             offset = prevBlockIt->first;
-            numDescriptors += prevBlockIt->second.Size;
+            numDescriptors += prevBlockIt->second.size;
 
             // Remove the previous block from the free list.
-            m_FreeListBySize.erase( prevBlockIt->second.FreeListBySizeIt );
-            m_FreeListByOffset.erase( prevBlockIt );
+            m_freeListBySize.erase( prevBlockIt->second.freeListBySizeIt );
+            m_freeListByOffset.erase( prevBlockIt );
         }
 
-        if ( nextBlockIt != m_FreeListByOffset.end() &&
+        if ( nextBlockIt != m_freeListByOffset.end() &&
              offset + numDescriptors == nextBlockIt->first )
         {
             // The next block is exactly in front of the block that is to be freed.
             //
             // Offset               NextBlock.Offset
             // |                    |
-            // |<------Size-------->|<-----NextBlock.Size----->|
+            // |<------size-------->|<-----NextBlock.size----->|
 
             // Increase the block size by the size of merging with the next block.
-            numDescriptors += nextBlockIt->second.Size;
+            numDescriptors += nextBlockIt->second.size;
 
             // Remove the next block from the free list.
-            m_FreeListBySize.erase( nextBlockIt->second.FreeListBySizeIt );
-            m_FreeListByOffset.erase( nextBlockIt );
+            m_freeListBySize.erase( nextBlockIt->second.freeListBySizeIt );
+            m_freeListByOffset.erase( nextBlockIt );
         }
 
         // Add the freed block to the free list.
-        addNewBlock( offset, numDescriptors );
+        addNewblock( offset, numDescriptors );
     }
 
 
@@ -170,9 +170,9 @@ namespace Mizu
             auto& staleDescriptor = m_staleDescriptors.front();
 
             // The offset of the descriptor inside the heap.
-            auto offset = staleDescriptor.Offset;
+            auto offset = staleDescriptor.offset;
             // The number of descriptors that were allocated.
-            auto numDescriptors = staleDescriptor.Size;
+            auto numDescriptors = staleDescriptor.size;
 
             freeBlock( offset, numDescriptors );
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "DescriptorAllocatorPage.hpp"
-
 #include "d3d12.h"
 #include "DescriptorAllocation.hpp"
 
@@ -31,7 +29,7 @@ namespace Mizu
 
         DescriptorAllocation allocate(uint32_t numDescriptors);
 
-        void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNumber);
+        void freePage(DescriptorAllocation&& descriptorHandle, uint64_t frameNumber);
 
         void releaseStaleDescriptors(uint64_t frameNumber);
 
@@ -63,7 +61,7 @@ namespace Mizu
 
             sizeType size;
 
-            FreeListBySize::iterator FreeListBySize;
+            FreeListBySize::iterator freeListBySizeIt;
         };
 
         struct StaleDescriptorInfo
@@ -83,7 +81,7 @@ namespace Mizu
 
         using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
 
-        FreeListByOffSet m_freelistByOffset;
+        FreeListByOffSet m_freeListByOffset;
         FreeListBySize  m_freeListBySize;
         StaleDescriptorQueue m_staleDescriptors;
 
