@@ -140,7 +140,7 @@ for the GPU](https://replicability.graphics/papers/10.1145-3197517.3201374/index
 [issues-shield]: https://img.shields.io/github/issues/TheSharpOwl/Mizu.svg?style=for-the-badge
 [issues-url]: https://github.com/TheSharpOwl/Mizu/issues
 [license-shield]: https://img.shields.io/github/license/TheSharpOwl/Mizu.svg?style=for-the-badge
-[license-url]: https://github.com/TheSharpOwl/Mizu/blob/master/LICENSE.txt
+[license-url]: https://github.com/TheSharpOwl/Mizu/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/mohamadziadalkabakibi/
 [product-screenshot]: images/screenshot.png
