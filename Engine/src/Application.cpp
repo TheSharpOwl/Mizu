@@ -14,6 +14,7 @@ using namespace std;
 static Application* App = nullptr;
 static bool isReady = false;
 const wchar_t* Application::windowClassName = L"MizuWindowClass";
+uint64_t Application::ms_frameCount = 0;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -25,6 +26,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (message)
 		{
 		case WM_PAINT:
+			++Application::ms_frameCount;
+
 			window->Update();
 			window->Render();
 			break;
@@ -127,6 +130,8 @@ Application::Application(HINSTANCE hInst) :
 	m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
 	m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
+
+	ms_frameCount = 0;
 }
 void Application::Create(HINSTANCE hInst) // static 
 {
