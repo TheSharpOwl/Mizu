@@ -20,7 +20,7 @@ namespace Mizu
         DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type,
                                 uint32_t numOfDescriptors);
 
-        D3D12_DESCRIPTOR_HEAP_TYPE getHeapType();
+        D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType();
 
         bool hasSpace(uint32_t numDescriptors) const;
 

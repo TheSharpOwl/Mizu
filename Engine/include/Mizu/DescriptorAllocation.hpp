@@ -27,21 +27,21 @@ namespace Mizu
 		DescriptorAllocation(DescriptorAllocation&& allocation);
 		DescriptorAllocation& operator=(DescriptorAllocation&& other);
 
-		bool isNull() const;
+		bool IsNull() const;
 
 		// Get a descriptor at a particular offset in the allocation.
-		D3D12_CPU_DESCRIPTOR_HANDLE getDescriptorHandle(uint32_t offset = 0) const;
+		D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle(uint32_t offset = 0) const;
 
 		// Get the number of (consecutive) handles for this allocation.
-		uint32_t getNumHandles() const;
+		uint32_t GetNumHandles() const;
 
 		// Get the heap that this allocation came from.
 		// (For internal use only).
-		std::shared_ptr<DescriptorAllocatorPage> getDescriptorAllocatorPage() const;
+		std::shared_ptr<DescriptorAllocatorPage> GetDescriptorAllocatorPage() const;
 
 	private:
 		// Free the descriptor back to the heap it came from.
-		void freeDescriptor();
+		void FreeDescriptor();
 
 		// The base descriptor.
 		D3D12_CPU_DESCRIPTOR_HANDLE m_descriptor;

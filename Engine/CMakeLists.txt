@@ -9,6 +9,20 @@ set(ENGINE_HEADERS
         include/Mizu/DescriptorAllocator.hpp
         include/Mizu/DescriptorAllocation.hpp
         include/Mizu/DescriptorAllocatorPage.hpp
+        include/Mizu/DynamicDescriptorHeap.hpp
+        include/Mizu/CommandList.hpp
+        include/Mizu/TextureUsage.h
+        include/Mizu/RootSignature.h
+        include/Mizu/ByteAddressBuffer.h
+        include/Mizu/Buffer.h
+        include/Mizu/Resource.h
+        include/Mizu/GenerateMipsPSO.h
+        include/Mizu/IndexBuffer.h
+        include/Mizu/PanoToCubemapPSO.h
+        include/Mizu/RenderTarget.h
+        include/Mizu/Texture.h
+        include/Mizu/VertexBuffer.h
+        include/Mizu/StructuredBuffer.h
         )
 
 set(ENGINE_SOURCES
@@ -20,6 +34,14 @@ set(ENGINE_SOURCES
         src/DescriptorAllocator.cpp
         src/DescriptorAllocation.cpp
         src/DescriptorAllocatorPage.cpp
+        src/DynamicDescriptorHeap.cpp
+        src/RootSignature.cpp
+        src/CommandList.cpp
+        src/RootSignature.cpp
+        src/Resource.cpp
+        src/Resource.cpp
+        src/VertexBuffer.cpp
+        src/StructuredBuffer.cpp
         )
 
 add_library(Mizu STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
@@ -36,3 +58,4 @@ set_target_properties(Mizu PROPERTIES
 # Make the headers available to the engine without Mizu prefix
 target_include_directories(Mizu PRIVATE "${PROJECT_SOURCE_DIR}/Engine/include/Mizu")
 
+# TODO next time add directx tex here 

@@ -25,7 +25,7 @@ namespace Mizu
 
 	DescriptorAllocation::~DescriptorAllocation()
 	{
-		freeDescriptor();
+		FreeDescriptor();
 	}
 
 	DescriptorAllocation::DescriptorAllocation(DescriptorAllocation&& allocation)
@@ -42,7 +42,7 @@ namespace Mizu
 	DescriptorAllocation& DescriptorAllocation::operator=(DescriptorAllocation&& other)
 	{
 		// Free this descriptor if it points to anything.
-		freeDescriptor();
+		FreeDescriptor();
 
 		m_descriptor = other.m_descriptor;
 		m_numHandles = other.m_numHandles;
@@ -56,9 +56,9 @@ namespace Mizu
 		return *this;
 	}
 
-	void DescriptorAllocation::freeDescriptor()
+	void DescriptorAllocation::FreeDescriptor()
 	{
-		if (!isNull() && m_page)
+		if (!IsNull() && m_page)
 		{
 			m_page->freePage(std::move(*this), Application::GetFrameCount());
 
@@ -70,24 +70,24 @@ namespace Mizu
 	}
 
 	// Check if this a valid descriptor.
-	bool DescriptorAllocation::isNull() const
+	bool DescriptorAllocation::IsNull() const
 	{
 		return m_descriptor.ptr == 0;
 	}
 
 	// get a descriptor at a particular offset in the allocation.
-	D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocation::getDescriptorHandle(uint32_t offset) const
+	D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocation::GetDescriptorHandle(uint32_t offset) const
 	{
 		assert(offset < m_numHandles);
 		return { m_descriptor.ptr + (m_descriptorSize * offset) };
 	}
 
-	uint32_t DescriptorAllocation::getNumHandles() const
+	uint32_t DescriptorAllocation::GetNumHandles() const
 	{
 		return m_numHandles;
 	}
 
-	std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocation::getDescriptorAllocatorPage() const
+	std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocation::GetDescriptorAllocatorPage() const
 	{
 		return m_page;
 	}

@@ -30,12 +30,12 @@ namespace Mizu
             }
 
             // we found a valid allocation
-            if (!allocation.isNull()) {
+            if (!allocation.IsNull()) {
                 break;
             }
         }
 
-        if (allocation.isNull()) {
+        if (allocation.IsNull()) {
             m_numDescriptorsPerHeap = std::max(m_numDescriptorsPerHeap, numDescriptors);
             auto newPage = createAllocatorPage();
 

@@ -27,7 +27,7 @@ namespace Mizu
         addNewblock(0, m_numFreeHandles);
     }
 
-    D3D12_DESCRIPTOR_HEAP_TYPE DescriptorAllocatorPage::getHeapType()
+    D3D12_DESCRIPTOR_HEAP_TYPE DescriptorAllocatorPage::GetHeapType()
     {
         return m_heapType;
     }
@@ -100,12 +100,12 @@ namespace Mizu
     void DescriptorAllocatorPage::freePage(DescriptorAllocation&& descriptor, uint64_t frameNumber )
     {
         // Compute the offset of the descriptor within the descriptor heap.
-        auto offset = computeOffset( descriptor.getDescriptorHandle() );
+        auto offset = computeOffset( descriptor.GetDescriptorHandle() );
 
         std::lock_guard<std::mutex> lock( m_mutex );
 
         // Don't add the block directly to the free list until the frame has completed.
-        m_staleDescriptors.emplace( offset, descriptor.getNumHandles(), frameNumber );
+        m_staleDescriptors.emplace( offset, descriptor.GetNumHandles(), frameNumber );
     }
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t numDescriptors)
