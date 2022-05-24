@@ -47,6 +47,7 @@ private:
     { {0.f,  -0.25f, 0.0f},{0.0f,  1.0f, 0.0f, 1.0f}}
     };
 
+    float dataToUpload[1] = {10.0f};
     // TODO next time : rename the file of this class
     static const int T = 4800/200;
     float m_resizeAmount;

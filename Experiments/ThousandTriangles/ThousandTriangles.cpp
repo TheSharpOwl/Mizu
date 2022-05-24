@@ -16,7 +16,7 @@
 #include <vector>
 #include "Mizu/Utils.hpp"
 
-#define MESH_SHADER
+//#define MESH_SHADER
 
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
 	DXSample(width, height, L"Thousand Triangles Experiment"),
@@ -144,11 +144,48 @@ void ThousandTriangles::LoadPipeline()
 // Load the sample assets.
 void ThousandTriangles::LoadAssets()
 {
-	// Create an empty root signature.
 	{
+#ifdef MESH_SHADER
+		// define the range
+		D3D12_DESCRIPTOR_RANGE srvRange;
+		ZeroMemory(&srvRange, sizeof(srvRange));
+		srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		srvRange.NumDescriptors = 1; // only upload one buffer
+		srvRange.BaseShaderRegister = 0; // starting from the first register t0 (t is made for srv of course)
+		srvRange.RegisterSpace = 0; // this allows to use same register name if a different space is used (doesn't matter in this context)
+		srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		// define the root parameter
+		// TODO rename to msRootParameter (mesh shader ...)
+		D3D12_ROOT_PARAMETER srvRootParameter;
+		ZeroMemory(&srvRootParameter, sizeof(srvRootParameter));
+		srvRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		srvRootParameter.DescriptorTable = { 1, &srvRange };// one range
+		srvRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_MESH; // only visible to mesh shader
+
+
+		std::vector<D3D12_ROOT_PARAMETER> rootParameters{ srvRootParameter };
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags{
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS
+		};
+
+		D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+		ZeroMemory(&rootSignatureDesc, sizeof(rootSignatureDesc));
+		rootSignatureDesc.NumParameters = static_cast<UINT>(rootParameters.size());
+		rootSignatureDesc.pParameters = rootParameters.data();
+		rootSignatureDesc.NumStaticSamplers = 0; // samplers can be stored in root signature separately and consume no space
+		rootSignatureDesc.pStaticSamplers = nullptr; // we're not using texturing
+		rootSignatureDesc.Flags = rootSignatureFlags;
+
+#else
+		// Create an empty root signature.
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
+#endif
 		ComPtr<ID3DBlob> signature;
 		ComPtr<ID3DBlob> error;
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
@@ -270,6 +307,7 @@ void ThousandTriangles::LoadAssets()
 	// Create the vertex buffer.
 	generateTriangles();
 #ifdef MESH_SHADER
+
 #else
 	{
 

@@ -4,6 +4,9 @@ struct MSvert
 	float4 color : COLOR;
 };
 
+
+StructuredBuffer<float4> coords : register(t0);
+
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]
 void main(
