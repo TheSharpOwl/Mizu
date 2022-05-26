@@ -16,7 +16,7 @@
 #include <vector>
 #include "Mizu/Utils.hpp"
 
-//#define MESH_SHADER
+#define MESH_SHADER
 
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
 	DXSample(width, height, L"Thousand Triangles Experiment"),
@@ -308,6 +308,18 @@ void ThousandTriangles::LoadAssets()
 	generateTriangles();
 #ifdef MESH_SHADER
 
+	using coordsType = decltype(ThousandTriangles::m_meshShaderCoordsData)::value_type;
+	// create a default buffer
+	m_meshShaderCoordsData.push_back({ 0.0f,  0.0f, 0.0f });
+	m_structuredBuffer = Mizu::createStructuredBuffer(m_device.Get(), m_meshShaderCoordsData, L"coords");
+
+	// create descriptor heap
+	createCoordsDescHeap();
+
+
+	Mizu::createSrv<coordsType>(m_device.Get(), m_meshShaderCoordsDescHeap.Get(), 0, m_structuredBuffer.Get(), m_meshShaderCoordsData.size());
+	
+
 #else
 	{
 
@@ -507,4 +519,16 @@ void ThousandTriangles::WaitForPreviousFrame()
 	}
 
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void ThousandTriangles::createCoordsDescHeap()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
+	ZeroMemory(&heapDesc, sizeof(heapDesc));
+	heapDesc.NumDescriptors = 1; // only one structured buffer the coords one
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	heapDesc.NodeMask = 0;
+
+	ThrowIfFailed(m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_meshShaderCoordsDescHeap)));
 }

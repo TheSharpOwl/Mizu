@@ -90,4 +90,147 @@ namespace Mizu
         assert((t >= x && t <= y) && "t should be in range [x,y]");
         return (2.f * t) / (y - x) - 1;
     }
+
+    template<typename T>
+    Microsoft::WRL::ComPtr<ID3D12Resource> createDefaultBuffer(ID3D12Device* device, const std::vector<T>& data, D3D12_RESOURCE_STATES finalState, std::wstring name = L"")
+    {
+        UINT elementSize = sizeof(T);
+        UINT bufferSize = elementSize * data.size();
+
+        D3D12_HEAP_PROPERTIES heapProps;
+        ZeroMemory(&heapProps, sizeof(heapProps));
+        heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+        heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // if cpu can access the heap or not (read and/or write or none)
+        heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN; // this affects the bandwidth of the memory (faster for cpu, slower for gpu or vice versa... check the reference page)
+        heapProps.CreationNodeMask = 1; // where it should be created (in case of multi-adapter)
+        heapProps.VisibleNodeMask = 1;// same but for visiblity not creation
+
+        D3D12_RESOURCE_DESC resDesc;
+        ZeroMemory(&resDesc, sizeof(resDesc));
+        resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+        resDesc.Alignment = 0; // will use the default 64 kb
+        resDesc.Width = bufferSize;
+        resDesc.Height = 1;
+        resDesc.DepthOrArraySize = 1;
+        resDesc.MipLevels = 1;
+        resDesc.Format = DXGI_FORMAT_UNKNOWN;
+        resDesc.SampleDesc.Count = 1;
+        resDesc.SampleDesc.Quality = 0;
+        resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+        resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+        // this heap stores the data inside the gpu
+        Microsoft::WRL::ComPtr<ID3D12Resource> defaultBuffer;
+        ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&defaultBuffer)));
+
+        defaultBuffer->SetName(name.c_str());
+
+        heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+
+        // this heap will upload the data to the default buffer (because cpu cannot access the default heap)
+        Microsoft::WRL::ComPtr<ID3D12Resource> uploadBuffer;
+        ThrowIfFailed(device->CreateCommittedResource(&heapProps, D3D12_HEAP_FLAG_NONE, &resDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&uploadBuffer)));
+
+
+        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+        ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator)));
+
+
+
+        Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+        ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(),nullptr, IID_PPV_ARGS(&commandList)));
+
+        D3D12_COMMAND_QUEUE_DESC queueDesc;
+        ZeroMemory(&queueDesc, sizeof(queueDesc));
+        queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+        queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        queueDesc.NodeMask = 0;
+
+
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
+        ThrowIfFailed(device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&commandQueue)));
+
+        void* pData;
+        ThrowIfFailed(uploadBuffer->Map(0, NULL, &pData));
+
+        memcpy(pData, data.data(), bufferSize);
+        uploadBuffer->Unmap(0, NULL);
+
+        commandList->CopyBufferRegion(defaultBuffer.Get(), 0, uploadBuffer.Get(), 0, bufferSize);
+
+
+        D3D12_RESOURCE_BARRIER barrierDesc;
+        ZeroMemory(&barrierDesc, sizeof(barrierDesc));
+        barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barrierDesc.Transition.pResource = defaultBuffer.Get();
+        barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+        barrierDesc.Transition.StateAfter = finalState;
+        barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+
+        commandList->ResourceBarrier(1, &barrierDesc);
+
+        commandList->Close();
+        std::vector<ID3D12CommandList*> ppCommandLists{ commandList.Get() };
+        commandQueue->ExecuteCommandLists(static_cast<UINT>(ppCommandLists.size()), ppCommandLists.data());
+
+        UINT64 initialValue{ 0 };
+        Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+        if (FAILED(device->CreateFence(initialValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(fence.ReleaseAndGetAddressOf()))))
+        {
+            throw(std::runtime_error{ "Error creating a fence." });
+        }
+
+        HANDLE fenceEventHandle{ CreateEvent(nullptr, FALSE, FALSE, nullptr) };
+        if (fenceEventHandle == NULL)
+        {
+            throw(std::runtime_error{ "Error creating a fence event." });
+        }
+
+        if (FAILED(commandQueue->Signal(fence.Get(), 1)))
+        {
+            throw(std::runtime_error{ "Error siganalling buffer uploaded." });
+        }
+
+        if (FAILED(fence->SetEventOnCompletion(1, fenceEventHandle)))
+        {
+            throw(std::runtime_error{ "Failed set event on completion." });
+        }
+        // TODO this might be slowing down (if called more than initialization time) (I think this comment should be removed because in the tutorial it was called in ctor so here's the answer to that)
+        DWORD wait{ WaitForSingleObject(fenceEventHandle, 10000) };
+        if (wait != WAIT_OBJECT_0)
+        {
+            throw(std::runtime_error{ "Failed WaitForSingleObject()." });
+        }
+
+        return defaultBuffer;
+
+    }
+
+
+    template<typename T>
+    Microsoft::WRL::ComPtr<ID3D12Resource> createStructuredBuffer(ID3D12Device* device, const std::vector<T>& data, std::wstring name = L"")
+    {
+        return createDefaultBuffer(device, data, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, name);
+    }
+
+    template<typename T>
+    void createSrv(ID3D12Device* device, ID3D12DescriptorHeap* descHeap, int offset, ID3D12Resource* resource, size_t numElements)
+    {
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+        ZeroMemory(&srvDesc, sizeof(srvDesc));
+        srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Buffer.FirstElement = 0;
+        srvDesc.Buffer.NumElements = static_cast<UINT>(numElements);
+        srvDesc.Buffer.StructureByteStride = static_cast<UINT>(sizeof(T));
+        srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+
+        static UINT descriptorSize{ device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) };
+        D3D12_CPU_DESCRIPTOR_HANDLE d{ descHeap->GetCPUDescriptorHandleForHeapStart() };
+        d.ptr += descriptorSize * offset;
+        device->CreateShaderResourceView(resource, &srvDesc, d);
+    }
 }

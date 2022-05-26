@@ -5,7 +5,7 @@ struct MSvert
 };
 
 
-StructuredBuffer<float4> coords : register(t0);
+StructuredBuffer<float3> coords : register(t0);
 
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]

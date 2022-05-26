@@ -71,7 +71,6 @@ private:
     ComPtr<IDXGISwapChain3> m_swapChain;
     ComPtr<ID3D12Device2> m_device;
     ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
-    ComPtr<ID3D12Resource> m_structuredBuffer;
     ComPtr<ID3D12CommandAllocator> m_commandAllocator;
     ComPtr<ID3D12CommandQueue> m_commandQueue;
     ComPtr<ID3D12RootSignature> m_rootSignature;
@@ -84,6 +83,9 @@ private:
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
+    // data to upload
+    std::vector<XMFLOAT3> m_meshShaderCoordsData;
+    ComPtr<ID3D12Resource> m_structuredBuffer;
     // Synchronization objects.
     UINT m_frameIndex;
     HANDLE m_fenceEvent;
@@ -98,4 +100,7 @@ private:
     // mesh shader related stuff
     bool m_supportMeshShaders = true; // TODO change it to input dependent variable
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_meshShaderPipelineState;
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_meshShaderCoordsDescHeap;
+
+    void createCoordsDescHeap();
 };
