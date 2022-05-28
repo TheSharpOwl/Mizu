@@ -1,3 +1,6 @@
+
+//#define ROOT_SIG "SRV(t0)"
+
 struct MSvert
 {
 	float4 pos : SV_POSITION;
@@ -7,6 +10,7 @@ struct MSvert
 
 StructuredBuffer<float3> coords : register(t0);
 
+//[RootSignature(ROOT_SIG)]
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]
 void main(

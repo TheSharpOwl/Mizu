@@ -16,7 +16,7 @@
 #include <vector>
 #include "Mizu/Utils.hpp"
 
-#define MESH_SHADER
+//#define MESH_SHADER
 
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
 	DXSample(width, height, L"Thousand Triangles Experiment"),
@@ -178,7 +178,7 @@ void ThousandTriangles::LoadAssets()
 		rootSignatureDesc.NumParameters = static_cast<UINT>(rootParameters.size());
 		rootSignatureDesc.pParameters = rootParameters.data();
 		rootSignatureDesc.NumStaticSamplers = 0; // samplers can be stored in root signature separately and consume no space
-		rootSignatureDesc.pStaticSamplers = nullptr; // we're not using texturing
+		rootSignatureDesc.pStaticSamplers = nullptr; // no texturing
 		rootSignatureDesc.Flags = rootSignatureFlags;
 
 #else
@@ -186,6 +186,18 @@ void ThousandTriangles::LoadAssets()
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 #endif
+		// TRY (Disabled) use root sigunature from mesh shader itself
+		/*
+		struct
+		{
+			byte* data;
+			uint32_t size;
+		} meshShaderData;
+
+		ReadDataFromFile(L"C:\\Repos\\Mizu\\build\\bin\\Debug\\MeshShader.cso", &meshShaderData.data, &meshShaderData.size);
+		ThrowIfFailed(m_device->CreateRootSignature(0, meshShaderData.data, meshShaderData.size, IID_PPV_ARGS(&m_rootSignature)));
+		*/
+	
 		ComPtr<ID3DBlob> signature;
 		ComPtr<ID3DBlob> error;
 		ThrowIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error));
@@ -276,7 +288,7 @@ void ThousandTriangles::LoadAssets()
 		D3D12_PIPELINE_STATE_STREAM_DESC StreamDesc;
 		StreamDesc.pPipelineStateSubobjectStream = &stateStream;
 		StreamDesc.SizeInBytes = sizeof(stateStream);
-		ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_meshShaderPipelineState)));
+		ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_pipelineState)));
 #else
 		// Describe and create the graphics pipeline state object (PSO).
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -316,10 +328,7 @@ void ThousandTriangles::LoadAssets()
 	// create descriptor heap
 	createCoordsDescHeap();
 
-
 	Mizu::createSrv<coordsType>(m_device.Get(), m_meshShaderCoordsDescHeap.Get(), 0, m_structuredBuffer.Get(), m_meshShaderCoordsData.size());
-	
-
 #else
 	{
 
@@ -467,8 +476,10 @@ void ThousandTriangles::PopulateCommandList()
 	// However, when ExecuteCommandList() is called on a particular command 
 	// list, that command list can then be reset at any time and must be before 
 	// re-recording.
+	// 
+	// TODO I think pipeline state already set from here
 #ifdef MESH_SHADER
-	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_meshShaderPipelineState.Get()));
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
 #else
 	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
 #endif
@@ -477,22 +488,47 @@ void ThousandTriangles::PopulateCommandList()
 	m_commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 	m_commandList->RSSetViewports(1, &m_viewport);
 	m_commandList->RSSetScissorRects(1, &m_scissorRect);
-
 	// Indicate that the back buffer will be used as a render target.
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	ID3D12Resource* currBuffer{ m_renderTargets[m_frameIndex].Get()};
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
+	D3D12_RESOURCE_BARRIER barrierDesc;
+	ZeroMemory(&barrierDesc, sizeof(barrierDesc));
+	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierDesc.Transition.pResource = currBuffer;
+	barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	m_commandList->ResourceBarrier(1, &barrierDesc);
+	// TODO remove the old way in this line:
+	//m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+	static UINT descriptorSize{ m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
+	rtvHandle.ptr += m_frameIndex * descriptorSize;
+
+	// TODO also remove this old way (was using the helpers from the library)
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
+
 	m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	// Record commands.
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
 	m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
+	// no need to clear depth because no depth is defined
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-#ifndef MESH_SHADER
+#ifdef MESH_SHADER
+	ID3D12DescriptorHeap* ppHeaps[] = { m_meshShaderCoordsDescHeap.Get() };
+	m_commandList->SetDescriptorHeaps(1, ppHeaps);
+	// TODO understand these lines
+	D3D12_GPU_DESCRIPTOR_HANDLE d = m_meshShaderCoordsDescHeap->GetGPUDescriptorHandleForHeapStart();
+	d.ptr += 0;
+	m_commandList->SetGraphicsRootDescriptorTable(0, d);
+	m_commandList->DispatchMesh(6, 1, 1);
+#else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
-#endif // !MESH_SHADER
 	m_commandList->DrawInstanced(T * 3, T, 0, 0);
+#endif
 	// Indicate that the back buffer will now be used to present.
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
