@@ -8,7 +8,7 @@ struct MSvert
 };
 
 
-StructuredBuffer<float3> coords : register(t0);
+StructuredBuffer<float4> coords : register(t0);
 
 //[RootSignature(ROOT_SIG)]
 [outputtopology("triangle")]
@@ -23,11 +23,11 @@ void main(
 	const uint numPrimitives = 1;
 	SetMeshOutputCounts(numVertices, numPrimitives);
 
-	const float4 allVertices[] = {
-		float4(-0.5f, 0.0f, 0.0f, 1.0f),
-		float4(0.25f, 0.0f, 0.0f, 1.0f),
-		float4(0.0f, -0.25f, 0.0f, 1.0f),
-	};
+	//const float4 allVertices[] = {
+	//	float4(-0.5f, 0.0f, 0.0f, 1.0f),
+	//	float4(0.25f, 0.0f, 0.0f, 1.0f),
+	//	float4(0.0f, -0.25f, 0.0f, 1.0f),
+	//};
 
 	const float4 allColors[] = {
 		float4(0.0f,  1.0f, 0.0f, 1.0f),
@@ -43,12 +43,7 @@ void main(
 
 	if (tid < numVertices)
 	{
-		if (tid == 0)
-			verts[tid].pos = float4(coords[tid].x, coords[tid].y, coords[tid].z, 0.f);
-		else
-			verts[tid].pos = allVertices[tid];
-
-
+		verts[tid].pos = coords[tid];
 		verts[tid].color = allColors[tid];
 		idx[tid] = allIndices[tid];
 	}

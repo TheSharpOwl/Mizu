@@ -322,7 +322,12 @@ void ThousandTriangles::LoadAssets()
 
 	using coordsType = decltype(ThousandTriangles::m_meshShaderCoordsData)::value_type;
 	// create a default buffer
-	m_meshShaderCoordsData.push_back({ 0.0f,  0.0f, 0.0f });
+
+
+	m_meshShaderCoordsData.push_back({ -0.5f, 0.0f, 0.0f, 1.0f });
+	m_meshShaderCoordsData.push_back({ 0.25f, 0.0f, 0.0f, 1.0f });
+	m_meshShaderCoordsData.push_back({ 0.0f, -0.25f, 0.0f, 1.0f });
+
 	m_structuredBuffer = Mizu::createStructuredBuffer(m_device.Get(), m_meshShaderCoordsData, L"coords");
 
 	// create descriptor heap

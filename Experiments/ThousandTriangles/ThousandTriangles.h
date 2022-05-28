@@ -84,7 +84,7 @@ private:
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
     // data to upload
-    std::vector<XMFLOAT3> m_meshShaderCoordsData;
+    std::vector<XMFLOAT4> m_meshShaderCoordsData;
     ComPtr<ID3D12Resource> m_structuredBuffer;
     // Synchronization objects.
     UINT m_frameIndex;
