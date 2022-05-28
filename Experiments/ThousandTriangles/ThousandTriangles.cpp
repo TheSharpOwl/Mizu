@@ -16,7 +16,7 @@
 #include <vector>
 #include "Mizu/Utils.hpp"
 
-//#define MESH_SHADER
+#define MESH_SHADER
 
 ThousandTriangles::ThousandTriangles(UINT width, UINT height, float resizeAmount) :
 	DXSample(width, height, L"Thousand Triangles Experiment"),
@@ -524,7 +524,7 @@ void ThousandTriangles::PopulateCommandList()
 	D3D12_GPU_DESCRIPTOR_HANDLE d = m_meshShaderCoordsDescHeap->GetGPUDescriptorHandleForHeapStart();
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
-	m_commandList->DispatchMesh(6, 1, 1);
+	m_commandList->DispatchMesh(3, 1, 1);
 #else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	m_commandList->DrawInstanced(T * 3, T, 0, 0);

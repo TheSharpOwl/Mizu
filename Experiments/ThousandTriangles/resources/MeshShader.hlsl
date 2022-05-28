@@ -24,7 +24,7 @@ void main(
 	SetMeshOutputCounts(numVertices, numPrimitives);
 
 	const float4 allVertices[] = {
-		float4(0.0f, 0.0f, 0.0f, 1.0f),
+		float4(-0.5f, 0.0f, 0.0f, 1.0f),
 		float4(0.25f, 0.0f, 0.0f, 1.0f),
 		float4(0.0f, -0.25f, 0.0f, 1.0f),
 	};
@@ -43,7 +43,12 @@ void main(
 
 	if (tid < numVertices)
 	{
-		verts[tid].pos = allVertices[tid];
+		if (tid == 0)
+			verts[tid].pos = float4(coords[tid].x, coords[tid].y, coords[tid].z, 0.f);
+		else
+			verts[tid].pos = allVertices[tid];
+
+
 		verts[tid].color = allColors[tid];
 		idx[tid] = allIndices[tid];
 	}
