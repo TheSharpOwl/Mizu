@@ -322,9 +322,9 @@ void ThousandTriangles::LoadAssets()
 	// create a default buffer
 
 
-	m_meshShaderCoordsData.push_back({ -0.5f, 0.0f, 0.0f, 1.0f });
-	m_meshShaderCoordsData.push_back({ 0.25f, 0.0f, 0.0f, 1.0f });
-	m_meshShaderCoordsData.push_back({ 0.0f, -0.25f, 0.0f, 1.0f });
+	//m_meshShaderCoordsData.push_back({ -0.5f, 0.0f, 0.0f, 1.0f });
+	//m_meshShaderCoordsData.push_back({ 0.25f, 0.0f, 0.0f, 1.0f });
+	//m_meshShaderCoordsData.push_back({ 0.0f, -0.25f, 0.0f, 1.0f });
 
 	m_structuredBuffer = Mizu::createStructuredBuffer(m_device.Get(), m_meshShaderCoordsData, L"coords");
 
@@ -483,12 +483,13 @@ void ThousandTriangles::generateTriangles()
 		{
 			assert(fArea >= 0.0);
 			m_triangles[i + j].color.x = m_triangles[i + j].color.z = static_cast<float>(fArea); // bigger = more white
+#ifdef MESH_SHADER
+			// We just care about all needed information arriving to the mesh shader (and there it will be used correctly)
+			m_meshShaderCoordsData.push_back({ m_triangles[i + j].position.x, m_triangles[i + j].position.y, m_triangles[i + j].position.z, m_triangles[i + j].color.x });
+#endif
 		}
 
 		// TODO upload data to the mesh shader from here (use a float4 where the first 3 are position and the 4th is the color to not write upload of another buffer)
-#ifdef MESH_SHADER
-
-#endif
 	}
 }
 
@@ -543,7 +544,7 @@ void ThousandTriangles::PopulateCommandList()
 	D3D12_GPU_DESCRIPTOR_HANDLE d = m_meshShaderCoordsDescHeap->GetGPUDescriptorHandleForHeapStart();
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
-	m_commandList->DispatchMesh(3, 1, 1);
+	m_commandList->DispatchMesh(128, 1, 1);
 #else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	m_commandList->DrawInstanced(T * 3, T, 0, 0);
