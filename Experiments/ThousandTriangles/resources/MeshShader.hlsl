@@ -1,6 +1,4 @@
 
-//#define ROOT_SIG "SRV(t0)"
-
 struct MSvert
 {
 	float4 pos : SV_POSITION;
@@ -10,7 +8,6 @@ struct MSvert
 
 StructuredBuffer<float4> coords : register(t0);
 
-//[RootSignature(ROOT_SIG)]
 [outputtopology("triangle")]
 [numthreads(3, 1, 1)]
 void main(
@@ -22,12 +19,6 @@ void main(
 	const uint numVertices = 3;
 	const uint numPrimitives = 1;
 	SetMeshOutputCounts(numVertices, numPrimitives);
-
-	//const float4 allVertices[] = {
-	//	float4(-0.5f, 0.0f, 0.0f, 1.0f),
-	//	float4(0.25f, 0.0f, 0.0f, 1.0f),
-	//	float4(0.0f, -0.25f, 0.0f, 1.0f),
-	//};
 
 	const float4 allColors[] = {
 		float4(0.0f,  1.0f, 0.0f, 1.0f),

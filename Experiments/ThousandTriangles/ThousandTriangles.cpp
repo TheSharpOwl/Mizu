@@ -99,7 +99,7 @@ void ThousandTriangles::LoadPipeline()
 
 	ComPtr<IDXGISwapChain1> swapChain;
 	ThrowIfFailed(factory->CreateSwapChainForHwnd(
-		m_commandQueue.Get(),        // Swap chain needs the queue so that it can force a flush on it.
+		m_commandQueue.Get(),							// Swap chain needs the queue so that it can force a flush on it.
 		Win32Application::GetHwnd(),
 		&swapChainDesc,
 		nullptr,
@@ -107,7 +107,7 @@ void ThousandTriangles::LoadPipeline()
 		&swapChain
 	));
 
-	// This sample does not support fullscreen transitions.
+	// This experiment doesn't support fullscreen transitions.
 	ThrowIfFailed(factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
 
 	ThrowIfFailed(swapChain.As(&m_swapChain));
@@ -129,7 +129,7 @@ void ThousandTriangles::LoadPipeline()
 	{
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 
-		// Create a RTV for each frame.
+		// Create an RTV for each frame.
 		for (UINT n = 0; n < FrameCount; n++)
 		{
 			ThrowIfFailed(m_swapChain->GetBuffer(n, IID_PPV_ARGS(&m_renderTargets[n])));
@@ -186,7 +186,8 @@ void ThousandTriangles::LoadAssets()
 		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 		rootSignatureDesc.Init(0, nullptr, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 #endif
-		// TRY (Disabled) use root sigunature from mesh shader itself
+
+		// Left for reference, defining a root signature using helper functions
 		/*
 		struct
 		{
@@ -194,7 +195,7 @@ void ThousandTriangles::LoadAssets()
 			uint32_t size;
 		} meshShaderData;
 
-		ReadDataFromFile(L"C:\\Repos\\Mizu\\build\\bin\\Debug\\MeshShader.cso", &meshShaderData.data, &meshShaderData.size);
+		ReadDataFromFile(L"MeshShader.cso", &meshShaderData.data, &meshShaderData.size);
 		ThrowIfFailed(m_device->CreateRootSignature(0, meshShaderData.data, meshShaderData.size, IID_PPV_ARGS(&m_rootSignature)));
 		*/
 	
@@ -224,16 +225,17 @@ void ThousandTriangles::LoadAssets()
 #endif
 
 
+		ThrowIfFailed(D3DReadFileToBlob(L"ThousandTrianglesPixelShader.cso", &pixelShader));
+
 #ifdef MESH_SHADER
 		ThrowIfFailed(D3DReadFileToBlob(L"MeshShader.cso", &meshShader));
 #else
 		ThrowIfFailed(D3DReadFileToBlob(L"ThousandTrianglesVertexShader.cso", &vertexShader));
 #endif
-		ThrowIfFailed(D3DReadFileToBlob(L"ThousandTrianglesPixelShader.cso", &pixelShader));
 
 
 #ifdef MESH_SHADER
-		// code here
+		// no need to to add any input elements for the mesh shader
 #else
 		// Define the vertex input layout.
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
@@ -244,6 +246,7 @@ void ThousandTriangles::LoadAssets()
 #endif
 
 #ifdef MESH_SHADER
+		// using the new way to define the pipeline state (define only needed fields and the rest will be default)
 		struct PSO_STREAM
 		{
 			CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE pRootSignature;
@@ -264,8 +267,8 @@ void ThousandTriangles::LoadAssets()
 		stateStream.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
 		stateStream.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		stateStream.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		//stateStream.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-		// disable depth stencil buffer instead
+
+		// disable depth stencil buffer 
 		CD3DX12_DEPTH_STENCIL_DESC& depthStencilState = stateStream.DepthStencilState;
 		depthStencilState.DepthEnable = FALSE;
 		depthStencilState.StencilEnable = FALSE;
@@ -278,9 +281,6 @@ void ThousandTriangles::LoadAssets()
 		rtFormatArray.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 		stateStream.RenderTargetFormats = rtFormatArray;
 
-		//stateStream.DepthStencilFormat = m_deviceResources->GetDepthBufferFormat();
-
-
 		DXGI_SAMPLE_DESC sampleDesc{};
 		sampleDesc.Count = 1;
 		stateStream.SampleDesc = sampleDesc;
@@ -290,7 +290,6 @@ void ThousandTriangles::LoadAssets()
 		StreamDesc.SizeInBytes = sizeof(stateStream);
 		ThrowIfFailed(m_device->CreatePipelineState(&StreamDesc, IID_PPV_ARGS(&m_pipelineState)));
 #else
-		// Describe and create the graphics pipeline state object (PSO).
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		psoDesc.pRootSignature = m_rootSignature.Get();
@@ -312,11 +311,10 @@ void ThousandTriangles::LoadAssets()
 	// Create the command list.
 	ThrowIfFailed(m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator.Get(), m_pipelineState.Get(), IID_PPV_ARGS(&m_commandList)));
 
-	// Command lists are created in the recording state, but there is nothing
-	// to record yet. The main loop expects it to be closed, so close it now.
+	// Command lists are created in the recording state, but nothing to record yet and main loop expects it closed so close for now
 	ThrowIfFailed(m_commandList->Close());
 
-	// Create the vertex buffer.
+	// generate the triangles (only once at the start of the code)
 	generateTriangles();
 #ifdef MESH_SHADER
 
@@ -335,6 +333,7 @@ void ThousandTriangles::LoadAssets()
 
 	Mizu::createSrv<coordsType>(m_device.Get(), m_meshShaderCoordsDescHeap.Get(), 0, m_structuredBuffer.Get(), m_meshShaderCoordsData.size());
 #else
+	// Create the vertex buffer.
 	{
 
 		const UINT vertexBufferSize = sizeof(m_triangles);
@@ -416,9 +415,35 @@ void ThousandTriangles::OnDestroy()
 
 void ThousandTriangles::generateTriangles()
 {
+	Vertex firstTriangle[3] = {
+{ {0.0f,  0.0f, 0.0f} ,{0.0f,  1.0f, 0.0f, 1.0f}},
+{ {0.25f, 0.f, 0.0f}  ,{0.0f,  1.0f, 0.0f, 1.0f}},
+{ {0.f,  -0.25f, 0.0f},{0.0f,  1.0f, 0.0f, 1.0f}}
+	};
+
 	double fArea = -1.f;
 
-	auto onScreen = [](Vertex v) {return v.position.x >= -1.f && v.position.x <= 1.f && v.position.y >= -1.f && v.position.y <= 1.f; };
+	auto onScreen = [](Vertex v)
+	{
+		return v.position.x >= -1.f && v.position.x <= 1.f && v.position.y >= -1.f && v.position.y <= 1.f;
+	};
+
+	auto movePoint = [](const Vertex& point, float xDif, float yDif)
+	{
+		Vertex ans = point;
+		ans.position.x += xDif;
+		ans.position.y += yDif;
+		return ans;
+	};
+
+	auto resizePoint = [this](Vertex v)
+	{
+		Vertex ans = v;
+		ans.position.x *= m_resizeAmount;
+		ans.position.y *= m_resizeAmount;
+		ans.position.z *= m_resizeAmount;
+		return ans;
+	};
 
 	for (int i = 0; i < T * 3; i += 3)
 	{
@@ -428,9 +453,9 @@ void ThousandTriangles::generateTriangles()
 			float x = Mizu::mapToScreen(rand() % 1280, 0, 1279);
 			float y = Mizu::mapToScreen(rand() % 720, 0, 719);
 			// try it
-			m_triangles[i] = movePoint(resizePoint(m_firstTriangle[0]), x, y);
-			m_triangles[i + 1] = movePoint(resizePoint(m_firstTriangle[1]), x, y);
-			m_triangles[i + 2] = movePoint(resizePoint(m_firstTriangle[2]), x, y);
+			m_triangles[i] = movePoint(resizePoint(firstTriangle[0]), x, y);
+			m_triangles[i + 1] = movePoint(resizePoint(firstTriangle[1]), x, y);
+			m_triangles[i + 2] = movePoint(resizePoint(firstTriangle[2]), x, y);
 			// break if it is according to the conditions
 			if (onScreen(m_triangles[i]) && onScreen(m_triangles[i + 1]) && onScreen(m_triangles[i + 2]))
 				break;
@@ -453,22 +478,18 @@ void ThousandTriangles::generateTriangles()
 			fArea /= (b - a);
 			assert(fArea >= 0.0);
 		}
-		// put the green color depening on the size
+		// set the green color level depending on the size
 		for (int j = 0; j < 3; j++)
 		{
 			assert(fArea >= 0.0);
 			m_triangles[i + j].color.x = m_triangles[i + j].color.z = static_cast<float>(fArea); // bigger = more white
 		}
-	}
-}
 
-ThousandTriangles::Vertex ThousandTriangles::resizePoint(Vertex v)
-{
-	Vertex ans = v;
-	ans.position.x *= m_resizeAmount;
-	ans.position.y *= m_resizeAmount;
-	ans.position.z *= m_resizeAmount;
-	return ans;
+		// TODO upload data to the mesh shader from here (use a float4 where the first 3 are position and the 4th is the color to not write upload of another buffer)
+#ifdef MESH_SHADER
+
+#endif
+	}
 }
 
 void ThousandTriangles::PopulateCommandList()
@@ -481,8 +502,6 @@ void ThousandTriangles::PopulateCommandList()
 	// However, when ExecuteCommandList() is called on a particular command 
 	// list, that command list can then be reset at any time and must be before 
 	// re-recording.
-	// 
-	// TODO I think pipeline state already set from here
 #ifdef MESH_SHADER
 	ThrowIfFailed(m_commandList->Reset(m_commandAllocator.Get(), m_pipelineState.Get()));
 #else
@@ -505,15 +524,10 @@ void ThousandTriangles::PopulateCommandList()
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 	m_commandList->ResourceBarrier(1, &barrierDesc);
-	// TODO remove the old way in this line:
-	//m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	static UINT descriptorSize{ m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 	rtvHandle.ptr += m_frameIndex * descriptorSize;
-
-	// TODO also remove this old way (was using the helpers from the library)
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
 
 	m_commandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
@@ -542,11 +556,6 @@ void ThousandTriangles::PopulateCommandList()
 
 void ThousandTriangles::WaitForPreviousFrame()
 {
-	// WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
-	// This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
-	// sample illustrates how to use fences for efficient resource usage and to
-	// maximize GPU utilization.
-
 	// Signal and increment the fence value.
 	const UINT64 fence = m_fenceValue;
 	ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), fence));
@@ -566,7 +575,7 @@ void ThousandTriangles::createCoordsDescHeap()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
 	ZeroMemory(&heapDesc, sizeof(heapDesc));
-	heapDesc.NumDescriptors = 1; // only one structured buffer the coords one
+	heapDesc.NumDescriptors = 1; // only one structured buffer for the coords one
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.NodeMask = 0;

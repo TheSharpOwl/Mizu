@@ -27,12 +27,13 @@ class ThousandTriangles : public DXSample
 public:
     ThousandTriangles(UINT width, UINT height, float resizeAmount);
 
-    virtual void OnInit();
-    virtual void OnUpdate();
-    virtual void OnRender();
-    virtual void OnDestroy();
+    virtual void OnInit() override;
+    virtual void OnUpdate() override;
+    virtual void OnRender() override;
+    virtual void OnDestroy() override;
 
 private:
+
     static const UINT FrameCount = 2;
 
     struct Vertex
@@ -41,29 +42,13 @@ private:
         XMFLOAT4 color;
     };
 
-    Vertex m_firstTriangle[3] = {
-    { {0.0f,  0.0f, 0.0f} ,{0.0f,  1.0f, 0.0f, 1.0f}},
-    { {0.25f, 0.f, 0.0f}  ,{0.0f,  1.0f, 0.0f, 1.0f}},
-    { {0.f,  -0.25f, 0.0f},{0.0f,  1.0f, 0.0f, 1.0f}}
-    };
-
-    float dataToUpload[1] = {10.0f};
     // TODO next time : rename the file of this class
-    static const int T = 4800/200;
+    static constexpr int T = 4800/200;
     float m_resizeAmount;
 
     Vertex m_triangles[T * 3];
 
-    Vertex movePoint(const Vertex& point, float xDif, float yDif)
-    {
-        Vertex ans = point;
-        ans.position.x += xDif;
-        ans.position.y += yDif;
-        return ans;
-    }
-
     void generateTriangles();
-    Vertex resizePoint(Vertex v);
 
     // Pipeline objects.
     CD3DX12_VIEWPORT m_viewport;
@@ -97,9 +82,6 @@ private:
     void PopulateCommandList();
     void WaitForPreviousFrame();
 
-    // mesh shader related stuff
-    bool m_supportMeshShaders = true; // TODO change it to input dependent variable
-	//Microsoft::WRL::ComPtr<ID3D12PipelineState> m_meshShaderPipelineState;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_meshShaderCoordsDescHeap;
 
     void createCoordsDescHeap();
