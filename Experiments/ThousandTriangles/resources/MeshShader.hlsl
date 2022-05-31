@@ -9,15 +9,15 @@ struct MSvert
 StructuredBuffer<float4> coords : register(t0);
 
 [outputtopology("triangle")]
-[numthreads(128, 1, 1)]
+[numthreads(75, 1, 1)]
 void main(
 	in uint3 groupID : SV_GroupID,
 	in uint3 threadInGroup : SV_GroupThreadID,
-	out vertices MSvert verts[255],
-	out indices uint3 idx[85]) // Three indices per primitive
+	out vertices MSvert verts[225],
+	out indices uint3 idx[75]) // Three indices per primitive
 {
-	const uint numVertices = 255;
-	const uint numPrimitives = 255 / 3;
+	const uint numVertices = 225;
+	const uint numPrimitives = 225 / 3; // 75
 	SetMeshOutputCounts(numVertices, numPrimitives);
 
 	const float4 allColors[] = {
@@ -28,16 +28,13 @@ void main(
 
 	uint tid = threadInGroup.x;
 
-	//const uint3 allIndices[] = {
-	//uint3(0, 1, 2),
-	//};
-
-	if (tid < numVertices)
+	// each thread 1 triangle
+	for(int i = 0; i < 3; i++)
 	{
-		verts[tid].pos = float4(coords[tid].x, coords[tid].y, coords[tid].z, 1.f);
-		verts[tid].color = float4(coords[tid].w, 1.f, coords[tid].w, 1.f);
-
-		if (tid < numPrimitives)
-			idx[tid] = uint3(tid * 3, tid * 3 + 1, tid * 3 + 2);
+		int j = tid * 3 + i;
+		verts[j].pos = float4(coords[j].x, coords[j].y, coords[j].z, 1.f);
+		verts[j].color = float4(coords[j].w, 1.f, coords[j].w, 1.f);
 	}
+
+	idx[tid] = uint3(tid * 3, tid * 3 + 1, tid * 3 + 2);
 }

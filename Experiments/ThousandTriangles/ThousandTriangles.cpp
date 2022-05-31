@@ -544,7 +544,12 @@ void ThousandTriangles::PopulateCommandList()
 	D3D12_GPU_DESCRIPTOR_HANDLE d = m_meshShaderCoordsDescHeap->GetGPUDescriptorHandleForHeapStart();
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
-	m_commandList->DispatchMesh(128, 1, 1);
+
+	for(int i = 0;i < T / 75;i++)
+	{
+		// TODO use a constant buffer to upload the number we already drawn so that we can know which positions to draw in the current iteration in the shader
+		m_commandList->DispatchMesh(75, 1, 1);
+	}
 #else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
 	m_commandList->DrawInstanced(T * 3, T, 0, 0);

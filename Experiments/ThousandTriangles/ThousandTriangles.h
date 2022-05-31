@@ -38,7 +38,7 @@ private:
     };
 
     // TODO next time : rename the file of this class
-    static constexpr int T = 4800/200;
+    static constexpr int T = 4800/1;
     float m_resizeAmount;
 
     Vertex m_triangles[T * 3];
