@@ -550,7 +550,7 @@ void ThousandTriangles::PopulateCommandList()
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
 
-	for(uint32_t i = 0;i < T;i += 75)
+	for(uint32_t i = 0;i < T * 3;i += 75)
 	{
 		const std::vector<uint32_t> rootConstants{i};
 		// root parameter index is 1 (the letter b in b0 doesn't matter here because when setting the root parameters it was the second one in the vector so it's index overall not inside b)
