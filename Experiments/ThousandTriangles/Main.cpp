@@ -21,7 +21,18 @@ extern "C"
 _Use_decl_annotations_
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
+    float params[] = {
+        0.0f,
+        0.01f,
+        0.015f,
+        0.02f ,
+        0.029f,
+        0.043f,
+        0.062f,
+        0.0905f
+    };
+
     // for one pixel triangle 0.01 thrid parameter
-    ThousandTriangles sample(1280, 720, 0.01);
+    ThousandTriangles sample(1280, 720, params[1]);
     return Win32Application::Run(&sample, hInstance, nCmdShow);
 }
