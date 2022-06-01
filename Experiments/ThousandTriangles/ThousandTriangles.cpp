@@ -550,11 +550,11 @@ void ThousandTriangles::PopulateCommandList()
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
 
-	for(uint32_t i = 0;i < T * 3;i += 96)
+	for(uint32_t i = 0;i < T * 3;i += 255)
 	{
 		// root parameter index is 1 (the letter b in b0 doesn't matter here because when setting the root parameters it was the second one in the vector so it's index overall not inside b)
 		m_commandList->SetGraphicsRoot32BitConstant(1, i, 0);
-		m_commandList->DispatchMesh(96, 1, 1);
+		m_commandList->DispatchMesh(128, 1, 1);
 	}
 #else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
