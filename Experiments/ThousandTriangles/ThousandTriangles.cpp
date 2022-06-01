@@ -545,7 +545,6 @@ void ThousandTriangles::PopulateCommandList()
 #ifdef MESH_SHADER
 	ID3D12DescriptorHeap* ppHeaps[] = { m_meshShaderCoordsDescHeap.Get() };
 	m_commandList->SetDescriptorHeaps(1, ppHeaps);
-	// TODO understand these lines
 	D3D12_GPU_DESCRIPTOR_HANDLE d = m_meshShaderCoordsDescHeap->GetGPUDescriptorHandleForHeapStart();
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
@@ -554,7 +553,7 @@ void ThousandTriangles::PopulateCommandList()
 	{
 		// root parameter index is 1 (the letter b in b0 doesn't matter here because when setting the root parameters it was the second one in the vector so it's index overall not inside b)
 		m_commandList->SetGraphicsRoot32BitConstant(1, i, 0);
-		m_commandList->DispatchMesh(128, 1, 1);
+		m_commandList->DispatchMesh(64, 1, 1);
 	}
 #else
 	m_commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);

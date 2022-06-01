@@ -16,7 +16,7 @@ ConstantBuffer<SubsetIndicator> subsetStart : register(b0);
 
 
 [outputtopology("triangle")]
-[numthreads(128, 1, 1)]
+[numthreads(64, 1, 1)]
 void main(
 	in uint3 groupID : SV_GroupID,
 	in uint3 threadInGroup : SV_GroupThreadID,
@@ -30,25 +30,22 @@ void main(
 	uint tid = threadInGroup.x;
 	uint numOfTriangles = 4800 / 1;
 
-	int k = subsetStart.start + tid * 2;
-	if (k < numOfTriangles * 3)
+	for(int i = 0; i < 4;i++)
 	{
-		verts[tid*2].pos = float4(coords[k].x, coords[k].y, coords[k].z, 1.f);
-		verts[tid*2].color = float4(coords[k].w, 1.f, coords[k].w, 1.f);
-
-		if (k + 1 < numOfTriangles * 3)
+		if (i + tid * 4 >= 255)
+			break;
+		int k = subsetStart.start + (tid * 4) + i;
+		if(k < numOfTriangles * 3)
 		{
-			k++;
-			verts[tid * 2 + 1].pos = float4(coords[k].x, coords[k].y, coords[k].z, 1.f);
-			verts[tid * 2 + 1].color = float4(coords[k].w, 1.f, coords[k].w, 1.f);
+			verts[tid * 4 + i].pos = float4(coords[k].x, coords[k].y, coords[k].z, 1.f);
+			verts[tid * 4 + i].color = float4(coords[k].w, 1.f, coords[k].w, 1.f);
 		}
-
-
 	}
-	
-	//if (tid < 64 && subsetStart.start + tid * 3 < numOfTriangles * 3)
-	if( tid * 3 < 255)
+	if(tid * 2 < 85)
 	{
-		idx[tid] = uint3(tid * 3, tid * 3 + 1, tid * 3 + 2);
+		idx[tid * 2] = uint3(tid * 3, tid * 3 + 1, tid * 3 + 2);
+		idx[tid * 2 + 1] = uint3(tid * 3 + 3, tid * 3 + 4, tid * 3 + 5);
 	}
+
+	int x = 1000;
 }
