@@ -233,4 +233,58 @@ namespace Mizu
         d.ptr += descriptorSize * offset;
         device->CreateShaderResourceView(resource, &srvDesc, d);
     }
+
+    /**
+     * \brief 
+     * \tparam T Type of the data upload to the constant buffer [WARNING: IT SHOULD NOT EXCEED THE STANDARD SIZE LIMIT OF THE CONSTANT BUFFER)
+     * \param name name of the constant buffer
+     * \param swapChainBufferCount how many buffers do we have for our swap chain (by default 2)
+     */
+    template<typename T>
+    ComPtr<ID3D12Resource> createConstantBuffer(const std::wstring& name, const int swapChainBufferCount = 2)
+    {
+        ComPtr<ID3D12Resource> constBuffer;
+        UINT elementSizeAligned = (sizeof(T) + 255) & ~255; // constant buffer should be aligned with 256 bits
+        UINT64 bufferSize{ elementSizeAligned * swapChainBufferCount};
+
+        D3D12_HEAP_PROPERTIES heapProps;
+        ZeroMemory(&heapProps, sizeof(heapProps));
+        heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+        heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+        heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+        heapProps.CreationNodeMask = 1;
+        heapProps.VisibleNodeMask = 1;
+
+        D3D12_RESOURCE_DESC resDesc;
+        ZeroMemory(&resDesc, sizeof(resDesc));
+        resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+        resDesc.Alignment = 0;
+        resDesc.Width = bufferSize;
+        resDesc.Height = 1;
+        resDesc.DepthOrArraySize = 1;
+        resDesc.MipLevels = 1;
+        resDesc.Format = DXGI_FORMAT_UNKNOWN;
+        resDesc.SampleDesc.Count = 1;
+        resDesc.SampleDesc.Quality = 0;
+        resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+        resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		HRESULT hr{ device->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&resDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(constBuffer.ReleaseAndGetAddressOf())
+		) };
+
+        if (FAILED(hr))
+        {
+            throw(std::runtime_error{ "Error creating constant buffer." });
+        }
+
+        constBuffer->SetName(name.c_str());
+
+        return constBUffer;
+    }
 }

@@ -155,16 +155,21 @@ void ThousandTriangles::LoadAssets()
 		srvRange.RegisterSpace = 0; // this allows to use same register name if a different space is used (doesn't matter in this context)
 		srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-		// define the root parameter
-		// TODO rename to msRootParameter (mesh shader ...)
+		// define the root parameter (the structured buffer)
 		D3D12_ROOT_PARAMETER srvRootParameter;
 		ZeroMemory(&srvRootParameter, sizeof(srvRootParameter));
 		srvRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 		srvRootParameter.DescriptorTable = { 1, &srvRange };// one range
 		srvRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_MESH; // only visible to mesh shader
 
+		// define the constant buffer (subset integer)
+		D3D12_ROOT_PARAMETER subsetRootParameter;
+		ZeroMemory(&subsetRootParameter, sizeof(subsetRootParameter));
+		subsetRootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		subsetRootParameter.Constants = { 0,0,1 };// register b0, first register space and 1 value
+		subsetRootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_MESH;
 
-		std::vector<D3D12_ROOT_PARAMETER> rootParameters{ srvRootParameter };
+		std::vector<D3D12_ROOT_PARAMETER> rootParameters{ srvRootParameter, subsetRootParameter};
 
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags{
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -545,9 +550,11 @@ void ThousandTriangles::PopulateCommandList()
 	d.ptr += 0;
 	m_commandList->SetGraphicsRootDescriptorTable(0, d);
 
-	for(int i = 0;i < T / 75;i++)
+	for(uint32_t i = 0;i < T;i += 75)
 	{
-		// TODO use a constant buffer to upload the number we already drawn so that we can know which positions to draw in the current iteration in the shader
+		const std::vector<uint32_t> rootConstants{i};
+		// root parameter index is 1 (the letter b in b0 doesn't matter here because when setting the root parameters it was the second one in the vector so it's index overall not inside b)
+		m_commandList->SetGraphicsRoot32BitConstant(1, i, 0);
 		m_commandList->DispatchMesh(75, 1, 1);
 	}
 #else
