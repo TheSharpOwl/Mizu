@@ -27,6 +27,7 @@ DXGI.lib
 d3dcompiler.lib
 )
 
+add_subdirectory(DX)
 add_subdirectory(Engine)
 add_subdirectory(CubeDemo)
 add_subdirectory(Experiments)

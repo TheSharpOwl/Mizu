@@ -56,6 +56,11 @@ namespace Mizu
 		auto getWindow(const std::wstring name) -> std::shared_ptr<Window> { auto it = m_windowsNameMap.find(name);  return (it != m_windowsNameMap.end() ? it->second : nullptr); }
 		auto getWindow(HWND hWnd) -> std::shared_ptr<Window> { auto it = m_windowsHwndMap.find(hWnd);  return (it != m_windowsHwndMap.end() ? it->second : nullptr); }
 
+		static uint64_t GetFrameCount()
+		{
+			return ms_frameCount;
+		}
+
 	protected:
 
 		Application(HINSTANCE hInst);
@@ -82,5 +87,7 @@ namespace Mizu
 		const bool m_useWarp = false;
 
 		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+		static uint64_t ms_frameCount;
 	};
 }

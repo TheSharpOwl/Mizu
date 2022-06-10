@@ -355,3 +355,5 @@ Mizu.sln
 *.vcxproj
 *.filters
 build/
+cmake-build-debug/
+.idea/

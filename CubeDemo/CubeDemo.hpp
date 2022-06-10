@@ -25,11 +25,11 @@ namespace Mizu
 
 	protected:
 
-		void OnResize(ResizeEventArgs& e) override;
+		void OnResize(const ResizeEventArgs& e) override;
 
-		void OnUpdate(UpdateEventArgs& e) override;
+		void OnUpdate(const UpdateEventArgs& e) override;
 
-		void OnRender(RenderEventArgs& e) override;
+		void OnRender(const RenderEventArgs& e) override;
 
 	private:
 		

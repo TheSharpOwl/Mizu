@@ -46,7 +46,7 @@ void Game::Reset()
 }
 
 
-void Game::OnResize(Mizu::ResizeEventArgs& e)
+void Game::OnResize(const Mizu::ResizeEventArgs& e)
 {
 	m_width = e.width;
 	m_height = e.height;
