@@ -5,6 +5,8 @@ set(ENGINE_HEADERS
  include/Mizu/EventArgs.hpp
  include/Mizu/Game.hpp
  include/Mizu/Utils.hpp
+ include/Mizu/UploadBuffer.hpp
+ include/Mizu/Definitions.hpp
  )
 
 set(ENGINE_SOURCES 
@@ -12,6 +14,7 @@ src/CommandQueue.cpp
 src/Window.cpp
 src/Application.cpp
 src/Game.cpp
+src/UploadBuffer.cpp
 )
 
 
