@@ -6,7 +6,7 @@ set(ENGINE_HEADERS
  include/Mizu/Game.hpp
  include/Mizu/Utils.hpp
  include/Mizu/UploadBuffer.hpp
- include/Mizu/Definitions.hpp
+ include/Mizu/DescriptorAllocator.hpp
  )
 
 set(ENGINE_SOURCES 
@@ -15,6 +15,7 @@ src/Window.cpp
 src/Application.cpp
 src/Game.cpp
 src/UploadBuffer.cpp
+src/DescriptorAllocator.cpp
 )
 
 
