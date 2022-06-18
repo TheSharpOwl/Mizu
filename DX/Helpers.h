@@ -2,6 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // For HRESULT
+#include <exception>
 
 #if defined(min)
 #undef min

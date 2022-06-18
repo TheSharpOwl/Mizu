@@ -33,6 +33,7 @@ namespace Mizu
         void releaseStaleDescriptors(uint64_t frameNumber);
 
     private:
+
         using DescriptorHeapPool = std::vector<std::shared_ptr<DescriptorAllocatorPage>>;
 
         std::shared_ptr<DescriptorAllocatorPage> createDescriptorAllocatorPage();
@@ -43,6 +44,7 @@ namespace Mizu
 
         DescriptorHeapPool m_heapPool;
 
+        // stores the indices of available heaps in the heap pool
         std::set<size_t> m_availableHeaps;
 
         std::mutex m_mutex;
