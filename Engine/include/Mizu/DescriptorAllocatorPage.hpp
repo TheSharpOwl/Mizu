@@ -13,35 +13,16 @@ namespace Mizu
 
         DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors) {}
         
-        bool hasSpace() const
-        {
-            return false;
-        }
+        bool hasSpace() const;
+        int freeHandlesCount() const;
 
-        int freeHandlesCount() const
-        {
-            return 0;
-        }
+        D3D12_DESCRIPTOR_HEAP_TYPE getHeapType() const;
 
-        D3D12_DESCRIPTOR_HEAP_TYPE getHeapType() const
-        {
-            return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        }
+        DescriptorAllocation allocate(uint32_t n);
 
-        DescriptorAllocation allocate(uint32_t n)
-        {
-            return DescriptorAllocation();
-        }
+        void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum);
 
-        void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum)
-        {
-
-        }
-
-        void releaseStaleDescriptors(uint64_t frameNum)
-        {
-
-        }
+        void releaseStaleDescriptors(uint64_t frameNum);
 
     protected:
     private:
