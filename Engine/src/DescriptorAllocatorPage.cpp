@@ -61,7 +61,11 @@ namespace Mizu
 
     void DescriptorAllocatorPage::addNewBlock(uint32_t offset, uint32_t descriptorsCount)
     {
-	    
+        // Note that emplace returns pair<iterator,bool> so .first is the iterator
+        auto offsetIt = m_freelistByoffset.emplace(offset, descriptorsCount); // offset is the key and FreeBlockInfo(descriptorsCount) is the value
+        auto sizeIt = m_freeListBySize.emplace(descriptorsCount, offsetIt.first);
+        // add reference to the sizeIt in the offset freeList (in 
+        offsetIt.first->second.freeListBySizeIt = sizeIt;
     }
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t descriptorsCount)
