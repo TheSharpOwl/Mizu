@@ -11,8 +11,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: "Windows Server 2019 + Visual Studio 2019"
-            os: windows-2019
+          - name: "Windows Server 2022 + Visual Studio 2022"
+            os: windows-2022
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -24,6 +24,6 @@ jobs:
     - name: Configure Build
       run: mkdir build && cd build && cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DCMAKE_BUILD_TYPE=Release ..
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v1.1
     - name: Build
       run: cd build && MSBuild.exe Mizu.sln /p:Configuration=Release
