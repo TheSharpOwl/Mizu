@@ -14,9 +14,9 @@ namespace Mizu
     {
     public:
 
-        DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors) {}
+        DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
         
-        bool hasSpace() const;
+        bool hasSpace(uint32_t descriptorsCount) const;
         int freeHandlesCount() const;
 
         D3D12_DESCRIPTOR_HEAP_TYPE getHeapType() const;
@@ -26,6 +26,8 @@ namespace Mizu
         void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum);
 
         void releaseStaleDescriptors(uint64_t frameNum);
+
+        uint32_t getFreeHandlesCount() const;
 
     protected:
 
@@ -80,7 +82,7 @@ namespace Mizu
         using StaleDescriptorQueue = std::queue<StaleDescriptorInfo>;
 
         FreeListByOffset m_freelistByoffset;
-        FreeListBySize m_freeListSize;
+        FreeListBySize m_freeListBySize;
         StaleDescriptorQueue  m_staleDescriptors;
 
         Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_descriptorHeap;
