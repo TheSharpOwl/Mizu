@@ -62,15 +62,17 @@ namespace Mizu
     void DescriptorAllocatorPage::addNewBlock(uint32_t offset, uint32_t descriptorsCount)
     {
         // Note that emplace returns pair<iterator,bool> so .first is the iterator
-        auto offsetIt = m_freelistByoffset.emplace(offset, descriptorsCount); // offset is the key and FreeBlockInfo(descriptorsCount) is the value
-        auto sizeIt = m_freeListBySize.emplace(descriptorsCount, offsetIt.first);
+        auto [offsetIt, success] = m_freelistByoffset.emplace(offset, descriptorsCount); // offset is the key and FreeBlockInfo(descriptorsCount) is the value
+        auto sizeIt = m_freeListBySize.emplace(descriptorsCount, offsetIt);
         // add reference to the sizeIt in the offset freeList (in 
-        offsetIt.first->second.freeListBySizeIt = sizeIt;
+        offsetIt->second.freeListBySizeIt = sizeIt;
     }
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t descriptorsCount)
     {
-	    
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        if(descriptorsCount > m_freeHandlesCount)
     }
 
     uint32_t DescriptorAllocatorPage::getFreeHandlesCount() const
