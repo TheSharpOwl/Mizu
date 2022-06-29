@@ -21,7 +21,7 @@ namespace Mizu
 
         D3D12_DESCRIPTOR_HEAP_TYPE getHeapType() const;
 
-        DescriptorAllocation allocate(uint32_t n);
+        DescriptorAllocation allocateFromPage(uint32_t n);
 
         void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum);
 

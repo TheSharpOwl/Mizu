@@ -33,7 +33,7 @@ namespace Mizu
         {
             auto allocatorPage = m_heapPool[*it];
 
-            allocation = allocatorPage->allocate(n);
+            allocation = allocatorPage->allocateFromPage(n);
 
             if (!allocatorPage->freeHandlesCount())
                 it = m_availableHeaps.erase(it);
@@ -52,7 +52,7 @@ namespace Mizu
             // make a new page of the size needed
             auto newPage = createDescriptorAllocatorPage();
 
-            allocation = newPage->allocate(n);
+            allocation = newPage->allocateFromPage(n);
         }
 
         return allocation;

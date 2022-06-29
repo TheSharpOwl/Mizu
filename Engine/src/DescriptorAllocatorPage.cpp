@@ -39,9 +39,48 @@ namespace Mizu
         return m_heapType;
     }
 
-    DescriptorAllocation DescriptorAllocatorPage::allocate(uint32_t n)
+    // n is the number of descriptors
+    DescriptorAllocation DescriptorAllocatorPage::allocateFromPage(uint32_t n)
     {
-        return DescriptorAllocation();
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        if (n > m_freeHandlesCount)
+        {
+            return DescriptorAllocation();
+        }
+
+        auto sizeIt = m_freeListBySize.lower_bound(n);
+
+        if(sizeIt == m_freeListBySize.end())
+        {
+            return DescriptorAllocation();
+        }
+
+        auto offsetIt = sizeIt->second;
+
+        const auto offset = offsetIt->first;
+
+        auto blockInfo = offsetIt->second;
+
+        // In case there is a piece left in the map return it
+        const OffsetType offsetAfter = offsetIt->first + n;
+        const SizeType sizeLeft = sizeIt->first - n;
+
+        // remove data from the maps because we will take it
+        m_freeListBySize.erase(sizeIt);
+        m_freelistByoffset.erase(offsetIt);
+
+        // can't be less than zero
+        if(sizeLeft)
+        {
+            addNewBlock(offsetAfter, sizeLeft);
+        }
+
+        // TODO understand this part after coding the descriptor allocation
+    	return DescriptorAllocation(
+            CD3DX12_CPU_DESCRIPTOR_HANDLE(m_baseDescriptor, offset, m_descriptorHandleIncreamentSize),
+            n, m_descriptorHandleIncreamentSize, shared_from_this());
+
     }
 
     void DescriptorAllocatorPage::free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum)
@@ -61,18 +100,16 @@ namespace Mizu
 
     void DescriptorAllocatorPage::addNewBlock(uint32_t offset, uint32_t descriptorsCount)
     {
-        // Note that emplace returns pair<iterator,bool> so .first is the iterator
-        auto [offsetIt, success] = m_freelistByoffset.emplace(offset, descriptorsCount); // offset is the key and FreeBlockInfo(descriptorsCount) is the value
-        auto sizeIt = m_freeListBySize.emplace(descriptorsCount, offsetIt);
+        // Note that emplace returns pair<iterator,bool> so .first is the iterator (IF IT'S MAP NOT MULTIMAP because multimap is always successful to insert into)
+        auto [offsetIt, _] = m_freelistByoffset.emplace(offset, descriptorsCount); // offset is the key and FreeBlockInfo(descriptorsCount) is the value
+        const auto sizeIt = m_freeListBySize.emplace(descriptorsCount, offsetIt);
         // add reference to the sizeIt in the offset freeList (in 
         offsetIt->second.freeListBySizeIt = sizeIt;
     }
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t descriptorsCount)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
 
-        if(descriptorsCount > m_freeHandlesCount)
     }
 
     uint32_t DescriptorAllocatorPage::getFreeHandlesCount() const
