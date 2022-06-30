@@ -19,5 +19,12 @@ namespace Mizu
         {
             return true;
         }
+
+        uint32_t getFreeHandlesCount()
+        {
+            return 0;
+        }
+
+
     };
 }

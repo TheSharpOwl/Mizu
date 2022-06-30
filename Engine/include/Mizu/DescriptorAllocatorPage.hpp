@@ -23,7 +23,7 @@ namespace Mizu
 
         DescriptorAllocation allocateFromPage(uint32_t n);
 
-        void free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum);
+        void freeDescriptor(DescriptorAllocation&& descriptorHandle, uint64_t frameNum);
 
         void releaseStaleDescriptors(uint64_t frameNum);
 

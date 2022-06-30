@@ -76,6 +76,8 @@ namespace Mizu
             addNewBlock(offsetAfter, sizeLeft);
         }
 
+        // update number of the free handles
+        m_freeHandlesCount -= n;
         // TODO understand this part after coding the descriptor allocation
     	return DescriptorAllocation(
             CD3DX12_CPU_DESCRIPTOR_HANDLE(m_baseDescriptor, offset, m_descriptorHandleIncreamentSize),
@@ -83,9 +85,13 @@ namespace Mizu
 
     }
 
-    void DescriptorAllocatorPage::free(DescriptorAllocation&& descriptorHandle, uint64_t frameNum)
+    void DescriptorAllocatorPage::freeDescriptor(DescriptorAllocation&& descriptorHandle, uint64_t frameNum)
     {
+        //auto offset = computeOffset(descriptorHandle.getDescriptorHandle());
 
+        //std::lock_guard<std::mutex> lock(m_mutex);
+
+        //m_staleDescriptors.emplace(offset, descriptorHandle.getFreeHandlesCount(), frameNum);
     }
 
     void DescriptorAllocatorPage::releaseStaleDescriptors(uint64_t frameNum)
@@ -95,7 +101,7 @@ namespace Mizu
 
     uint32_t DescriptorAllocatorPage::computeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle)
     {
-        return 0;
+        return static_cast<uint32_t>(handle.ptr - m_baseDescriptor.ptr) / m_descriptorHandleIncreamentSize;
     }
 
     void DescriptorAllocatorPage::addNewBlock(uint32_t offset, uint32_t descriptorsCount)
@@ -109,7 +115,41 @@ namespace Mizu
 
     void DescriptorAllocatorPage::freeBlock(uint32_t offset, uint32_t descriptorsCount)
     {
+        auto offsetAfterIt = m_freelistByoffset.upper_bound(offset);
+        auto offsetBeforeIt = offsetAfterIt;
 
+        if (offsetBeforeIt != m_freelistByoffset.begin())
+        {
+            --offsetBeforeIt;
+        }
+        else
+        {
+            offsetBeforeIt = m_freelistByoffset.end();
+        }
+
+
+        if (offsetBeforeIt != m_freelistByoffset.end() && offsetBeforeIt->first + descriptorsCount  == offset)
+        {
+            auto sizeIt = offsetBeforeIt->second.freeListBySizeIt;
+            descriptorsCount += sizeIt->first;
+
+            offset = offsetBeforeIt->first;
+
+            m_freeListBySize.erase(sizeIt);
+            m_freelistByoffset.erase(offsetAfterIt);
+        }
+
+        if(offsetAfterIt != m_freelistByoffset.end() && offsetAfterIt->first == offset + descriptorsCount)
+        {
+            auto sizeIt = offsetAfterIt->second.freeListBySizeIt;
+            descriptorsCount += sizeIt->first;
+
+            m_freeListBySize.erase(sizeIt);
+            m_freelistByoffset.erase(offsetAfterIt);
+        }
+
+
+        addNewBlock(offset, descriptorsCount);
     }
 
     uint32_t DescriptorAllocatorPage::getFreeHandlesCount() const
