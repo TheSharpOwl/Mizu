@@ -96,7 +96,19 @@ namespace Mizu
 
     void DescriptorAllocatorPage::releaseStaleDescriptors(uint64_t frameNum)
     {
+        std::lock_guard<std::mutex> lock(m_mutex);
 
+        while(!m_staleDescriptors.empty() && m_staleDescriptors.front().frameNumber <= frameNum)
+        {
+            const auto& staleDesc = m_staleDescriptors.front();
+
+            const auto& offset = staleDesc.offset;
+            const auto& descCount = staleDesc._size;
+
+            freeBlock(offset, descCount);
+
+            m_staleDescriptors.pop();
+        }
     }
 
     uint32_t DescriptorAllocatorPage::computeOffset(D3D12_CPU_DESCRIPTOR_HANDLE handle)
