@@ -47,8 +47,22 @@ namespace Mizu
 		{
 			m_page->freeDescriptor(std::move(*this), Application::getFrameNumber());
 
+
+			m_descriptor.ptr = 0;
+			m_handlesCount = 0;
+			m_descriptorSize = 0;
+			m_page.reset();
 		}
 	}
-	
 
+	D3D12_CPU_DESCRIPTOR_HANDLE DescriptorAllocation::getDescriptorHandle(uint32_t offset) const
+	{
+		assert(offset < m_handlesCount);
+		return { m_descriptor.ptr + (m_descriptorSize * offset) };
+	}
+
+	std::shared_ptr<DescriptorAllocatorPage> DescriptorAllocation::getDescriptorAllocatorPage() const
+	{
+		return m_page;
+	}
 }

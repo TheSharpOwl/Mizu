@@ -29,11 +29,6 @@ namespace Mizu
         return m_freeListBySize.lower_bound(descriptorsCount) != m_freeListBySize.end();
     }
 
-    int DescriptorAllocatorPage::freeHandlesCount() const
-    {
-        return 0;
-    }
-
     D3D12_DESCRIPTOR_HEAP_TYPE DescriptorAllocatorPage::getHeapType() const
     {
         return m_heapType;
@@ -87,11 +82,11 @@ namespace Mizu
 
     void DescriptorAllocatorPage::freeDescriptor(DescriptorAllocation&& descriptorHandle, uint64_t frameNum)
     {
-        //auto offset = computeOffset(descriptorHandle.getDescriptorHandle());
+        auto offset = computeOffset(descriptorHandle.getDescriptorHandle());
 
-        //std::lock_guard<std::mutex> lock(m_mutex);
+        std::lock_guard<std::mutex> lock(m_mutex);
 
-        //m_staleDescriptors.emplace(offset, descriptorHandle.getFreeHandlesCount(), frameNum);
+        m_staleDescriptors.emplace(offset, descriptorHandle.getHandlesCount(), frameNum);
     }
 
     void DescriptorAllocatorPage::releaseStaleDescriptors(uint64_t frameNum)
@@ -163,6 +158,7 @@ namespace Mizu
 
         addNewBlock(offset, descriptorsCount);
     }
+
 
     uint32_t DescriptorAllocatorPage::getFreeHandlesCount() const
     {

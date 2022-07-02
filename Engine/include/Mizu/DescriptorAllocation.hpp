@@ -36,26 +36,14 @@ namespace Mizu
             return m_descriptor.ptr == 0;
         }
 
-        uint32_t getFreeHandlesCount()
-        {
-            return 0;
-        }
-
-        //CD3DX12_CPU_DESCRIPTOR_HANDLE getDescriptorHandle(uint32_t offset) const
-        //{
-	       // 
-        //}
-
         uint32_t getHandlesCount() const
         {
-            return 0;
+            return m_handlesCount;
         }
 
-        std::shared_ptr<DescriptorAllocatorPage> GetDescriptorAllocatorPage() const
-        {
-            return nullptr;
-        }
+        std::shared_ptr<DescriptorAllocatorPage> getDescriptorAllocatorPage() const;
 
+        D3D12_CPU_DESCRIPTOR_HANDLE getDescriptorHandle(uint32_t offset = 0) const;
 
     private:
 
