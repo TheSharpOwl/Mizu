@@ -45,7 +45,7 @@ namespace Mizu
 	{
 		if(!isNull() && m_page)
 		{
-			//m_page->freeDescriptor(std::move(*this), Application::GetFrameCount());
+			m_page->freeDescriptor(std::move(*this), Application::getFrameNumber());
 
 		}
 	}
