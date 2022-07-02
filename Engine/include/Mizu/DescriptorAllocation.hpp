@@ -13,10 +13,9 @@ namespace Mizu
     public:
 
         // creates a null descriptor (default just a place holder to compile)
-        DescriptorAllocation() = default;
+        DescriptorAllocation();
 
-        DescriptorAllocation(CD3DX12_CPU_DESCRIPTOR_HANDLE handle, uint32_t handlesCount, uint32_t descriptorSize, std::shared_ptr<DescriptorAllocatorPage> pDescriptorAllocatorPage);
-
+        DescriptorAllocation(D3D12_CPU_DESCRIPTOR_HANDLE handle, uint32_t handlesCount, uint32_t descriptorSize, std::shared_ptr<DescriptorAllocatorPage> pDescriptorAllocatorPage);
 
     	~DescriptorAllocation();
 
@@ -27,14 +26,14 @@ namespace Mizu
         DescriptorAllocation& operator=(const DescriptorAllocation&) = delete;
 
         // moving is allowed
-        DescriptorAllocation(const DescriptorAllocation&& allocation);
-        DescriptorAllocation& operator=(const DescriptorAllocation&& other);
+        DescriptorAllocation(DescriptorAllocation&& allocation);
+        DescriptorAllocation& operator=(DescriptorAllocation&& other);
 
 
 
         bool isNull() const
         {
-            return true;
+            return m_descriptor.ptr == 0;
         }
 
         uint32_t getFreeHandlesCount()
@@ -57,5 +56,18 @@ namespace Mizu
             return nullptr;
         }
 
+
+    private:
+
+        void freeAllocation();
+
+        D3D12_CPU_DESCRIPTOR_HANDLE m_descriptor;
+
+        uint32_t m_handlesCount;
+
+        uint32_t m_descriptorSize;
+
+
+        std::shared_ptr<DescriptorAllocatorPage> m_page;
     };
 }
