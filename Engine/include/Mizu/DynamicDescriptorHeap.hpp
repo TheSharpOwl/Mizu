@@ -39,6 +39,27 @@ namespace Mizu
 		void commitStagedDescriptorsForDraw(CommandList& commandList);
 		void commitStagedDescriptorsForDispatch(CommandList& commandList);
 
+		// TODO I did not understand this function well
+		/**
+		 * \brief Copies a single CPU descriptor to a GPU visible Descriptor heap which is useful ClearUnorderedAccessViewFloat and ClearUnorderedAccessViewUint
+		 * methods because they require both a CPU and GPU visible descriptor for a UAV resource
+		 * \param commandList in case the GPU visible descriptor needs to be updated on the command list
+		 * \param cpuDescriptor the CPU descriptor to copy into a GPU visible descriptor
+		 * \return the GPU visible descriptor
+		 */
+		D3D12_GPU_DESCRIPTOR_HANDLE copyDescriptor(CommandList& commandList, D3D12_CPU_DESCRIPTOR_HANDLE cpuDescriptor);
+
+		/**
+		 * \brief Parses a root signature to know which root parameters contain descriptor tables and determine number of descriptors needed for each table
+		 * \param rootSignature 
+		 */
+		void parseRootSignature(const RootSignature& rootSignature);
+
+		/**
+		 * \brief Resets the used descriptors and should by only used when all the descriptors that are referenced by a command list have finished execution on the command queue
+		 */
+		void reset();
+
 
 	};
 }

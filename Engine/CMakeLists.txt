@@ -10,6 +10,7 @@ set(ENGINE_HEADERS
     include/Mizu/DescriptorAllocatorPage.hpp
     include/Mizu/DescriptorAllocation.hpp
     include/Mizu//DynamicDescriptorHeap.hpp
+    include/Mizu//RootSignature.hpp
 )
 
 set(ENGINE_SOURCES 
