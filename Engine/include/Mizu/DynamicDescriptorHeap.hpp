@@ -3,6 +3,7 @@
 #include "d3d12.h"
 #include <cstdint>
 #include <functional>
+#include <wrl/client.h>
 
 namespace Mizu
 {
@@ -59,6 +60,36 @@ namespace Mizu
 		 * \brief Resets the used descriptors and should by only used when all the descriptors that are referenced by a command list have finished execution on the command queue
 		 */
 		void reset();
+
+
+	private:
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> requestDescriptorHeap();
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> createDescriptorHeap();
+
+		uint32_t computeStaleDesctiptorCount() const;
+
+
+		static const uint32_t MaxDescriptorTables = 32;
+
+		struct DesctiptorTableCache
+		{
+			DesctiptorTableCache() :
+				descriptorsCount(0),
+				baseDescriptor(nullptr)
+			{}
+
+
+			void reset()
+			{
+				descriptorsCount = 0;
+				baseDescriptor = nullptr;
+			}
+			uint32_t descriptorsCount;
+
+			D3D12_CPU_DESCRIPTOR_HANDLE* baseDescriptor;
+		};
 
 
 	};
