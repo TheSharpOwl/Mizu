@@ -2,7 +2,9 @@
 
 #include "d3d12.h"
 #include <cstdint>
+#include <d3dx12.h>
 #include <functional>
+#include <queue>
 #include <wrl/client.h>
 
 namespace Mizu
@@ -29,7 +31,7 @@ namespace Mizu
 
 		/**
 		 * \brief Copies all of the staged descriptors to GPU's visible descriptor heap and bindsthe desciptors heap and descriptor tables to the command list.
-		 * \param commandList 
+		 * \param commandList
 		 * \param setFunc Used to set the GPU visible descriptors on the command list, two possible possible functions are :
 		 * 1. SetGraphicsRootDescriptorTable before a draw
 		 * 2. SetComputeRootDescriptorTable	 before a dispatch
@@ -52,7 +54,7 @@ namespace Mizu
 
 		/**
 		 * \brief Parses a root signature to know which root parameters contain descriptor tables and determine number of descriptors needed for each table
-		 * \param rootSignature 
+		 * \param rootSignature
 		 */
 		void parseRootSignature(const RootSignature& rootSignature);
 
@@ -91,6 +93,37 @@ namespace Mizu
 			D3D12_CPU_DESCRIPTOR_HANDLE* baseDescriptor;
 		};
 
+		/**
+		 * \brief type can be: D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV or D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER
+		 *  // TODO did not get this :This parameter also determines the type of GPU visible descriptor heap to
+			// create.
+		 */
+		D3D12_DESCRIPTOR_HEAP_TYPE m_descriptorHeapType;
+
+		uint32_t descriptorsPerHeapCount;
+
+		uint32_t m_descriptorHandleIncrementSize;
+
+		std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> m_descriptorHeapCache;
+
+		DesctiptorTableCache m_descriptorTableCache[MaxDescriptorTables];
+
+		// turned on bits represent an index in the root signature that has a table
+		uint32_t m_descriptorTableBitmask;
+
+		// turned on bits represent tables in the root signature that has changed since the last time of copying descriptors
+		uint32_t m_staleDescriptorTableBitmask;
+
+		using DescriptorHeapPool = std::queue<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>>;
+
+		DescriptorHeapPool m_descriptorHeapPool;
+		DescriptorHeapPool m_availableDescriptorHeaps;
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_currentDescriptorHeap;
+		CD3DX12_GPU_DESCRIPTOR_HANDLE m_currentGpuDescriptorHandle;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE m_currentCpuDescriptorHandle;
+
+		uint32_t m_freeHandlesCount;
 
 	};
 }
