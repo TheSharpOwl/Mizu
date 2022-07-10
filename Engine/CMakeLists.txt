@@ -9,8 +9,9 @@ set(ENGINE_HEADERS
     include/Mizu/DescriptorAllocator.hpp
     include/Mizu/DescriptorAllocatorPage.hpp
     include/Mizu/DescriptorAllocation.hpp
-    include/Mizu//DynamicDescriptorHeap.hpp
-    include/Mizu//RootSignature.hpp
+    include/Mizu/DynamicDescriptorHeap.hpp
+    include/Mizu/RootSignature.hpp
+    include/Mizu/CommandList.hpp
 )
 
 set(ENGINE_SOURCES 
@@ -23,8 +24,8 @@ set(ENGINE_SOURCES
     src/DescriptorAllocatorPage.cpp
     src/DescriptorAllocation.cpp
     src/DynamicDescriptorHeap.cpp
+    src/CommandList.cpp
 )
-
 
 add_library(Mizu STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
 
