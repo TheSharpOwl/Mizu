@@ -5,6 +5,7 @@ set(ENGINE_HEADERS
  include/Mizu/EventArgs.hpp
  include/Mizu/Game.hpp
  include/Mizu/Utils.hpp
+ include/Mizu/logger.hpp
  )
 
 set(ENGINE_SOURCES 
