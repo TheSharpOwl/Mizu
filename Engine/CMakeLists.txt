@@ -25,6 +25,7 @@ set(ENGINE_SOURCES
     src/DescriptorAllocatorPage.cpp
     src/DescriptorAllocation.cpp
     src/DynamicDescriptorHeap.cpp
+    src/RootSignature.cpp
     src/CommandList.cpp
 )
 

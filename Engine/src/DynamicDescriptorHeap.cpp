@@ -48,7 +48,10 @@ namespace Mizu
 
 	void DynamicDescriptorHeap::parseRootSignature(const RootSignature& rootSignature)
 	{
+		// when root signature changes all the descriptors have to be rebound to the command list
+		m_staleDescriptorTableBitmask = 0;
 
+		const auto& rootSignatureDesc = rootSignature.getRootSignatureDesc();
 	}
 
 	void DynamicDescriptorHeap::reset()
