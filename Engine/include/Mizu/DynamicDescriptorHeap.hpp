@@ -100,11 +100,11 @@ namespace Mizu
 		 */
 		D3D12_DESCRIPTOR_HEAP_TYPE m_descriptorHeapType;
 
-		uint32_t descriptorsPerHeapCount;
+		uint32_t m_descriptorsPerHeapCount;
 
 		uint32_t m_descriptorHandleIncrementSize;
 
-		std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> m_descriptorHeapCache;
+		std::unique_ptr<D3D12_CPU_DESCRIPTOR_HANDLE[]> m_descriptorHandleCache;
 
 		DesctiptorTableCache m_descriptorTableCache[MaxDescriptorTables];
 
@@ -119,11 +119,10 @@ namespace Mizu
 		DescriptorHeapPool m_descriptorHeapPool;
 		DescriptorHeapPool m_availableDescriptorHeaps;
 
+		uint32_t m_freeHandlesCount;
+
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_currentDescriptorHeap;
 		CD3DX12_GPU_DESCRIPTOR_HANDLE m_currentGpuDescriptorHandle;
 		CD3DX12_CPU_DESCRIPTOR_HANDLE m_currentCpuDescriptorHandle;
-
-		uint32_t m_freeHandlesCount;
-
 	};
 }

@@ -1,11 +1,25 @@
 #include "DynamicDescriptorHeap.hpp"
+#include "Application.hpp"
+#include "CommandList.hpp"
 #include "RootSignature.hpp"
+
+#include "DX12LibPCH.h"
 
 namespace Mizu
 {
 	DynamicDescriptorHeap::DynamicDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, uint32_t descriptorsPerHeap)
+		: m_descriptorHeapType(heapType)
+		, m_descriptorsPerHeapCount(descriptorsPerHeap)
+		, m_descriptorTableBitmask(0)
+		, m_staleDescriptorTableBitmask(0)
+		, m_freeHandlesCount(0)
+		, m_currentGpuDescriptorHandle(D3D12_DEFAULT)
+		, m_currentCpuDescriptorHandle(D3D12_DEFAULT)
 	{
+		m_descriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(heapType);
 
+		// allocate space to stage CPU visible descriptors
+		m_descriptorHandleCache = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(m_descriptorsPerHeapCount);
 	}
 	DynamicDescriptorHeap::~DynamicDescriptorHeap()
 	{
