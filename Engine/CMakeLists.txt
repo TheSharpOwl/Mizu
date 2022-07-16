@@ -5,6 +5,7 @@ set(ENGINE_HEADERS
     include/Mizu/EventArgs.hpp
     include/Mizu/Game.hpp
     include/Mizu/Utils.hpp
+    include/Mizu/logger.hpp
     include/Mizu/UploadBuffer.hpp
     include/Mizu/DescriptorAllocator.hpp
     include/Mizu/DescriptorAllocatorPage.hpp
