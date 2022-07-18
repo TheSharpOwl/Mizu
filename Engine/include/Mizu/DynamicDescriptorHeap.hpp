@@ -26,7 +26,7 @@ namespace Mizu
 		 * \param descriptorsCount
 		 * \param srcDescriptors base descriptor to start copying descriptors from
 		 */
-		void stageDescriptors(uint32_t rootParameterIdx, uint32_t offset, uint32_t descriptorsCount, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors) {}
+		void stageDescriptors(uint32_t rootParameterIdx, uint32_t offset, uint32_t descriptorsCount, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors)
 
 
 		/**
