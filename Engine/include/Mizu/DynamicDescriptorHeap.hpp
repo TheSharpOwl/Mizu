@@ -26,7 +26,7 @@ namespace Mizu
 		 * \param descriptorsCount
 		 * \param srcDescriptors base descriptor to start copying descriptors from
 		 */
-		void stageDescriptors(uint32_t rootParameterIdx, uint32_t offset, uint32_t descriptorsCount, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors)
+		void stageDescriptors(uint32_t rootParameterIdx, uint32_t offset, uint32_t descriptorsCount, const D3D12_CPU_DESCRIPTOR_HANDLE srcDescriptors);
 
 
 		/**
@@ -44,7 +44,7 @@ namespace Mizu
 
 		// TODO I did not understand this function well
 		/**
-		 * \brief Copies a single CPU descriptor to a GPU visible Descriptor heap which is useful ClearUnorderedAccessViewFloat and ClearUnorderedAccessViewUint
+		 * \brief Copies a single CPU descriptor (in the parameter) to a GPU visible Descriptor heap (which is stored in the class) which is useful ClearUnorderedAccessViewFloat and ClearUnorderedAccessViewUint
 		 * methods because they require both a CPU and GPU visible descriptor for a UAV resource
 		 * \param commandList in case the GPU visible descriptor needs to be updated on the command list
 		 * \param cpuDescriptor the CPU descriptor to copy into a GPU visible descriptor
