@@ -55,7 +55,6 @@ bool CubeDemo::LoadContent()
 {
 	auto device = Application::Get().GetDevice();
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
-	// TODO next time : make the command lists 3 because now we need copy one and the one we have already is only direct 
 	auto commandList = commandQueue->GetCommandList();
 
 	// Uploading vertex buffer data
@@ -115,13 +114,13 @@ bool CubeDemo::LoadContent()
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
 
 	CD3DX12_ROOT_PARAMETER1 rootParamters[1];
-	// TODO DELETE first parameter was sizeof(XMatrix)/4 (same number)
+	// first parameter was sizeof(XMatrix)/4 (same number)
 	rootParamters[0].InitAsConstants(16u, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootsSignatureDescription;
 	rootsSignatureDescription.Init_1_1(_countof(rootParamters), rootParamters, 0, nullptr, rootSignatureFlags);
 
-	// serialization of the root signature (better to convert it to binary before runtime ... TODO)
+	// serialization of the root signature (better to convert it to binary before runtime ... todo)
 	cp<ID3DBlob> rootSignatureBlob;
 	cp<ID3DBlob> errorBlob;
 

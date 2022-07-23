@@ -2,6 +2,7 @@
 
 #include <dxgi.h>
 #include <dxgi1_2.h>
+#include <dxgi1_3.h>
 #include <string>
 #include <wrl/client.h>
 #include "Helpers.h"

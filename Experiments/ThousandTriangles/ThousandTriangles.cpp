@@ -11,7 +11,6 @@
 
 #include "stdafx.h"
 #include "ThousandTriangles.h"
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include "Mizu/Utils.hpp"

@@ -1,10 +1,23 @@
 #pragma once
-#include<string>
+
+#include <string>
 #include <atlstr.h>
 #include <cassert>
+#include <stdexcept>
+#include <vector>
+
+#include "DX12LibPCH.h"
+#include "d3d12.h"
+#include "d3dcompiler.h"
 
 namespace Mizu
 {
+    // definitions for numbers
+    const int byte = 1;
+    constexpr int kb(int n) { return n * 1024;};
+    constexpr int mb(int n) {return n * 1024 * 1024;};
+
+    // TODO refactor this way of using the variable to make the directory
     static std::wstring resources_dir = L"";
 
     void ParseCommandLineArguments()
@@ -241,7 +254,7 @@ namespace Mizu
      * \param swapChainBufferCount how many buffers do we have for our swap chain (by default 2)
      */
     template<typename T>
-    ComPtr<ID3D12Resource> createConstantBuffer(const std::wstring& name, const int swapChainBufferCount = 2)
+    Microsoft::WRL::ComPtr<ID3D12Resource> createConstantBuffer(const std::wstring& name, const int swapChainBufferCount = 2)
     {
         ComPtr<ID3D12Resource> constBuffer;
         UINT elementSizeAligned = (sizeof(T) + 255) & ~255; // constant buffer should be aligned with 256 bits
@@ -286,5 +299,51 @@ namespace Mizu
         constBuffer->SetName(name.c_str());
 
         return constBUffer;
+    }
+
+    /***************************************************************************
+    * Taken from the MiniEngine.
+    * Source code available here:
+    * https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h
+    * Retrieved: 12 June 2022
+    **************************************************************************/
+    namespace Math
+    {
+        // usually I use only ALignUp and the one with mask (because first calls the second)
+        template <typename T>
+        inline T AlignUpWithMask(T value, size_t mask)
+        {
+            return (T)(((size_t)value + mask) & ~mask);
+        }
+
+        template <typename T>
+        inline T AlignDownWithMask(T value, size_t mask)
+        {
+            return (T)((size_t)value & ~mask);
+        }
+
+        template <typename T>
+        inline T AlignUp(T value, size_t alignment)
+        {
+            return AlignUpWithMask(value, alignment - 1);
+        }
+
+        template <typename T>
+        inline T AlignDown(T value, size_t alignment)
+        {
+            return AlignDownWithMask(value, alignment - 1);
+        }
+
+        template <typename T>
+        inline bool IsAligned(T value, size_t alignment)
+        {
+            return 0 == ((size_t)value & (alignment - 1));
+        }
+
+        template <typename T>
+        inline T DivideByMultiple(T value, size_t alignment)
+        {
+            return (T)((value + alignment - 1) / alignment);
+        }
     }
 }
