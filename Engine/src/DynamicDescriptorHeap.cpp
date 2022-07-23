@@ -206,7 +206,19 @@ namespace Mizu
 
 	void DynamicDescriptorHeap::reset()
 	{
+		m_availableDescriptorHeaps = m_descriptorHeapPool;
+		m_currentDescriptorHeap.Reset();
+		m_currentCpuDescriptorHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(D3D12_DEFAULT);
+		m_currentGpuDescriptorHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(D3D12_DEFAULT);
+		m_freeHandlesCount = 0;
+		m_descriptorTableBitmask = 0;
+		m_staleDescriptorTableBitmask = 0;
 
+		// reset the table cache
+		for(int i = 0;i < MaxDescriptorTables;i++)
+		{
+			m_descriptorTableCache[i].reset();
+		}
 	}
 
 
