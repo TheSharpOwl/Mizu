@@ -13,7 +13,7 @@ set(ENGINE_HEADERS
     include/Mizu/DynamicDescriptorHeap.hpp
     include/Mizu/RootSignature.hpp
     include/Mizu/CommandList.hpp
-    include/Mizu/ResourceTracker.hpp
+    include/Mizu/ResourceStateTracker.hpp
 )
 
 set(ENGINE_SOURCES 
@@ -28,7 +28,7 @@ set(ENGINE_SOURCES
     src/DynamicDescriptorHeap.cpp
     src/RootSignature.cpp
     src/CommandList.cpp
-    src/ResourceTracker.cpp
+    src/ResourceStateTracker.cpp
 )
 
 add_library(Mizu STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
