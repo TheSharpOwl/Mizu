@@ -85,5 +85,61 @@ namespace Mizu
 		void flushResourceBarriers(CommandList& commandList)
 		{
 		}
+
+ 		// commits the final state of the resources to the global resource state map (must be called when the command list is closed)
+		void commitFinalResourceStates()
+		{
+			
+		}
+
+		// resets the state tracking must be done when the command list is reset
+		void resetState(){}
+
+		// locks the global state before flushing pending resource barriers and committing the final resource state to the global state of resources. To ensure the consistency between command list executions
+		static void lock(){}
+
+		// unlock the global resource state after the final states have been committed to the global resources state array
+		static void unlock(){}
+
+		// should be done when the resource is done for the first time
+		static void addGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state){}
+
+		// should be done when the resource is destroyed
+		static void removeGlobalResourceState(ID3D12Resource* resource){}
+
+
+	private:
+
+		using ResourceBarriers = std::vector<D3D12_RESOURCE_BARRIER>;
+
+		ResourceBarriers m_pendingResourceBarriers;
+
+		// non pending
+		ResourceBarriers m_resourceBarriers;
+
+		// track the state of a particular resource and all of its subresources
+		struct ResourceState
+		{
+			explicit ResourceState(D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON)
+			: state(state)
+			{}
+
+			void setSubresourceState(UINT subresource, D3D12_RESOURCE_STATES state)
+			{
+				if(subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+				{
+					this->state = state;
+					subresourceState.clear();
+				}
+				else
+				{
+					subresourceState[subresource] = state;
+				}
+			}
+
+			// Continue FROM HERE 
+			D3D12_RESOURCE_STATES state;
+			std::map<UINT, D3D12_RESOURCE_STATES> subresourceState;
+		};
 	};
 }
