@@ -124,22 +124,48 @@ namespace Mizu
 			: state(state)
 			{}
 
-			void setSubresourceState(UINT subresource, D3D12_RESOURCE_STATES state)
+			void setSubresourceState(UINT subresource, D3D12_RESOURCE_STATES s)
 			{
 				if(subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
 				{
-					this->state = state;
+					this->state = s;
 					subresourceState.clear();
 				}
 				else
 				{
-					subresourceState[subresource] = state;
+					subresourceState[subresource] = s;
 				}
 			}
 
-			// Continue FROM HERE 
+			D3D12_RESOURCE_STATES getSubresourceState(UINT subresource) const
+			{
+				D3D12_RESOURCE_STATES s = this->state; // all the subresources have this->state unless specified in the map
+				const auto it = subresourceState.find(subresource);
+
+				if(it != subresourceState.end())
+				{
+					s = it->second;
+				}
+				return s;
+			}
+
 			D3D12_RESOURCE_STATES state;
 			std::map<UINT, D3D12_RESOURCE_STATES> subresourceState;
 		};
+
+		using ResourceStateMap = std::unordered_map<ID3D12Resource*, ResourceState>;
+
+		/*
+		 * the final last known state of the resources within a command list
+		 * this final state is commmited to the global resource state when the command list is closed
+		 * and before it is executed on the command queue
+		 */
+		ResourceStateMap m_finalResourceState;
+
+		// the global resource state map that stores the state of the resources between command list executions
+		static ResourceStateMap ms_globalResourceState;
+
+		static std::mutex ms_mutex;
+		static bool ms_isLocked;
 	};
 }
