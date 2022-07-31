@@ -1,3 +1,5 @@
+# TODO use cmake function that includes all files in a folder to a list instead of this
+
 set(ENGINE_HEADERS
     include/Mizu/CommandQueue.hpp
     include/Mizu/Window.hpp
@@ -14,6 +16,7 @@ set(ENGINE_HEADERS
     include/Mizu/RootSignature.hpp
     include/Mizu/CommandList.hpp
     include/Mizu/ResourceStateTracker.hpp
+    include/Mizu/Resource.hpp
 )
 
 set(ENGINE_SOURCES 
@@ -29,6 +32,7 @@ set(ENGINE_SOURCES
     src/RootSignature.cpp
     src/CommandList.cpp
     src/ResourceStateTracker.cpp
+    src/Resource.cpp
 )
 
 add_library(Mizu STATIC ${ENGINE_HEADERS} ${ENGINE_SOURCES})
