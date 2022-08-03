@@ -13,4 +13,20 @@ namespace Mizu
     Resource& Resource::operator=(Resource&& copy) { return *this; }
 
 	Resource::~Resource(){}
+
+
+    void setResource(Microsoft::WRL::ComPtr<ID3D12Resource> resource, const D3D12_CLEAR_VALUE* clearValue)
+    {
+	    
+    }
+
+    void setName(const std::wstring& name)
+    {
+	    
+    }
+
+    void resetResource()
+    {
+	    
+    }
 }
