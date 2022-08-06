@@ -11,6 +11,7 @@ namespace Mizu
 	 */
 	class Resource
     {
+	public:
         Resource(std::wstring name = L"");
 
         Resource(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue = nullptr, const std::wstring& name = L"");
