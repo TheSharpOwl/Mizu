@@ -182,20 +182,56 @@ namespace Mizu
 
 	void ResourceStateTracker::commitFinalResourceStates()
 	{
+		assert(ms_isLocked);
 
+		// commit the final resource states to the global resource state array
+		for(const auto& [idx, val] : m_finalResourceState)
+		{
+			ms_globalResourceState[idx] = val;
+		}
+
+		m_finalResourceState.clear();
 	}
 
-	void ResourceStateTracker::resetState() {}
+	// called when the command list is reset
+	void ResourceStateTracker::resetState()
+	{
+		m_pendingResourceBarriers.clear();
+		m_resourceBarriers.clear();
+		m_finalResourceState.clear();
+	}
 
 	// (static)
-	void ResourceStateTracker::lock() {}
+	void ResourceStateTracker::lock()
+	{
+		ms_mutex.lock();
+		ms_isLocked = true;
+	}
 
 	// (static)
-	void ResourceStateTracker::unlock() {}
+	void ResourceStateTracker::unlock()
+	{
+		ms_isLocked = false;
+		ms_mutex.unlock();
+	}
 
-	// (static)
-	void ResourceStateTracker::addGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state) {}
+	// (static) called whenever a new resource is created using (createCommittedResource, createPlacedResource, CreateReservedResource)
+	void ResourceStateTracker::addGlobalResourceState(ID3D12Resource* resource, D3D12_RESOURCE_STATES state)
+	{
+		if(resource)
+		{
+			std::lock_guard<std::mutex> lock(ms_mutex);
+			ms_globalResourceState[resource].setSubresourceState(D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES, state);
+		}
+	}
 
-	// (static)
-	void ResourceStateTracker::removeGlobalResourceState(ID3D12Resource* resource) {}
+	// (static) removes resource state from the global state map
+	void ResourceStateTracker::removeGlobalResourceState(ID3D12Resource* resource)
+	{
+		if(resource)
+		{
+			std::lock_guard<std::mutex> lock(ms_mutex);
+			ms_globalResourceState.erase(resource);
+		}
+	}
 }
