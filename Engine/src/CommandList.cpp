@@ -1,4 +1,6 @@
 #include "CommandList.hpp"
+
+#include "DynamicDescriptorHeap.hpp"
 #include "Resource.hpp"
 #include "ResourceStateTracker.hpp"
 #include "UploadBuffer.hpp"
@@ -52,7 +54,33 @@ namespace Mizu
 
 	void CommandList::trackObject(Microsoft::WRL::ComPtr<ID3D12Object> object)
 	{
-		// TODO
+		m_trackedObjects.push_back(object);
+	}
+
+	void CommandList::setShaderResourceView(
+		uint32_t rootParameterIndex,
+		uint32_t descriptorOffset,
+		const Resource& resource,
+		D3D12_RESOURCE_STATES stateAfter,
+		UINT firstSubresource,
+		UINT numSubresources,
+		const D3D12_SHADER_RESOURCE_VIEW_DESC* srv)
+	{
+		if (numSubresources < D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+		{
+			for (uint32_t i = 0; i < numSubresources; ++i)
+			{
+				transitionBarrier(resource, stateAfter, firstSubresource + i);
+			}
+		}
+		else
+		{
+			transitionBarrier(resource, stateAfter);
+		}
+
+		m_dynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]->stageDescriptors(rootParameterIndex, descriptorOffset, 1, resource.getShaderResourceView(srv));
+
+		trackResource(resource);
 	}
 
 }

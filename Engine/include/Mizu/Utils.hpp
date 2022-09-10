@@ -20,7 +20,7 @@ namespace Mizu
     // TODO refactor this way of using the variable to make the directory
     static std::wstring resources_dir = L"";
 
-    void ParseCommandLineArguments()
+    inline void ParseCommandLineArguments()
     {
         int argc;
         wchar_t** argv = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
@@ -39,7 +39,7 @@ namespace Mizu
         ::LocalFree(argv);
     }
 
-    std::wstring to_wstring(LPCSTR s)
+    inline std::wstring to_wstring(LPCSTR s)
     {
         std::string temp(s);
         std::wstring ans(temp.begin(), temp.end());
@@ -57,7 +57,7 @@ namespace Mizu
 
    
 
-	void CompileShader(LPCWSTR filename, LPCSTR entryPoint, LPCSTR targetType, UINT compileFlags, ID3DBlob** shaderBlob)
+	inline void CompileShader(LPCWSTR filename, LPCSTR entryPoint, LPCSTR targetType, UINT compileFlags, ID3DBlob** shaderBlob)
 	{
         ParseCommandLineArguments(); // to get the resources directory
 
@@ -98,7 +98,7 @@ namespace Mizu
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    float mapToScreen(float t, float x, float y)
+    inline float mapToScreen(float t, float x, float y)
     {
         assert((t >= x && t <= y) && "t should be in range [x,y]");
         return (2.f * t) / (y - x) - 1;

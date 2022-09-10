@@ -6,6 +6,7 @@ namespace Mizu
     class Resource;
     class ResourceStateTracker;
     class UploadBuffer;
+    class DynamicDescriptorHeap;
 
     class CommandList
     {
@@ -41,16 +42,32 @@ namespace Mizu
         // the root parameter at rootParameterIndex should be set to D3D12_ROOT_PARAMETER_TYPE_CBV
         void setGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData);
 
-    private:
+		void setShaderResourceView(
+            uint32_t rootParameterIndex,
+            uint32_t descriptorOffset,
+            const Resource& resource,
+            D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
+            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			UINT firstSubresource = 0,
+            UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+            const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr
+        );
+
+    protected:
+
+
+        // TODO next time add comments to this class
 
         void trackResource(const Resource& res);
 
         void trackObject(Microsoft::WRL::ComPtr<ID3D12Object> object);
 
+
+        std::unique_ptr<DynamicDescriptorHeap> m_dynamicDescriptorHeap[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+
+        std::vector<Microsoft::WRL::ComPtr<ID3D12Object>> m_trackedObjects;
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_commandList;
-
         std::unique_ptr<ResourceStateTracker> m_resourceStateTracker;
-
         std::unique_ptr<UploadBuffer> m_uploadBuffer;
     };
 }
