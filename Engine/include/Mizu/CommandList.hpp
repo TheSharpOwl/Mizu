@@ -42,7 +42,17 @@ namespace Mizu
         // the root parameter at rootParameterIndex should be set to D3D12_ROOT_PARAMETER_TYPE_CBV
         void setGraphicsDynamicConstantBuffer(uint32_t rootParameterIndex, size_t sizeInBytes, const void* bufferData);
 
-		void setShaderResourceView(
+        /**
+         * \brief 
+         * \param rootParameterIndex to assign the SRV to
+         * \param descriptorOffset
+         * \param resource 
+         * \param stateAfter 
+         * \param firstSubresource to transit to the requested state 
+         * \param numSubresources number of resources to transit
+         * \param srv to use for the resource in the shader. by default nullptr which uses the default srv for the resource
+         */
+        void setShaderResourceView(
             uint32_t rootParameterIndex,
             uint32_t descriptorOffset,
             const Resource& resource,
@@ -52,6 +62,14 @@ namespace Mizu
             UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
             const D3D12_SHADER_RESOURCE_VIEW_DESC* srv = nullptr
         );
+
+        void setUnorderedAccessView(uint32_t rootParameterIndex,
+            uint32_t descriptorOffset,
+            const Resource& resource,
+            D3D12_RESOURCE_STATES stateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+            UINT firstSubresource = 0,
+            UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+            const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav= nullptr);
 
     protected:
 
