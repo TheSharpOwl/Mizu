@@ -113,7 +113,7 @@ namespace Mizu
 		trackResource(resource);
 	}
 
-	void CommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance)
+	void CommandList::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance)
 	{
 		// All resource barriers must be flushed to the command list
 		flushResourceBarriers();
@@ -125,6 +125,20 @@ namespace Mizu
 		}
 
 		m_commandList->DrawInstanced(vertexCount, instanceCount, startVertex, startInstance);
+	}
+
+	void CommandList::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex, uint32_t startInstance)
+	{
+		// All resource barriers must be flushed to the command list
+			flushResourceBarriers();
+
+		// all the staged descriptors also must be committed
+		for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; i++)
+		{
+			m_dynamicDescriptorHeap[i]->commitStagedDescriptorsForDraw(*this);
+		}
+
+		m_commandList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance);
 	}
 
 }
