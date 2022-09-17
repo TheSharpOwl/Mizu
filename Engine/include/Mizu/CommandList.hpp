@@ -1,5 +1,6 @@
 #pragma once
 #include "DX12LibPCH.h"
+#include "DynamicDescriptorHeap.hpp"
 
 namespace Mizu
 {
@@ -70,6 +71,15 @@ namespace Mizu
             UINT firstSubresource = 0,
             UINT numSubresources = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
             const D3D12_UNORDERED_ACCESS_VIEW_DESC* uav= nullptr);
+
+        /**
+         * \brief Draw geomerty to the currently bound render target
+         * \param vertexCount 
+         * \param instanceCount 
+         * \param startVertex 
+         * \param startInstance 
+         */
+        void Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance);
 
     protected:
 
