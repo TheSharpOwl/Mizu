@@ -14,7 +14,7 @@ namespace Mizu
 {
 	class Window;
 	class Game;
-
+	// TODO refactor function names to use lowerCamelCase not UpperCamelCase
 	class Application
 	{
 	public:
@@ -56,6 +56,8 @@ namespace Mizu
 		auto getWindow(const std::wstring name) -> std::shared_ptr<Window> { auto it = m_windowsNameMap.find(name);  return (it != m_windowsNameMap.end() ? it->second : nullptr); }
 		auto getWindow(HWND hWnd) -> std::shared_ptr<Window> { auto it = m_windowsHwndMap.find(hWnd);  return (it != m_windowsHwndMap.end() ? it->second : nullptr); }
 
+		static uint64_t getFrameNumber();
+
 	protected:
 
 		Application(HINSTANCE hInst);
@@ -81,6 +83,9 @@ namespace Mizu
 
 		const bool m_useWarp = false;
 
+		static uint64_t ms_frameNumber;
+
 		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 	};
 }

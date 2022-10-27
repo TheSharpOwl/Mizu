@@ -1,4 +1,3 @@
-// TODO set shader to version and properites using cmake
 struct ModelViewProjection
 {
 	matrix MVP;
