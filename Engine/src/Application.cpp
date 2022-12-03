@@ -300,7 +300,7 @@ ComPtr<ID3D12Device2> Application::CreateDevice()
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
 		infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
 
-		// TODO might change these later about what to suppress out of the warnings and errors
+		// NOTE this can be changed these later about what to suppress out of the warnings and errors
 		// in case skipping a category is needed : D3D12_MESSAGE_CATEGORY Categories[] can be used
 		D3D12_MESSAGE_SEVERITY severities[] = {
 			D3D12_MESSAGE_SEVERITY_INFO // suppress only the info messages
