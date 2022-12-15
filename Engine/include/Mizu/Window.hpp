@@ -2,14 +2,13 @@
 #include "DX12LibPCH.h"
 #include <memory>
 
-class CommandQueue;
 
 // TODO add Renderer class and improve dependencies (for example app and window)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
-
+	class CommandQueue;
 	class Game;
 
 	class Window
