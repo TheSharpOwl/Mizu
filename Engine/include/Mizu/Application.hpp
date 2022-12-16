@@ -6,14 +6,15 @@
 
 #include <unordered_map>
 
-class CommandQueue;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
 	class Window;
+	class CommandQueue;
 	class Game;
+
 	// TODO refactor function names to use lowerCamelCase not UpperCamelCase
 	class Application
 	{
