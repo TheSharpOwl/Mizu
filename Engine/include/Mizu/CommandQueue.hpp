@@ -26,11 +26,10 @@ namespace Mizu
 		void Flush();
 
 		// TODO find a better solution than this one to close the window handle
-		void CloseHandle() { ::CloseHandle(m_FenceEvent); };
+		void CloseHandle() { ::CloseHandle(m_FenceEvent); }
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 
-		// todo make private/protected
 	protected:
 
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
