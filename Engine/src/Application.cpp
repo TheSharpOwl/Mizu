@@ -348,16 +348,16 @@ namespace Mizu
 
 	void Application::Flush()
 	{
-		m_directCommandQueue->Flush();
-		m_copyCommandQueue->Flush();
-		m_computeCommandQueue->Flush();
+		m_directCommandQueue->flush();
+		m_copyCommandQueue->flush();
+		m_computeCommandQueue->flush();
 	}
 
 	void Mizu::Application::Close()
 	{
-		m_directCommandQueue->CloseHandle();
-		m_copyCommandQueue->CloseHandle();
-		m_computeCommandQueue->CloseHandle();
+		m_directCommandQueue->closeHandle();
+		m_copyCommandQueue->closeHandle();
+		m_computeCommandQueue->closeHandle();
 
 		m_windowsNameMap.clear();
 		m_windowsHwndMap.clear();

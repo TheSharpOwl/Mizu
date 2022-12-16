@@ -3,54 +3,50 @@
 #include <d3dx12.h>
 #include <wrl.h>
 
-#include<queue>
-#include<cstdint>
-
-
+#include <cstdint>
+#include <queue>
 
 namespace Mizu
 {
-	class CommandQueue
-	{
-	public:
-		CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type);
-		virtual ~CommandQueue();
+class CommandQueue
+{
+public:
+    CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type);
+    virtual ~CommandQueue();
 
-		uint64_t ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList);
+    uint64_t executeCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList);
 
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList();
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList();
 
-		uint64_t Signal();
-		bool IsFenceComplete(uint64_t fenceValue);
-		void WaitForFenceValue(uint64_t fenceValue);
-		void Flush();
+    uint64_t signal();
+    bool isFenceComplete(uint64_t fenceValue);
+    void waitForFenceValue(uint64_t fenceValue);
+    void flush();
 
-		// TODO find a better solution than this one to close the window handle
-		void CloseHandle() { ::CloseHandle(m_FenceEvent); }
+    // TODO find a better solution than this one to close the window handle
+    void closeHandle() const { ::CloseHandle(m_FenceEvent); }
 
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
+    [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12CommandQueue> getCommandQueue() const;
 
-	protected:
+protected:
+    Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
 
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CreateCommandAllocator();
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator);
 
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator);
+    struct CommandAllocatorEntry
+    {
+        uint64_t fenceValue;
+        Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+    };
 
-		struct CommandAllocatorEntry
-		{
-			uint64_t fenceValue;
-			Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-		};
+    D3D12_COMMAND_LIST_TYPE m_CommandListType;
+    Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+    Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
+    HANDLE m_FenceEvent;
+    uint64_t m_FenceValue;
 
-		D3D12_COMMAND_LIST_TYPE m_CommandListType;
-		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
-		HANDLE m_FenceEvent;
-		uint64_t m_FenceValue;
-
-		std::queue<CommandAllocatorEntry> m_CommandAllocatorQueue;
-		std::queue<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>> m_CommandListQueue;
-	};
+    std::queue<CommandAllocatorEntry> m_CommandAllocatorQueue;
+    std::queue<Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>> m_CommandListQueue;
+};
 }
-

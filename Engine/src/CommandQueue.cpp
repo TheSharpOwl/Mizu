@@ -34,7 +34,7 @@ namespace Mizu
 
 	}
 
-	uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
+	uint64_t CommandQueue::executeCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
 	{
 		commandList->Close();
 
@@ -47,7 +47,7 @@ namespace Mizu
 		};
 
 		m_CommandQueue->ExecuteCommandLists(1, ppCommandList);
-		uint64_t fenceValue = Signal();
+		uint64_t fenceValue = signal();
 
 		m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
 		m_CommandListQueue.push(commandList);
@@ -65,7 +65,7 @@ namespace Mizu
 		cp<ID3D12CommandAllocator> commandAllocator;
 
 		// reuse the command allocator we have if it's already finished 
-		if (!m_CommandAllocatorQueue.empty() && IsFenceComplete(m_CommandAllocatorQueue.front().fenceValue))
+		if (!m_CommandAllocatorQueue.empty() && isFenceComplete(m_CommandAllocatorQueue.front().fenceValue))
 		{
 			commandAllocator = m_CommandAllocatorQueue.front().commandAllocator;
 			m_CommandAllocatorQueue.pop();
@@ -97,32 +97,32 @@ namespace Mizu
 		return commandList;
 	}
 
-	uint64_t CommandQueue::Signal()
+	uint64_t CommandQueue::signal()
 	{
 		uint64_t newFenceVal = ++m_FenceValue;
 		ThrowIfFailed(m_CommandQueue->Signal(m_Fence.Get(), newFenceVal));
 		return newFenceVal;
 	}
 
-	bool CommandQueue::IsFenceComplete(uint64_t fenceValue)
+	bool CommandQueue::isFenceComplete(uint64_t fenceValue)
 	{
 		return m_Fence->GetCompletedValue() >= fenceValue;
 	}
 
-	void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
+	void CommandQueue::waitForFenceValue(uint64_t fenceValue)
 	{
-		if (!IsFenceComplete(fenceValue))
+		if (!isFenceComplete(fenceValue))
 		{
 			m_Fence->SetEventOnCompletion(fenceValue, m_FenceEvent);
 			::WaitForSingleObject(m_FenceEvent, DWORD_MAX);
 		}
 	}
-	void CommandQueue::Flush()
+	void CommandQueue::flush()
 	{
-		WaitForFenceValue(Signal());
+		waitForFenceValue(signal());
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetCommandQueue() const
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::getCommandQueue() const
 	{
 		return m_CommandQueue;
 	}
