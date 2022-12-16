@@ -19,7 +19,11 @@ BreakBeforeBraces: Allman
 # Indent in all namespaces
 NamespaceIndentation: All
 
-# TODO add line break after public/protected/private
+
+# Start empty line after public/private..etc only if there is some logic after it
+EmptyLineBeforeAccessModifier: LogicalBlock
+# Seems this one is not supported for my clang-format version TODO check it later
+# EmptyLineAfterAccessModifierStyle: Always
 ...
 
 
