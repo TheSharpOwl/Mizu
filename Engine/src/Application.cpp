@@ -237,13 +237,13 @@ namespace Mizu
 		switch (type)
 		{
 		case D3D12_COMMAND_LIST_TYPE_COPY:
-			return m_copyCommandQueue->GetCommandList();
+			return m_copyCommandQueue->getCommandList();
 
 		case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-			return m_computeCommandQueue->GetCommandList();
+			return m_computeCommandQueue->getCommandList();
 
 		default:
-			return m_directCommandQueue->GetCommandList();
+			return m_directCommandQueue->getCommandList();
 		}
 	}
 

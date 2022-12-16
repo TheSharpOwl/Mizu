@@ -55,7 +55,7 @@ bool CubeDemo::LoadContent()
 {
 	auto device = Application::Get().GetDevice();
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
-	auto commandList = commandQueue->GetCommandList();
+	auto commandList = commandQueue->getCommandList();
 
 	// Uploading vertex buffer data
 	cp<ID3D12Resource> intermediateVertexBuffer;
@@ -202,7 +202,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 void CubeDemo::OnRender(RenderEventArgs& e)
 {
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	auto commandList = commandQueue->GetCommandList();
+	auto commandList = commandQueue->getCommandList();
 	// no need to reset the command list (check CommandQueue::GetCommandList function above)
 
 	UINT currentBackBufferIndex = m_window->GetCurrentBackBufferIndex();
