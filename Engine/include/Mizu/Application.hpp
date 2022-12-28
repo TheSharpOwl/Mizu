@@ -23,7 +23,7 @@ namespace Mizu
         Application(const Application& copy) = delete;
         Application& operator=(const Application& other) = delete;
 
-        static void Create(HINSTANCE hInst);
+        static void create(HINSTANCE hInst);
 
         std::shared_ptr<Window> createRenderWindow(const std::wstring& windowName, int width, int height);
 
@@ -35,7 +35,7 @@ namespace Mizu
 
         static Application& get();
 
-        bool isTearingSupported() const;
+        [[nodiscard]] bool isTearingSupported() const;
 
         void flush();
 
@@ -46,9 +46,9 @@ namespace Mizu
         [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> getCommandList(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
 
         // return the created descriptor heap with its size
-        std::pair<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, UINT> createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
+        [[nodiscard]] std::pair<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, UINT> createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
 
-        UINT getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
+        [[nodiscard]] UINT getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
 
         auto getWindow(const std::wstring name) -> std::shared_ptr<Window>
         {

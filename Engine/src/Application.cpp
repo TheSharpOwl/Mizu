@@ -133,7 +133,7 @@ namespace Mizu
 		m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
 	}
-	void Application::Create(HINSTANCE hInst) // static 
+	void Application::create(HINSTANCE hInst) // static 
 	{
 		// make sure we have an app singleton already
 		if (!App)
