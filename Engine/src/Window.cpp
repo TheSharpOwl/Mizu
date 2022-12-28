@@ -141,7 +141,7 @@ namespace Mizu
 		scDesc.Flags = CheckTearingSupport() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		// get the COM ptr
-		auto commandQueue = command_queue_sptr->GetCommandQueue();
+		auto commandQueue = command_queue_sptr->getCommandQueue();
 
 		ThrowIfFailed(f4->CreateSwapChainForHwnd(commandQueue.Get(), m_hWnd, &scDesc, nullptr, nullptr, &swapChain1));
 

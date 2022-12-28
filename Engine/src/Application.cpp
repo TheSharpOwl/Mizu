@@ -237,13 +237,13 @@ namespace Mizu
 		switch (type)
 		{
 		case D3D12_COMMAND_LIST_TYPE_COPY:
-			return m_copyCommandQueue->GetCommandList();
+			return m_copyCommandQueue->getCommandList();
 
 		case D3D12_COMMAND_LIST_TYPE_COMPUTE:
-			return m_computeCommandQueue->GetCommandList();
+			return m_computeCommandQueue->getCommandList();
 
 		default:
-			return m_directCommandQueue->GetCommandList();
+			return m_directCommandQueue->getCommandList();
 		}
 	}
 
@@ -348,16 +348,16 @@ namespace Mizu
 
 	void Application::Flush()
 	{
-		m_directCommandQueue->Flush();
-		m_copyCommandQueue->Flush();
-		m_computeCommandQueue->Flush();
+		m_directCommandQueue->flush();
+		m_copyCommandQueue->flush();
+		m_computeCommandQueue->flush();
 	}
 
 	void Mizu::Application::Close()
 	{
-		m_directCommandQueue->CloseHandle();
-		m_copyCommandQueue->CloseHandle();
-		m_computeCommandQueue->CloseHandle();
+		m_directCommandQueue->closeHandle();
+		m_copyCommandQueue->closeHandle();
+		m_computeCommandQueue->closeHandle();
 
 		m_windowsNameMap.clear();
 		m_windowsHwndMap.clear();

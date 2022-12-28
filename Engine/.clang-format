@@ -1,0 +1,31 @@
+---
+# With 4 columns indentation.
+BasedOnStyle: WebKit
+IndentWidth: 4
+---
+Language: Cpp
+# Force pointers to the type for C++.
+DerivePointerAlignment: false
+PointerAlignment: Left
+# Override the break before braces and use Allman (aka add a new line after every bracket)
+BreakBeforeBraces: Allman
+# to Use in case with custom (specify Custom for BreakBeforeBraces to make this work)
+# BraceWrapping:
+#    AfterEnum: true
+#    AfterStruct: true
+#    AfterClass: true
+
+
+# Indent in all namespaces
+NamespaceIndentation: All
+
+
+# Start empty line after public/private..etc only if there is some logic after it
+EmptyLineBeforeAccessModifier: LogicalBlock
+# Seems this one is not supported for my clang-format version TODO check it later
+# EmptyLineAfterAccessModifierStyle: Always
+...
+
+
+# for reference:
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html

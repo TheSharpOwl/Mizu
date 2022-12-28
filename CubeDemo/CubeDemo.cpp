@@ -55,7 +55,7 @@ bool CubeDemo::LoadContent()
 {
 	auto device = Application::Get().GetDevice();
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
-	auto commandList = commandQueue->GetCommandList();
+	auto commandList = commandQueue->getCommandList();
 
 	// Uploading vertex buffer data
 	cp<ID3D12Resource> intermediateVertexBuffer;
@@ -158,8 +158,8 @@ bool CubeDemo::LoadContent()
 
 	ThrowIfFailed(device->CreatePipelineState(&pipelineStateStreamDesc, IID_PPV_ARGS(&m_pipelineState)));
 
-	auto fenceValue = commandQueue->ExecuteCommandList(commandList);
-	commandQueue->WaitForFenceValue(fenceValue);
+	auto fenceValue = commandQueue->executeCommandList(commandList);
+	commandQueue->waitForFenceValue(fenceValue);
 
 	m_contentLoaded = true;
 
@@ -202,7 +202,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 void CubeDemo::OnRender(RenderEventArgs& e)
 {
 	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	auto commandList = commandQueue->GetCommandList();
+	auto commandList = commandQueue->getCommandList();
 	// no need to reset the command list (check CommandQueue::GetCommandList function above)
 
 	UINT currentBackBufferIndex = m_window->GetCurrentBackBufferIndex();
@@ -242,11 +242,11 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 	// presenting
 	{
 		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-		m_fenceValues[currentBackBufferIndex] = commandQueue->ExecuteCommandList(commandList);
+		m_fenceValues[currentBackBufferIndex] = commandQueue->executeCommandList(commandList);
 
 		UINT presentFlags = Application::Get().IsTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 		currentBackBufferIndex = m_window->Present((m_vsync ? 1 : 0), presentFlags);
-		commandQueue->WaitForFenceValue(m_fenceValues[currentBackBufferIndex]);
+		commandQueue->waitForFenceValue(m_fenceValues[currentBackBufferIndex]);
 	}
 }
 

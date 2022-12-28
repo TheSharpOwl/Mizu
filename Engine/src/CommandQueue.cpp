@@ -12,21 +12,21 @@ namespace Mizu
 	using cp = Microsoft::WRL::ComPtr<T>;
 
 	CommandQueue::CommandQueue(Microsoft::WRL::ComPtr<ID3D12Device2> device, D3D12_COMMAND_LIST_TYPE type) :
-		m_FenceValue(0),
-		m_Device(device),
-		m_CommandListType(type)
+		m_fenceValue(0),
+		m_device(device),
+		m_commandListType(type)
 	{
 		D3D12_COMMAND_QUEUE_DESC des = {};
 		des.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		des.NodeMask = 0;
 		des.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-		des.Type = m_CommandListType;
+		des.Type = m_commandListType;
 
-		ThrowIfFailed(m_Device->CreateCommandQueue(&des, IID_PPV_ARGS(&m_CommandQueue)));
-		ThrowIfFailed(m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
-		m_FenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
+		ThrowIfFailed(m_device->CreateCommandQueue(&des, IID_PPV_ARGS(&m_commandQueue)));
+		ThrowIfFailed(m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence)));
+		m_fenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
-		assert(m_FenceEvent && "Failed to create the fence event handle!");
+		assert(m_fenceEvent && "Failed to create the fence event handle!");
 	}
 
 	CommandQueue::~CommandQueue()
@@ -34,7 +34,7 @@ namespace Mizu
 
 	}
 
-	uint64_t CommandQueue::ExecuteCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
+	uint64_t CommandQueue::executeCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2>  commandList)
 	{
 		commandList->Close();
 
@@ -46,11 +46,11 @@ namespace Mizu
 			commandList.Get()
 		};
 
-		m_CommandQueue->ExecuteCommandLists(1, ppCommandList);
-		uint64_t fenceValue = Signal();
+		m_commandQueue->ExecuteCommandLists(1, ppCommandList);
+		uint64_t fenceValue = signal();
 
-		m_CommandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
-		m_CommandListQueue.push(commandList);
+		m_commandAllocatorQueue.emplace(CommandAllocatorEntry{ fenceValue, commandAllocator });
+		m_commandListQueue.push(commandList);
 
 
 		// because ownership was moved to the ComPtr in the commandAllocatorQueue, so it's safe to release now
@@ -59,35 +59,35 @@ namespace Mizu
 		return fenceValue;
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::GetCommandList()
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::getCommandList()
 	{
 		cp<ID3D12GraphicsCommandList2> commandList;
 		cp<ID3D12CommandAllocator> commandAllocator;
 
 		// reuse the command allocator we have if it's already finished 
-		if (!m_CommandAllocatorQueue.empty() && IsFenceComplete(m_CommandAllocatorQueue.front().fenceValue))
+		if (!m_commandAllocatorQueue.empty() && isFenceComplete(m_commandAllocatorQueue.front().fenceValue))
 		{
-			commandAllocator = m_CommandAllocatorQueue.front().commandAllocator;
-			m_CommandAllocatorQueue.pop();
+			commandAllocator = m_commandAllocatorQueue.front().commandAllocator;
+			m_commandAllocatorQueue.pop();
 
 			ThrowIfFailed(commandAllocator->Reset());
 		}
 		else // or create a new one
 		{
-			commandAllocator = CreateCommandAllocator();
+			commandAllocator = createCommandAllocator();
 		}
 
 
-		if (!m_CommandListQueue.empty())
+		if (!m_commandListQueue.empty())
 		{
-			commandList = m_CommandListQueue.front();
-			m_CommandListQueue.pop();
+			commandList = m_commandListQueue.front();
+			m_commandListQueue.pop();
 
 			ThrowIfFailed(commandList->Reset(commandAllocator.Get(), nullptr));
 		}
 		else
 		{
-			commandList = CreateCommandList(commandAllocator);
+			commandList = createCommandList(commandAllocator);
 		}
 
 		// we associate the command allocator with the command list so that we can retrieve the command allocator from the command list when it is executed
@@ -97,49 +97,49 @@ namespace Mizu
 		return commandList;
 	}
 
-	uint64_t CommandQueue::Signal()
+	uint64_t CommandQueue::signal()
 	{
-		uint64_t newFenceVal = ++m_FenceValue;
-		ThrowIfFailed(m_CommandQueue->Signal(m_Fence.Get(), newFenceVal));
+		uint64_t newFenceVal = ++m_fenceValue;
+		ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), newFenceVal));
 		return newFenceVal;
 	}
 
-	bool CommandQueue::IsFenceComplete(uint64_t fenceValue)
+	bool CommandQueue::isFenceComplete(uint64_t fenceValue)
 	{
-		return m_Fence->GetCompletedValue() >= fenceValue;
+		return m_fence->GetCompletedValue() >= fenceValue;
 	}
 
-	void CommandQueue::WaitForFenceValue(uint64_t fenceValue)
+	void CommandQueue::waitForFenceValue(uint64_t fenceValue)
 	{
-		if (!IsFenceComplete(fenceValue))
+		if (!isFenceComplete(fenceValue))
 		{
-			m_Fence->SetEventOnCompletion(fenceValue, m_FenceEvent);
-			::WaitForSingleObject(m_FenceEvent, DWORD_MAX);
+			m_fence->SetEventOnCompletion(fenceValue, m_fenceEvent);
+			::WaitForSingleObject(m_fenceEvent, DWORD_MAX);
 		}
 	}
-	void CommandQueue::Flush()
+	void CommandQueue::flush()
 	{
-		WaitForFenceValue(Signal());
+		waitForFenceValue(signal());
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::GetCommandQueue() const
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> CommandQueue::getCommandQueue() const
 	{
-		return m_CommandQueue;
+		return m_commandQueue;
 	}
 
 
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandQueue::CreateCommandAllocator()
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandQueue::createCommandAllocator()
 	{
 		cp<ID3D12CommandAllocator> commandAllocator;
-		ThrowIfFailed(m_Device->CreateCommandAllocator(m_CommandListType, IID_PPV_ARGS(&commandAllocator)));
+		ThrowIfFailed(m_device->CreateCommandAllocator(m_commandListType, IID_PPV_ARGS(&commandAllocator)));
 
 		return commandAllocator;
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::CreateCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator)
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> CommandQueue::createCommandList(Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator)
 	{
 		cp<ID3D12GraphicsCommandList2> commandList;
-		ThrowIfFailed(m_Device->CreateCommandList(0, m_CommandListType, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
+		ThrowIfFailed(m_device->CreateCommandList(0, m_commandListType, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList)));
 
 		// no need to close it inside our class 
 		//ThrowIfFailed(commandList->Close());
