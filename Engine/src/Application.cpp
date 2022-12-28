@@ -20,7 +20,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (isReady)
 	{
-		std::shared_ptr<Mizu::Window> window = Mizu::Application::Get().getWindow(hWnd);
+		std::shared_ptr<Mizu::Window> window = Mizu::Application::get().getWindow(hWnd);
 		assert(window && "there is no window with this hwnd");
 
 		switch (message)
@@ -90,7 +90,7 @@ namespace Mizu
 {
 	Application::Application(HINSTANCE hInst) :
 		m_hInstance(hInst),
-		m_IsTearingSupported(false)
+		m_isTearingSupported(false)
 	{
 		// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 		// Using this awareness context allows the client area of the window 
@@ -124,9 +124,9 @@ namespace Mizu
 			MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
 		}
 		// get the adapter
-		m_adapter = GetAdapter();
+		m_adapter = getAdapter();
 		// make a device
-		m_device = CreateDevice();
+		m_device = createDevice();
 		// create the command queues
 		m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
@@ -158,7 +158,7 @@ namespace Mizu
 		return window;
 	}
 
-	int Mizu::Application::Run(std::shared_ptr<Game> game)
+	int Mizu::Application::run(std::shared_ptr<Game> game)
 	{
 		if (!game->Initialize()) return 1;
 		if (!game->LoadContent()) return 2;
@@ -182,41 +182,41 @@ namespace Mizu
 
 		// TODO notify game about window destruction
 		game->UnloadContent();
-		DestroyWindow(game->getWindow()->getName());
+		destroyWindow(game->getWindow()->getName());
 
-		Flush();
+		flush();
 
 		return static_cast<int>(msg.wParam);
 	}
 
-	void Application::Destroy() // static
+	void Application::destroy() // static
 	{
 		// TODO add notification to game + window destruction
 	}
 
-	void Mizu::Application::DestroyWindow(const std::wstring& name)
+	void Mizu::Application::destroyWindow(const std::wstring& name)
 	{
 		auto window = getWindow(name);
 		m_windowsHwndMap.erase(window->getHWnd());
 		m_windowsNameMap.erase(name);
 	}
 
-	Application& Application::Get() // static
+	Application& Application::get() // static
 	{
 		return *App;
 	}
 
-	bool Application::IsTearingSupported() const
+	bool Application::isTearingSupported() const
 	{
-		return m_IsTearingSupported;
+		return m_isTearingSupported;
 	}
 
-	ComPtr<ID3D12Device2> Application::GetDevice() const
+	ComPtr<ID3D12Device2> Application::getDevice() const
 	{
 		return m_device;
 	}
 
-	shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
+	shared_ptr<CommandQueue> Application::getCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 	{
 		switch (type)
 		{
@@ -232,7 +232,7 @@ namespace Mizu
 	}
 
 	// TODO this should be removed probably just misleading (we should get the command list from the command queue)
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::getCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 	{
 		switch (type)
 		{
@@ -248,7 +248,7 @@ namespace Mizu
 	}
 
 
-	Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::GetAdapter()
+	Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::getAdapter()
 	{
 		ComPtr<IDXGIFactory4> factory;
 		UINT createFactoryFlags = 0;
@@ -288,7 +288,7 @@ namespace Mizu
 	}
 
 
-	ComPtr<ID3D12Device2> Application::CreateDevice()
+	ComPtr<ID3D12Device2> Application::createDevice()
 	{
 		ComPtr<ID3D12Device2> device2;
 		ThrowIfFailed(D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device2)));
@@ -328,7 +328,7 @@ namespace Mizu
 	}
 
 
-	pair<ComPtr<ID3D12DescriptorHeap>, UINT> Application::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+	pair<ComPtr<ID3D12DescriptorHeap>, UINT> Application::createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
 	{
 		ComPtr<ID3D12DescriptorHeap> descriporHeap;
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -337,23 +337,23 @@ namespace Mizu
 		//will leave desc.Flags for now
 		ThrowIfFailed(m_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriporHeap)));
 
-		return { descriporHeap, GetDescriptorHandleIncrementSize(type) };
+		return { descriporHeap, getDescriptorHandleIncrementSize(type) };
 	}
 
 
-	UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
+	UINT Application::getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
 	{
 		return m_device->GetDescriptorHandleIncrementSize(type);
 	}
 
-	void Application::Flush()
+	void Application::flush()
 	{
 		m_directCommandQueue->flush();
 		m_copyCommandQueue->flush();
 		m_computeCommandQueue->flush();
 	}
 
-	void Mizu::Application::Close()
+	void Mizu::Application::close()
 	{
 		m_directCommandQueue->closeHandle();
 		m_copyCommandQueue->closeHandle();

@@ -53,8 +53,8 @@ CubeDemo::CubeDemo(int width, int height, bool vsync) :
 
 bool CubeDemo::LoadContent()
 {
-	auto device = Application::Get().GetDevice();
-	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
+	auto device = Application::get().getDevice();
+	auto commandQueue = Application::get().getCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 	auto commandList = commandQueue->getCommandList();
 
 	// Uploading vertex buffer data
@@ -201,9 +201,9 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 
 void CubeDemo::OnRender(RenderEventArgs& e)
 {
-	auto commandQueue = Application::Get().GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	auto commandQueue = Application::get().getCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = commandQueue->getCommandList();
-	// no need to reset the command list (check CommandQueue::GetCommandList function above)
+	// no need to reset the command list (check CommandQueue::getCommandList function above)
 
 	UINT currentBackBufferIndex = m_window->GetCurrentBackBufferIndex();
 	auto backBuffer = m_window->getCurrentBackBuffer();
@@ -244,7 +244,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_fenceValues[currentBackBufferIndex] = commandQueue->executeCommandList(commandList);
 
-		UINT presentFlags = Application::Get().IsTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		UINT presentFlags = Application::get().isTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 		currentBackBufferIndex = m_window->Present((m_vsync ? 1 : 0), presentFlags);
 		commandQueue->waitForFenceValue(m_fenceValues[currentBackBufferIndex]);
 	}
@@ -259,7 +259,7 @@ void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommand
 	D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
 {
 
-	auto device = Application::Get().GetDevice();
+	auto device = Application::get().getDevice();
 	size_t bufferSize = numElements * elementSize;
 
 	// Create the committed resource for the GPU part in a default heap
@@ -300,12 +300,12 @@ void CubeDemo::ResizeDepthBuffer(int width, int height)
 	if (m_contentLoaded) // will be true only after the descriptor heap is created
 	{
 		// Flush all gpu commands (because they might be referencing the depth buffer)
-		Application::Get().Flush();
+		Application::get().flush();
 
 		width = std::max(width, 1);
 		height = std::max(height, 1);
 
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 
 		D3D12_CLEAR_VALUE optimizedClearValue = {};
 		optimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;

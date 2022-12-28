@@ -33,13 +33,13 @@ namespace Mizu
 
 		assert(m_hWnd && "Failed To create a window");
 
-		Application& app = Application::Get();
+		Application& app = Application::get();
 
-		m_swapChain = CreateSwapChain(app.GetCommandQueue());
+		m_swapChain = CreateSwapChain(app.getCommandQueue());
 
 		m_currentBackBufferIndex = GetCurrentBackBufferIndex();
 
-		auto [descriptorHeap, descriptorSize] = Application::Get().CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, numberOfBuffers);
+		auto [descriptorHeap, descriptorSize] = Application::get().createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, numberOfBuffers);
 		m_RTVDescriptorHeap = descriptorHeap;
 		m_RTVDescriptorSize = descriptorSize;
 
@@ -154,7 +154,7 @@ namespace Mizu
 
 	void Window::UpdateRenderTargetViews()
 	{
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 		auto rtvDescSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		// here we assume it's for CPU
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -177,7 +177,7 @@ namespace Mizu
 		m_windowWidth = max(newWidth, 1U);
 		m_windowHeight = max(newHeight, 1U);
 
-		Application::Get().Flush();
+		Application::get().flush();
 
 		// this is not necessary afaik TODO check that
 		for (uint32_t i = 0; i < numberOfBuffers; i++)

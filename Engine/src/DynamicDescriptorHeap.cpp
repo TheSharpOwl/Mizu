@@ -23,7 +23,7 @@ namespace Mizu
 		, m_currentCpuDescriptorHandle(D3D12_DEFAULT)
 	{
 		// vendor specific so queried in runtime
-		m_descriptorHandleIncrementSize = Application::Get().GetDescriptorHandleIncrementSize(heapType);
+		m_descriptorHandleIncrementSize = Application::get().getDescriptorHandleIncrementSize(heapType);
 
 		// allocate space to stage CPU visible descriptors
 		m_descriptorHandleCache = std::make_unique<D3D12_CPU_DESCRIPTOR_HANDLE[]>(m_descriptorsPerHeapCount);
@@ -64,7 +64,7 @@ namespace Mizu
 		if (numDescriptorsToCommit == 0)
 			return;
 
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 		auto cl = commandList.getGraphicsCommandList().Get();
 
 		assert(cl != nullptr);
@@ -142,7 +142,7 @@ namespace Mizu
 			// (it will be done before a draw of dispatch call)
 		}
 
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 		D3D12_GPU_DESCRIPTOR_HANDLE hGpu = m_currentGpuDescriptorHandle; // we need to return it before we offset it
 		device->CopyDescriptorsSimple(1, m_currentCpuDescriptorHandle, cpuDescriptor, m_descriptorHeapType);
 
@@ -241,7 +241,7 @@ namespace Mizu
 
 	cp<ID3D12DescriptorHeap> DynamicDescriptorHeap::createDescriptorHeap()
 	{
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.NumDescriptors = m_descriptorsPerHeapCount;

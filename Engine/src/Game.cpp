@@ -29,9 +29,9 @@ bool Game::Initialize()
 		return false;
 	}
 
-	m_window = Application::Get().createRenderWindow(m_name, m_width, m_height);
+	m_window = Application::get().createRenderWindow(m_name, m_width, m_height);
 
-	//m_window = Application::Get().createRenderWindow();
+	//m_window = Application::get().createRenderWindow();
 	m_window->SetGamePtr(shared_from_this());
 	m_window->ShowWindow();
 
@@ -42,7 +42,7 @@ bool Game::Initialize()
 
 void Game::Reset()
 {
-	Mizu::Application::Get().DestroyWindow(m_window->getName());
+	Mizu::Application::get().destroyWindow(m_window->getName());
 }
 
 

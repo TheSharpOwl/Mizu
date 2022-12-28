@@ -14,7 +14,7 @@ namespace Mizu
 
 	Resource::Resource(const D3D12_RESOURCE_DESC& resourceDesc, const D3D12_CLEAR_VALUE* clearValue, const std::wstring& name)
     {
-        auto device = Application::Get().GetDevice();
+        auto device = Application::get().getDevice();
 
         if(clearValue)
         {
