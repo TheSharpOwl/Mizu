@@ -125,12 +125,16 @@ namespace Mizu
 		}
 		// get the adapter
 		m_adapter = getAdapter();
+                assert(m_adapter && "Failed to get adapter");
 		// make a device
 		m_device = createDevice();
+                assert(m_device && "Failed to create device");
 		// create the command queues
 		m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
 		m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+
+	        m_isTearingSupported = checkTearingSupport();
 
 	}
 	void Application::create(HINSTANCE hInst) // static 
@@ -206,10 +210,22 @@ namespace Mizu
 		return *App;
 	}
 
-	bool Application::isTearingSupported() const
-	{
-		return m_isTearingSupported;
-	}
+	bool Application::checkTearingSupport() const
+        {
+                BOOL allowTearing = FALSE;
+                // it's made factory 4 then checked to be 5 for graphics debugging tools support (don't know if by this time they support it because in the tutorial it was not)
+                ComPtr<IDXGIFactory4> factory4;
+                if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+                {
+                        ComPtr<IDXGIFactory5> factory5;
+                        if (SUCCEEDED(factory4.As(&factory5)))
+                        {
+                                factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+                        }
+                }
+
+                return allowTearing == TRUE;
+        }
 
 	ComPtr<ID3D12Device2> Application::getDevice() const
 	{

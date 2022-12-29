@@ -35,7 +35,7 @@ namespace Mizu
 
         static Application& get();
 
-        [[nodiscard]] bool isTearingSupported() const;
+        [[nodiscard]] bool checkTearingSupport() const;
 
         void flush();
 

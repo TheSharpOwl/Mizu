@@ -244,7 +244,7 @@ void CubeDemo::OnRender(RenderEventArgs& e)
 		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_fenceValues[currentBackBufferIndex] = commandQueue->executeCommandList(commandList);
 
-		UINT presentFlags = Application::get().isTearingSupported() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		UINT presentFlags = Application::get().checkTearingSupport() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 		currentBackBufferIndex = m_window->Present((m_vsync ? 1 : 0), presentFlags);
 		commandQueue->waitForFenceValue(m_fenceValues[currentBackBufferIndex]);
 	}
