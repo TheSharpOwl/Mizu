@@ -50,12 +50,12 @@ namespace Mizu
 
         [[nodiscard]] UINT getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
 
-        auto getWindow(const std::wstring name) -> std::shared_ptr<Window>
+        [[nodiscard]] auto getWindow(const std::wstring name) -> std::shared_ptr<Window>
         {
             auto it = m_windowsNameMap.find(name);
             return (it != m_windowsNameMap.end() ? it->second : nullptr);
         }
-        auto getWindow(HWND hWnd) -> std::shared_ptr<Window>
+        [[nodiscard]] auto getWindow(HWND hWnd) -> std::shared_ptr<Window>
         {
             auto it = m_windowsHwndMap.find(hWnd);
             return (it != m_windowsHwndMap.end() ? it->second : nullptr);
