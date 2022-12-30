@@ -12,8 +12,11 @@ using namespace std;
 
 static Mizu::Application* App = nullptr;
 static bool isReady = false;
+std::unordered_map<std::wstring, std::shared_ptr<Mizu::Window>> Mizu::Application::ms_windowsNameMap;
+std::unordered_map<HWND, std::shared_ptr<Mizu::Window>> Mizu::Application::ms_windowsHwndMap;
 const wchar_t* Mizu::Application::windowClassName = L"MizuWindowClass";
 uint64_t Mizu::Application::ms_frameNumber = 0;
+
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -151,11 +154,11 @@ namespace Mizu
 
 		// create the window
 		// TODO maybe we can return the existing one ?
-		assert(m_windowsNameMap.find(windowName) == m_windowsNameMap.end() && "A window with the same name already exists");
+		assert(ms_windowsNameMap.find(windowName) == ms_windowsNameMap.end() && "A window with the same name already exists");
 
 		auto window = make_shared<Window>(windowClassName, windowName.c_str(), m_hInstance, width, height);
-		m_windowsNameMap[windowName] = window;
-		m_windowsHwndMap[window->getHWnd()] = window;
+		ms_windowsNameMap[windowName] = window;
+		ms_windowsHwndMap[window->getHWnd()] = window;
 
 		isReady = true;
 
@@ -195,18 +198,23 @@ namespace Mizu
 
 	void Application::destroy() // static
 	{
+                if (App)
+                {
+
+                }
 		// TODO add notification to game + window destruction
 	}
 
 	void Mizu::Application::destroyWindow(const std::wstring& name)
 	{
 		auto window = getWindow(name);
-		m_windowsHwndMap.erase(window->getHWnd());
-		m_windowsNameMap.erase(name);
+		ms_windowsHwndMap.erase(window->getHWnd());
+		ms_windowsNameMap.erase(name);
 	}
 
 	Application& Application::get() // static
 	{
+                assert(App);
 		return *App;
 	}
 
@@ -375,8 +383,8 @@ namespace Mizu
 		m_copyCommandQueue->closeHandle();
 		m_computeCommandQueue->closeHandle();
 
-		m_windowsNameMap.clear();
-		m_windowsHwndMap.clear();
+		ms_windowsNameMap.clear();
+		ms_windowsHwndMap.clear();
 	}
 
 	uint64_t Mizu::Application::getFrameNumber() // static

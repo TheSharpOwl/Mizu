@@ -52,13 +52,13 @@ namespace Mizu
 
         [[nodiscard]] auto getWindow(const std::wstring name) -> std::shared_ptr<Window>
         {
-            auto it = m_windowsNameMap.find(name);
-            return (it != m_windowsNameMap.end() ? it->second : nullptr);
+            auto it = ms_windowsNameMap.find(name);
+            return (it != ms_windowsNameMap.end() ? it->second : nullptr);
         }
         [[nodiscard]] auto getWindow(HWND hWnd) -> std::shared_ptr<Window>
         {
-            auto it = m_windowsHwndMap.find(hWnd);
-            return (it != m_windowsHwndMap.end() ? it->second : nullptr);
+            auto it = ms_windowsHwndMap.find(hWnd);
+            return (it != ms_windowsHwndMap.end() ? it->second : nullptr);
         }
 
         static uint64_t getFrameNumber();
@@ -81,8 +81,8 @@ namespace Mizu
         std::shared_ptr<CommandQueue> m_copyCommandQueue;
         std::shared_ptr<CommandQueue> m_computeCommandQueue;
 
-        std::unordered_map<std::wstring, std::shared_ptr<Window>> m_windowsNameMap;
-        std::unordered_map<HWND, std::shared_ptr<Window>> m_windowsHwndMap;
+        static std::unordered_map<std::wstring, std::shared_ptr<Window>> ms_windowsNameMap;
+        static std::unordered_map<HWND, std::shared_ptr<Window>> ms_windowsHwndMap;
 
         bool m_isTearingSupported;
 
