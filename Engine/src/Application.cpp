@@ -68,22 +68,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			::GetClientRect(hWnd, &clientRect);
 
 			int width = clientRect.right - clientRect.left;
-			int height = clientRect.bottom - clientRect.top;
+                        int height = clientRect.bottom - clientRect.top;
 
-			window->Resize(width, height);
-		}
-		break;
+                        window->Resize(width, height);
+                }
+                break;
 
-		case WM_DESTROY:
-			::PostQuitMessage(0);
-			break;
-		default:
-			return ::DefWindowProcW(hWnd, message, wParam, lParam);
-		}
-	}
-	else
-	{
-		return ::DefWindowProcW(hWnd, message, wParam, lParam);
+                case WM_DESTROY:
+                        // remove the window from the list of our windows
+                        Mizu::Application::removeWindow(hWnd);
+		    // if we have no more windows left quit the application
+                        if (Mizu::Application::ms_windowsHwndMap.empty())
+                        {
+                                ::PostQuitMessage(0);
+                        }
+                        break;
+                default:
+                        return ::DefWindowProcW(hWnd, message, wParam, lParam);
+                }
+        }
+        else
+        {
+                return ::DefWindowProcW(hWnd, message, wParam, lParam);
 	}
 
 	return 0;
@@ -197,22 +203,28 @@ namespace Mizu
 	}
 
 	void Application::destroy() // static
-	{
+        {
                 if (App)
                 {
-
+                        assert(ms_windowsHwndMap.empty() && ms_windowsNameMap.empty() && "All windows should be destoryed before destroying the application instance");
+                        delete App;
+                        App = nullptr;
                 }
 		// TODO add notification to game + window destruction
 	}
 
 	void Mizu::Application::destroyWindow(const std::wstring& name)
 	{
-		auto window = getWindow(name);
-		ms_windowsHwndMap.erase(window->getHWnd());
-		ms_windowsNameMap.erase(name);
+		auto pWindow= getWindow(name);
+                pWindow->destroy();
 	}
 
-	Application& Application::get() // static
+        void Application::destroyWindow(std::shared_ptr<Window> window)
+	{
+                window->destroy();
+	}
+
+        Application& Application::get() // static
 	{
                 assert(App);
 		return *App;
@@ -386,6 +398,17 @@ namespace Mizu
 		ms_windowsNameMap.clear();
 		ms_windowsHwndMap.clear();
 	}
+
+        void Application::removeWindow(HWND hWnd)
+        {
+                auto it = ms_windowsHwndMap.find(hWnd);
+                if (it != ms_windowsHwndMap.end())
+                {
+                        auto pWindow = it->second;
+                        ms_windowsNameMap.erase(pWindow->m_name);
+                        ms_windowsHwndMap.erase(it);
+                }
+        }
 
 	uint64_t Mizu::Application::getFrameNumber() // static
 	{

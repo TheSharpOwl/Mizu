@@ -254,11 +254,25 @@ namespace Mizu
 			// TODO fix and pass correct args
 			RenderEventArgs r(0.f, 0.f);
 			game->OnRender(r);
-		}
-	}
+                }
+        }
 
-	void Mizu::Window::SetGamePtr(std::shared_ptr<Game> game)
-	{
+        void Window::destroy()
+        {
+                if (auto pGame = m_game.lock())
+                {
+                        pGame->OnWindowDestroy();
+                }
+                if (m_hWnd)
+                {
+                        // this function is from microsoft windows library (will make WM_DESTROY event that will be caught and call remove window method for)
+                        DestroyWindow(m_hWnd);
+                        m_hWnd = nullptr;
+                }
+        }
+
+        void Mizu::Window::SetGamePtr(std::shared_ptr<Game> game)
+        {
 		m_game = game;
 	}
 }

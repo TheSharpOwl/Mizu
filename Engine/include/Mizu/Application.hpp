@@ -33,6 +33,8 @@ namespace Mizu
 
         void destroyWindow(const std::wstring& name);
 
+        void destroyWindow(std::shared_ptr<Window> window);
+
         static Application& get();
 
         [[nodiscard]] bool checkTearingSupport() const;
@@ -60,6 +62,12 @@ namespace Mizu
             auto it = ms_windowsHwndMap.find(hWnd);
             return (it != ms_windowsHwndMap.end() ? it->second : nullptr);
         }
+
+        /**
+         * \brief remove window from our windows lists (the 2 maps HWND to window ptr and window name to its ptr)
+         * \param hWnd hWnd of the window we want to remove
+         */
+        static void removeWindow(HWND hWnd);
 
         static uint64_t getFrameNumber();
 
