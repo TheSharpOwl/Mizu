@@ -15,7 +15,10 @@ namespace Mizu
         virtual ~CommandQueue();
 
         uint64_t executeCommandList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList);
-
+        /**
+         * \brief Make a new ready and cleared command list
+         * \return Command list that is clear and ready to record draw or dispatch commands
+         */
         Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> getCommandList();
 
         uint64_t signal();
