@@ -196,7 +196,7 @@ namespace Mizu
 
 		if (auto pGame = m_game.lock())
 		{
-			pGame->OnResize(ResizeEventArgs(newWidth, newHeight));
+			pGame->onResize(ResizeEventArgs(newWidth, newHeight));
 		}
 	}
 
@@ -222,7 +222,7 @@ namespace Mizu
 			// 7. fix exception when making window bigger for mat multiplication
 
 			UpdateEventArgs updateEventArgs(secondsPassed, totalPassed + secondsPassed);
-			game->OnUpdate(updateEventArgs);
+			game->onUpdate(updateEventArgs);
 		}
 
 		frameCounter++;
@@ -253,7 +253,7 @@ namespace Mizu
 		{
 			// TODO fix and pass correct args
 			RenderEventArgs r(0.f, 0.f);
-			game->OnRender(r);
+			game->onRender(r);
                 }
         }
 
@@ -261,7 +261,7 @@ namespace Mizu
         {
                 if (auto pGame = m_game.lock())
                 {
-                        pGame->OnWindowDestroy();
+                        pGame->onWindowDestroy();
                 }
                 if (m_hWnd)
                 {

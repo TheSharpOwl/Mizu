@@ -173,8 +173,8 @@ namespace Mizu
 
 	int Mizu::Application::run(std::shared_ptr<Game> game)
 	{
-		if (!game->Initialize()) return 1;
-		if (!game->LoadContent()) return 2;
+		if (!game->initialize()) return 1;
+		if (!game->loadContent()) return 2;
 
 		// to print for example
 		BOOL bRet;
@@ -194,7 +194,7 @@ namespace Mizu
 		}
 
 		// TODO notify game about window destruction
-		game->UnloadContent();
+		game->unloadContent();
 		destroyWindow(game->getWindow()->getName());
 
 		flush();

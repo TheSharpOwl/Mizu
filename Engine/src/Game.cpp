@@ -21,7 +21,7 @@ Game::~Game()
 }
 
 
-bool Game::Initialize()
+bool Game::initialize()
 {
 	if (DirectX::XMVerifyCPUSupport() == false)
 	{
@@ -40,19 +40,19 @@ bool Game::Initialize()
 
 
 
-void Game::Reset()
+void Game::reset()
 {
 	Mizu::Application::get().destroyWindow(m_window->getName());
 }
 
 
-void Game::OnResize(Mizu::ResizeEventArgs& e)
+void Game::onResize(Mizu::ResizeEventArgs& e)
 {
 	m_width = e.width;
 	m_height = e.height;
 }
 // TODO use this later instead of manually doing it
-void Game::OnWindowDestroy()
+void Game::onWindowDestroy()
 {
-	UnloadContent();
+	unloadContent();
 }

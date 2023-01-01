@@ -17,18 +17,18 @@ namespace Mizu
 		
 		virtual ~Game();
 
-		int Width() const { return m_width; }
-		int Height() const { return m_height; }
-		bool Vsync() const { return m_vsync; }
-		std::wstring Name() const { return m_name; }
+		int width() const { return m_width; }
+		int height() const { return m_height; }
+		bool vsync() const { return m_vsync; }
+		std::wstring name() const { return m_name; }
 
-		virtual bool Initialize();
+		virtual bool initialize();
 
-		virtual bool LoadContent() = 0;
+		virtual bool loadContent() = 0;
 
-		virtual void UnloadContent() = 0;
+		virtual void unloadContent() = 0;
 
-		virtual void Reset();
+		virtual void reset();
 
 		auto getWindow() { return m_window; }
 
@@ -36,13 +36,13 @@ namespace Mizu
 
 		friend class Window;
 
-		virtual void OnUpdate(UpdateEventArgs& e) = 0;
+		virtual void onUpdate(UpdateEventArgs& e) = 0;
 
-		virtual void OnRender(RenderEventArgs& e) = 0;
+		virtual void onRender(RenderEventArgs& e) = 0;
 
-		virtual void OnResize(ResizeEventArgs& e);
+		virtual void onResize(ResizeEventArgs& e);
 
-		virtual void OnWindowDestroy();
+		virtual void onWindowDestroy();
 
 
 		std::shared_ptr<Window> m_window;

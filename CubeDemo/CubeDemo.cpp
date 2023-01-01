@@ -51,7 +51,7 @@ CubeDemo::CubeDemo(int width, int height, bool vsync) :
 
 }
 
-bool CubeDemo::LoadContent()
+bool CubeDemo::loadContent()
 {
 	auto device = Application::get().getDevice();
 	auto commandQueue = Application::get().getCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
@@ -170,7 +170,7 @@ bool CubeDemo::LoadContent()
 	return true;
 }
 
-void CubeDemo::OnResize(ResizeEventArgs& e)
+void CubeDemo::onResize(ResizeEventArgs& e)
 {
 	if (m_width == e.width && m_height == e.height)
 		return;
@@ -182,7 +182,7 @@ void CubeDemo::OnResize(ResizeEventArgs& e)
 	ResizeDepthBuffer(e.width, e.height);
 }
 
-void CubeDemo::OnUpdate(UpdateEventArgs& e)
+void CubeDemo::onUpdate(UpdateEventArgs& e)
 {
 	float angle = static_cast<float>(e.totalTime * 90.0);
 	const XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
@@ -199,7 +199,7 @@ void CubeDemo::OnUpdate(UpdateEventArgs& e)
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(m_fov), aspectRatio, 0.1f, 100.0f);
 }
 
-void CubeDemo::OnRender(RenderEventArgs& e)
+void CubeDemo::onRender(RenderEventArgs& e)
 {
 	auto commandQueue = Application::get().getCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	auto commandList = commandQueue->getCommandList();
@@ -345,7 +345,7 @@ void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_
 	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr);
 }
 
-void CubeDemo::UnloadContent()
+void CubeDemo::unloadContent()
 {
 	m_contentLoaded = false;
 }

@@ -19,17 +19,17 @@ namespace Mizu
 
 		CubeDemo(int width, int height, bool vsync);
 
-		bool LoadContent();
+		bool loadContent();
 
-		void UnloadContent() override;
+		void unloadContent() override;
 
 	protected:
 
-		void OnResize(ResizeEventArgs& e) override;
+		void onResize(ResizeEventArgs& e) override;
 
-		void OnUpdate(UpdateEventArgs& e) override;
+		void onUpdate(UpdateEventArgs& e) override;
 
-		void OnRender(RenderEventArgs& e) override;
+		void onRender(RenderEventArgs& e) override;
 
 	private:
 		
