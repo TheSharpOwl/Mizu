@@ -8,7 +8,7 @@ namespace Mizu
     DescriptorAllocatorPage::DescriptorAllocatorPage(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors) :
     m_heapType(type), m_descriptorsInHeapCount(numDescriptors)
     {
-        auto device = Application::Get().GetDevice();
+        auto device = Application::get().getDevice();
 
         D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
         heapDesc.Type = m_heapType;

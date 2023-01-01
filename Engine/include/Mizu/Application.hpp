@@ -6,87 +6,98 @@
 
 #include <unordered_map>
 
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 namespace Mizu
 {
-	class Window;
-	class CommandQueue;
-	class Game;
+    class Window;
+    class CommandQueue;
+    class Game;
 
-	// TODO refactor function names to use lowerCamelCase not UpperCamelCase
-	class Application
-	{
-	public:
-		
-		static const wchar_t* windowClassName;
+    // TODO refactor function names to use lowerCamelCase not UpperCamelCase
+    class Application
+    {
+    public:
+        Application() = delete;
 
-		Application() = delete;
+        Application(const Application& copy) = delete;
+        Application& operator=(const Application& other) = delete;
 
-		Application(const Application& copy) = delete;
-		Application& operator=(const Application& other) = delete;
+        static void create(HINSTANCE hInst);
 
-		static void Create(HINSTANCE hInst);
+        std::shared_ptr<Window> createRenderWindow(const std::wstring& windowName, int width, int height);
 
-		std::shared_ptr<Window> createRenderWindow(const std::wstring& appName, int width, int height);
+        int run(std::shared_ptr<Game> game);
 
-		int Run(std::shared_ptr<Game> game);
+        static void destroy();
 
-		static void Destroy();
+        void destroyWindow(const std::wstring& name);
 
-		void DestroyWindow(const std::wstring& name);
+        void destroyWindow(std::shared_ptr<Window> window);
 
-		static Application& Get();
+        static Application& get();
 
-		bool IsTearingSupported() const;
+        [[nodiscard]] bool checkTearingSupport() const;
 
-		void Flush();
-		
-		void Close();
+        void flush();
 
-		Microsoft::WRL::ComPtr<ID3D12Device2> GetDevice() const;
-		std::shared_ptr<CommandQueue> GetCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> GetCommandList(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
+        void close();
 
-		// return the created descriptor heap with its size
-		std::pair<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, UINT> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12Device2> getDevice() const;
+        [[nodiscard]] std::shared_ptr<CommandQueue> getCommandQueue(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT) const;
+        [[nodiscard]] Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> getCommandList(D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT);
 
-		UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
+        // return the created descriptor heap with its size
+        [[nodiscard]] std::pair<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>, UINT> createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors);
 
-		auto getWindow(const std::wstring name) -> std::shared_ptr<Window> { auto it = m_windowsNameMap.find(name);  return (it != m_windowsNameMap.end() ? it->second : nullptr); }
-		auto getWindow(HWND hWnd) -> std::shared_ptr<Window> { auto it = m_windowsHwndMap.find(hWnd);  return (it != m_windowsHwndMap.end() ? it->second : nullptr); }
+        [[nodiscard]] UINT getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type);
 
-		static uint64_t getFrameNumber();
+        [[nodiscard]] auto getWindow(const std::wstring name) -> std::shared_ptr<Window>
+        {
+            auto it = ms_windowsNameMap.find(name);
+            return (it != ms_windowsNameMap.end() ? it->second : nullptr);
+        }
+        [[nodiscard]] auto getWindow(HWND hWnd) -> std::shared_ptr<Window>
+        {
+            auto it = ms_windowsHwndMap.find(hWnd);
+            return (it != ms_windowsHwndMap.end() ? it->second : nullptr);
+        }
 
-	protected:
+        /**
+         * \brief remove window from our windows lists (the 2 maps HWND to window ptr and window name to its ptr)
+         * \param hWnd hWnd of the window we want to remove
+         */
+        static void removeWindow(HWND hWnd);
 
-		Application(HINSTANCE hInst);
+        static uint64_t getFrameNumber();
 
-		Microsoft::WRL::ComPtr<IDXGIAdapter4> GetAdapter();
+        static const wchar_t* windowClassName;
 
+    protected:
+        Application(HINSTANCE hInst);
 
-		Microsoft::WRL::ComPtr<ID3D12Device2> CreateDevice();
+        Microsoft::WRL::ComPtr<IDXGIAdapter4> getAdapter();
 
-		HINSTANCE m_hInstance;
+        Microsoft::WRL::ComPtr<ID3D12Device2> createDevice();
 
-		Microsoft::WRL::ComPtr<IDXGIAdapter4> m_adapter;
-		Microsoft::WRL::ComPtr<ID3D12Device2> m_device;
+        HINSTANCE m_hInstance;
 
-		std::shared_ptr<CommandQueue> m_directCommandQueue;
-		std::shared_ptr<CommandQueue> m_copyCommandQueue;
-		std::shared_ptr<CommandQueue> m_computeCommandQueue;
+        Microsoft::WRL::ComPtr<IDXGIAdapter4> m_adapter;
+        Microsoft::WRL::ComPtr<ID3D12Device2> m_device;
 
-		std::unordered_map<std::wstring, std::shared_ptr<Window>> m_windowsNameMap;
-		std::unordered_map<HWND, std::shared_ptr<Window>> m_windowsHwndMap;
+        std::shared_ptr<CommandQueue> m_directCommandQueue;
+        std::shared_ptr<CommandQueue> m_copyCommandQueue;
+        std::shared_ptr<CommandQueue> m_computeCommandQueue;
 
-		bool m_IsTearingSupported;
+        static std::unordered_map<std::wstring, std::shared_ptr<Window>> ms_windowsNameMap;
+        static std::unordered_map<HWND, std::shared_ptr<Window>> ms_windowsHwndMap;
 
-		const bool m_useWarp = false;
+        bool m_isTearingSupported;
 
-		static uint64_t ms_frameNumber;
+        const bool m_useWarp = false;
 
-		friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+        static uint64_t ms_frameNumber;
 
-	};
+        friend LRESULT CALLBACK::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    };
 }

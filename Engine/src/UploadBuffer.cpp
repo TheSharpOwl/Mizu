@@ -57,7 +57,7 @@ namespace Mizu
 		: m_size(sizeBytes)
 		, m_offset(0)
 	{
-		auto device = Application::Get().GetDevice();
+		auto device = Application::get().getDevice();
 
 		/*
 		 * Create a heap where we can upload from cpu to gpu (D3D12_HEAP_TYPE_UPLOAD)

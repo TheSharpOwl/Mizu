@@ -12,15 +12,18 @@ using namespace std;
 
 static Mizu::Application* App = nullptr;
 static bool isReady = false;
+std::unordered_map<std::wstring, std::shared_ptr<Mizu::Window>> Mizu::Application::ms_windowsNameMap;
+std::unordered_map<HWND, std::shared_ptr<Mizu::Window>> Mizu::Application::ms_windowsHwndMap;
 const wchar_t* Mizu::Application::windowClassName = L"MizuWindowClass";
 uint64_t Mizu::Application::ms_frameNumber = 0;
+
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (isReady)
 	{
-		std::shared_ptr<Mizu::Window> window = Mizu::Application::Get().getWindow(hWnd);
+		std::shared_ptr<Mizu::Window> window = Mizu::Application::get().getWindow(hWnd);
 		assert(window && "there is no window with this hwnd");
 
 		switch (message)
@@ -65,22 +68,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			::GetClientRect(hWnd, &clientRect);
 
 			int width = clientRect.right - clientRect.left;
-			int height = clientRect.bottom - clientRect.top;
+                        int height = clientRect.bottom - clientRect.top;
 
-			window->Resize(width, height);
-		}
-		break;
+                        window->Resize(width, height);
+                }
+                break;
 
-		case WM_DESTROY:
-			::PostQuitMessage(0);
-			break;
-		default:
-			return ::DefWindowProcW(hWnd, message, wParam, lParam);
-		}
-	}
-	else
-	{
-		return ::DefWindowProcW(hWnd, message, wParam, lParam);
+                case WM_DESTROY:
+                        // remove the window from the list of our windows
+                        Mizu::Application::removeWindow(hWnd);
+		    // if we have no more windows left quit the application
+                        if (Mizu::Application::ms_windowsHwndMap.empty())
+                        {
+                                ::PostQuitMessage(0);
+                        }
+                        break;
+                default:
+                        return ::DefWindowProcW(hWnd, message, wParam, lParam);
+                }
+        }
+        else
+        {
+                return ::DefWindowProcW(hWnd, message, wParam, lParam);
 	}
 
 	return 0;
@@ -90,7 +99,7 @@ namespace Mizu
 {
 	Application::Application(HINSTANCE hInst) :
 		m_hInstance(hInst),
-		m_IsTearingSupported(false)
+		m_isTearingSupported(false)
 	{
 		// Windows 10 Creators update adds Per Monitor V2 DPI awareness context.
 		// Using this awareness context allows the client area of the window 
@@ -124,16 +133,20 @@ namespace Mizu
 			MessageBoxA(NULL, "Unable to register the window class.", "Error", MB_OK | MB_ICONERROR);
 		}
 		// get the adapter
-		m_adapter = GetAdapter();
+		m_adapter = getAdapter();
+                assert(m_adapter && "Failed to get adapter");
 		// make a device
-		m_device = CreateDevice();
+		m_device = createDevice();
+                assert(m_device && "Failed to create device");
 		// create the command queues
 		m_directCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		m_copyCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COPY);
 		m_computeCommandQueue = make_shared<CommandQueue>(m_device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
+	        m_isTearingSupported = checkTearingSupport();
+
 	}
-	void Application::Create(HINSTANCE hInst) // static 
+	void Application::create(HINSTANCE hInst) // static 
 	{
 		// make sure we have an app singleton already
 		if (!App)
@@ -147,18 +160,18 @@ namespace Mizu
 
 		// create the window
 		// TODO maybe we can return the existing one ?
-		assert(m_windowsNameMap.find(windowName) == m_windowsNameMap.end() && "A window with the same name already exists");
+		assert(ms_windowsNameMap.find(windowName) == ms_windowsNameMap.end() && "A window with the same name already exists");
 
 		auto window = make_shared<Window>(windowClassName, windowName.c_str(), m_hInstance, width, height);
-		m_windowsNameMap[windowName] = window;
-		m_windowsHwndMap[window->getHWnd()] = window;
+		ms_windowsNameMap[windowName] = window;
+		ms_windowsHwndMap[window->getHWnd()] = window;
 
 		isReady = true;
 
 		return window;
 	}
 
-	int Mizu::Application::Run(std::shared_ptr<Game> game)
+	int Mizu::Application::run(std::shared_ptr<Game> game)
 	{
 		if (!game->Initialize()) return 1;
 		if (!game->LoadContent()) return 2;
@@ -182,41 +195,64 @@ namespace Mizu
 
 		// TODO notify game about window destruction
 		game->UnloadContent();
-		DestroyWindow(game->getWindow()->getName());
+		destroyWindow(game->getWindow()->getName());
 
-		Flush();
+		flush();
 
 		return static_cast<int>(msg.wParam);
 	}
 
-	void Application::Destroy() // static
-	{
+	void Application::destroy() // static
+        {
+                if (App)
+                {
+                        assert(ms_windowsHwndMap.empty() && ms_windowsNameMap.empty() && "All windows should be destoryed before destroying the application instance");
+                        delete App;
+                        App = nullptr;
+                }
 		// TODO add notification to game + window destruction
 	}
 
-	void Mizu::Application::DestroyWindow(const std::wstring& name)
+	void Mizu::Application::destroyWindow(const std::wstring& name)
 	{
-		auto window = getWindow(name);
-		m_windowsHwndMap.erase(window->getHWnd());
-		m_windowsNameMap.erase(name);
+		auto pWindow= getWindow(name);
+                pWindow->destroy();
 	}
 
-	Application& Application::Get() // static
+        void Application::destroyWindow(std::shared_ptr<Window> window)
 	{
+                window->destroy();
+	}
+
+        Application& Application::get() // static
+	{
+                assert(App);
 		return *App;
 	}
 
-	bool Application::IsTearingSupported() const
-	{
-		return m_IsTearingSupported;
-	}
+	bool Application::checkTearingSupport() const
+        {
+                BOOL allowTearing = FALSE;
+                // it's made factory 4 then checked to be 5 for graphics debugging tools support (don't know if by this time they support it because in the tutorial it was not)
+                ComPtr<IDXGIFactory4> factory4;
+                if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+                {
+                        ComPtr<IDXGIFactory5> factory5;
+                        if (SUCCEEDED(factory4.As(&factory5)))
+                        {
+                                factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+                        }
+                }
 
-	ComPtr<ID3D12Device2> Application::GetDevice() const
+                return allowTearing == TRUE;
+        }
+
+	ComPtr<ID3D12Device2> Application::getDevice() const
 	{
 		return m_device;
 	}
 
-	shared_ptr<CommandQueue> Application::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
+	shared_ptr<CommandQueue> Application::getCommandQueue(D3D12_COMMAND_LIST_TYPE type) const // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 	{
 		switch (type)
 		{
@@ -232,7 +268,7 @@ namespace Mizu
 	}
 
 	// TODO this should be removed probably just misleading (we should get the command list from the command queue)
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::GetCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> Mizu::Application::getCommandList(D3D12_COMMAND_LIST_TYPE type) // type = D3D12_COMMAND_LIST_TYPE_DIRECT by default
 	{
 		switch (type)
 		{
@@ -248,7 +284,7 @@ namespace Mizu
 	}
 
 
-	Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::GetAdapter()
+	Microsoft::WRL::ComPtr<IDXGIAdapter4> Application::getAdapter()
 	{
 		ComPtr<IDXGIFactory4> factory;
 		UINT createFactoryFlags = 0;
@@ -288,7 +324,7 @@ namespace Mizu
 	}
 
 
-	ComPtr<ID3D12Device2> Application::CreateDevice()
+	ComPtr<ID3D12Device2> Application::createDevice()
 	{
 		ComPtr<ID3D12Device2> device2;
 		ThrowIfFailed(D3D12CreateDevice(m_adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device2)));
@@ -328,7 +364,7 @@ namespace Mizu
 	}
 
 
-	pair<ComPtr<ID3D12DescriptorHeap>, UINT> Application::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
+	pair<ComPtr<ID3D12DescriptorHeap>, UINT> Application::createDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t numDescriptors)
 	{
 		ComPtr<ID3D12DescriptorHeap> descriporHeap;
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -337,31 +373,42 @@ namespace Mizu
 		//will leave desc.Flags for now
 		ThrowIfFailed(m_device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&descriporHeap)));
 
-		return { descriporHeap, GetDescriptorHandleIncrementSize(type) };
+		return { descriporHeap, getDescriptorHandleIncrementSize(type) };
 	}
 
 
-	UINT Application::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
+	UINT Application::getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
 	{
 		return m_device->GetDescriptorHandleIncrementSize(type);
 	}
 
-	void Application::Flush()
+	void Application::flush()
 	{
 		m_directCommandQueue->flush();
 		m_copyCommandQueue->flush();
 		m_computeCommandQueue->flush();
 	}
 
-	void Mizu::Application::Close()
+	void Mizu::Application::close()
 	{
 		m_directCommandQueue->closeHandle();
 		m_copyCommandQueue->closeHandle();
 		m_computeCommandQueue->closeHandle();
 
-		m_windowsNameMap.clear();
-		m_windowsHwndMap.clear();
+		ms_windowsNameMap.clear();
+		ms_windowsHwndMap.clear();
 	}
+
+        void Application::removeWindow(HWND hWnd)
+        {
+                auto it = ms_windowsHwndMap.find(hWnd);
+                if (it != ms_windowsHwndMap.end())
+                {
+                        auto pWindow = it->second;
+                        ms_windowsNameMap.erase(pWindow->m_name);
+                        ms_windowsHwndMap.erase(it);
+                }
+        }
 
 	uint64_t Mizu::Application::getFrameNumber() // static
 	{
