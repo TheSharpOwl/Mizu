@@ -1,6 +1,7 @@
 # TODO use cmake function that includes all files in a folder to a list instead of this
 
 set(ENGINE_HEADERS
+    include/Mizu/KeyCodes.hpp
     include/Mizu/CommandQueue.hpp
     include/Mizu/Window.hpp
     include/Mizu/Application.hpp
