@@ -250,13 +250,23 @@ void CubeDemo::onRender(RenderEventArgs& e)
 	}
 }
 
+void CubeDemo::onKeyPressed(KeyEventArgs& e)
+{
+	Game::onKeyPressed(e);
+}
+
+void CubeDemo::onMouseWheel(MouseWheelEventArgs& e)
+{
+	Game::onMouseWheel(e);
+}
+
 void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-	ID3D12Resource** ppDestinationRes,
-	ID3D12Resource** ppIntermediateRes,
-	size_t numElements,
-	size_t elementSize,
-	const void* bufferData,
-	D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
+                                    ID3D12Resource** ppDestinationRes,
+                                    ID3D12Resource** ppIntermediateRes,
+                                    size_t numElements,
+                                    size_t elementSize,
+                                    const void* bufferData,
+                                    D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
 {
 
 	auto device = Application::get().getDevice();
