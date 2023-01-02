@@ -48,23 +48,39 @@ void Game::reset()
     Mizu::Application::get().destroyWindow(m_window->getName());
 }
 
-void Game::onKeyPressed(KeyEventArgs& e) { }
+void Game::onKeyPressed(KeyEventArgs& e)
+{ // by default nothing should be done
+}
 
-void Game::onKeyReleased(KeyEventArgs& e) { }
+void Game::onKeyReleased(KeyEventArgs& e)
+{ // by default nothing should be done
+}
 
-void Game::onMouseButtonPressed(MouseButtonEventArgs& e) { }
+void Game::onMouseButtonPressed(MouseButtonEventArgs& e)
+{ // by default nothing should be done
+}
 
-void Game::onMouseButtonReleased(MouseButtonEventArgs& e) { }
+void Game::onMouseButtonReleased(MouseButtonEventArgs& e)
+{
+    // by default nothing should be done
+}
 
-void Game::onMouseMoved(MouseMotionEventArgs& e) { }
+void Game::onMouseMoved(MouseMotionEventArgs& e)
+{
+    // by default nothing should be done
+}
 
-void Game::onMouseWheel(MouseWheelEventArgs& e) { }
+void Game::onMouseWheel(MouseWheelEventArgs& e)
+{
+    // by default nothing should be done
+}
 
 void Game::onResize(Mizu::ResizeEventArgs& e)
 {
     m_width = e.width;
     m_height = e.height;
 }
+
 // TODO use this later instead of manually doing it
 void Game::onWindowDestroy()
 {
