@@ -1,6 +1,5 @@
 #include <memory>
 #include <string>
-
 #include "EventArgs.hpp"
 
 namespace Mizu
