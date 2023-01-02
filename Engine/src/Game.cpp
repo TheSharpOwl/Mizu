@@ -5,18 +5,20 @@
 using Mizu::Game;
 
 Game::Game(const std::wstring& name, int width, int height, bool vSync)
-    : m_width(width)
+    : m_name(name)
+    , m_width(width)
     , m_height(height)
     , m_vsync(vSync)
-    , m_name(name)
+
 {
 }
 
 Game::~Game()
 {
-    assert(!m_contentLoaded && "Content should be unloaded before destroying game object");
-    assert(m_window.use_count() == 1 && "There should be only m_window pointing to the window object");
-    m_window.reset();
+    if (m_window)
+    {
+        Game::destroy();
+    }
 }
 
 bool Game::initialize()
@@ -28,12 +30,17 @@ bool Game::initialize()
     }
 
     m_window = Application::get().createRenderWindow(m_name, m_width, m_height);
-
-    // m_window = Application::get().createRenderWindow();
     m_window->SetGamePtr(shared_from_this());
     m_window->ShowWindow();
 
     return true;
+}
+
+void Game::destroy()
+{
+    Application::get().destroyWindow(m_window);
+    // reset our shared pointer
+    m_window.reset();
 }
 
 void Game::reset()

@@ -22,6 +22,8 @@ namespace Mizu
 
         virtual bool initialize();
 
+        virtual void destroy();
+
         virtual bool loadContent() = 0;
 
         virtual void unloadContent() = 0;
@@ -29,6 +31,7 @@ namespace Mizu
         virtual void reset();
 
         auto getWindow() { return m_window; }
+
 
     protected:
         friend class Window;
