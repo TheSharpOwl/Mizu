@@ -37,7 +37,7 @@ namespace Mizu
 
 	private:
 		
-		void UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
+		void updateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 			ID3D12Resource** ppDestinationRes,
 			ID3D12Resource** ppIntermediateRes,
 			size_t numElements,
@@ -45,13 +45,13 @@ namespace Mizu
 			const void* bufferData,
 			D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE);
 
-		void ResizeDepthBuffer(int width, int height);
+		void resizeDepthBuffer(int width, int height);
 
-		void TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
+		void transitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
-		void ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor);
+		void clearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor);
 
-		void ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth = 1.0f);
+		void clearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth = 1.0f);
 
 		// vertex buffer for our cube
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_vertexBuffer;
@@ -62,7 +62,7 @@ namespace Mizu
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthBuffer;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
-		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_RootSignature;
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_rootSignature;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 
 		D3D12_VIEWPORT m_viewport;
