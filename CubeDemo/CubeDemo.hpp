@@ -36,7 +36,7 @@ namespace Mizu
 		virtual void onMouseWheel(MouseWheelEventArgs& e) override;
 
 	private:
-		
+
 		void updateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
 			ID3D12Resource** ppDestinationRes,
 			ID3D12Resource** ppIntermediateRes,

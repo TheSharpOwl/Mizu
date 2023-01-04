@@ -272,11 +272,13 @@ void CubeDemo::updateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommand
 	auto device = Application::get().getDevice();
 	size_t bufferSize = numElements * elementSize;
 
+	auto heapType = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags);
 	// Create the committed resource for the GPU part in a default heap
 	ThrowIfFailed(
 		device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
+			&heapType,
+			D3D12_HEAP_FLAG_NONE, &resDesc,
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(ppDestinationRes)
