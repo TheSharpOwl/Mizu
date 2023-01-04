@@ -59,7 +59,7 @@ bool CubeDemo::loadContent()
 
 	// Uploading vertex buffer data
 	cp<ID3D12Resource> intermediateVertexBuffer;
-	UpdateBufferResource(commandList, &m_vertexBuffer, &intermediateVertexBuffer, _countof(Vertices), sizeof(VertexPosColor), Vertices);
+	updateBufferResource(commandList, &m_vertexBuffer, &intermediateVertexBuffer, _countof(Vertices), sizeof(VertexPosColor), Vertices);
 
 	// Create the vertex buffer view
 	m_vertexBufferView.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
@@ -68,7 +68,7 @@ bool CubeDemo::loadContent()
 
 	// Uploading index buffer data
 	cp<ID3D12Resource> intermediateIndexBuffer;
-	UpdateBufferResource(commandList, &m_indexBuffer, &intermediateIndexBuffer, _countof(Indicies), sizeof(WORD), Indicies);
+	updateBufferResource(commandList, &m_indexBuffer, &intermediateIndexBuffer, _countof(Indicies), sizeof(WORD), Indicies);
 
 	//Creating the index buffer view
 	m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
@@ -127,7 +127,7 @@ bool CubeDemo::loadContent()
 	ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&rootsSignatureDescription, featureData.HighestVersion, &rootSignatureBlob, &errorBlob));
 
 	// create the root signature
-	ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(), rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature)));
+	ThrowIfFailed(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(), rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&m_rootSignature)));
 
 	struct PipelineStateStream
 	{
@@ -144,7 +144,7 @@ bool CubeDemo::loadContent()
 	rtvFormats.NumRenderTargets = 1;
 	rtvFormats.RTFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	pipelineStateStream.pRootSignature = m_RootSignature.Get();
+	pipelineStateStream.pRootSignature = m_rootSignature.Get();
 	pipelineStateStream.InputLayout = { inputLayout, _countof(inputLayout) };
 	pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	pipelineStateStream.VS = CD3DX12_SHADER_BYTECODE(vertexShaderBlob.Get());
@@ -164,7 +164,7 @@ bool CubeDemo::loadContent()
 	m_contentLoaded = true;
 
 	// Resize/create the depth buffer
-	ResizeDepthBuffer(m_width, m_height);
+	resizeDepthBuffer(m_width, m_height);
 
 
 	return true;
@@ -179,7 +179,7 @@ void CubeDemo::onResize(ResizeEventArgs& e)
 	m_height = e.height;
 	m_viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(e.width), static_cast<float>(e.height));
 
-	ResizeDepthBuffer(e.width, e.height);
+	resizeDepthBuffer(e.width, e.height);
 }
 
 void CubeDemo::onUpdate(UpdateEventArgs& e)
@@ -212,16 +212,16 @@ void CubeDemo::onRender(RenderEventArgs& e)
 
 	// Clearing render targets
 	{
-		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		transitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		FLOAT clearColor[] = { 0.7, 0.6f, 0.9f, 1.0f };
 
-		ClearRTV(commandList, rtv, clearColor);
-		ClearDepth(commandList, dsv);
+		clearRTV(commandList, rtv, clearColor);
+		clearDepth(commandList, dsv);
 	}
 
 	commandList->SetPipelineState(m_pipelineState.Get());
-	commandList->SetGraphicsRootSignature(m_RootSignature.Get());
+	commandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
@@ -241,7 +241,7 @@ void CubeDemo::onRender(RenderEventArgs& e)
 
 	// presenting
 	{
-		TransitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		transitionResource(commandList, backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 		m_fenceValues[currentBackBufferIndex] = commandQueue->executeCommandList(commandList);
 
 		UINT presentFlags = Application::get().checkTearingSupport() && !m_vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
@@ -250,23 +250,35 @@ void CubeDemo::onRender(RenderEventArgs& e)
 	}
 }
 
-void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
-	ID3D12Resource** ppDestinationRes,
-	ID3D12Resource** ppIntermediateRes,
-	size_t numElements,
-	size_t elementSize,
-	const void* bufferData,
-	D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
+void CubeDemo::onKeyPressed(KeyEventArgs& e)
+{
+	Game::onKeyPressed(e);
+}
+
+void CubeDemo::onMouseWheel(MouseWheelEventArgs& e)
+{
+	Game::onMouseWheel(e);
+}
+
+void CubeDemo::updateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> commandList,
+                                    ID3D12Resource** ppDestinationRes,
+                                    ID3D12Resource** ppIntermediateRes,
+                                    size_t numElements,
+                                    size_t elementSize,
+                                    const void* bufferData,
+                                    D3D12_RESOURCE_FLAGS flags) // flags = D3D12_RESOURCE_FLAG_NONE
 {
 
 	auto device = Application::get().getDevice();
 	size_t bufferSize = numElements * elementSize;
 
+	auto heapType = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags);
 	// Create the committed resource for the GPU part in a default heap
 	ThrowIfFailed(
 		device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize, flags),
+			&heapType,
+			D3D12_HEAP_FLAG_NONE, &resDesc,
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(ppDestinationRes)
@@ -295,7 +307,7 @@ void CubeDemo::UpdateBufferResource(Microsoft::WRL::ComPtr<ID3D12GraphicsCommand
 	}
 }
 
-void CubeDemo::ResizeDepthBuffer(int width, int height)
+void CubeDemo::resizeDepthBuffer(int width, int height)
 {
 	if (m_contentLoaded) // will be true only after the descriptor heap is created
 	{
@@ -328,19 +340,19 @@ void CubeDemo::ResizeDepthBuffer(int width, int height)
 	}
 }
 
-void CubeDemo::TransitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
+void CubeDemo::transitionResource(cp<ID3D12GraphicsCommandList2> commandList, cp<ID3D12Resource> resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState)
 {
 	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), beforeState, afterState);
 	commandList->ResourceBarrier(1, &barrier);
 }
 
 
-void CubeDemo::ClearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor)
+void CubeDemo::clearRTV(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtv, FLOAT* clearColor)
 {
 	commandList->ClearRenderTargetView(rtv, clearColor, 0, nullptr);
 }
 
-void CubeDemo::ClearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth) // depth = 1.0f default
+void CubeDemo::clearDepth(cp<ID3D12GraphicsCommandList2> commandList, D3D12_CPU_DESCRIPTOR_HANDLE dsv, FLOAT depth) // depth = 1.0f default
 {
 	commandList->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH, depth, 0, 0, nullptr);
 }
